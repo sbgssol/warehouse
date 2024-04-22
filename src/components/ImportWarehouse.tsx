@@ -125,12 +125,12 @@ export default function ImportWarehouse() {
   // Validation
   const [hopDongValid, setHopDongValid] = useState(false);
   const colorInputHopDong = () => {
-    return hopDongValid ? `bg-white` : `bg-red-50 focus:outline-red-400`;
+    return hopDongValid ? `bg-white` : `bg-red-100 focus:outline-red-500`;
   };
 
   const [soBillValid, setSoBillValid] = useState(false);
   const colorInputSoBill = () => {
-    return soBillValid ? `bg-white` : `bg-red-50 focus:outline-red-400`;
+    return soBillValid ? `bg-white` : `bg-red-100 focus:outline-red-500`;
   };
 
   const handleNewClick = async () => {
@@ -138,16 +138,20 @@ export default function ImportWarehouse() {
     if (inpAmountRef && currentSessionData && currentSessionData.danh_sach_san_pham.length) {
       let tmp = currentSessionData;
       for (let i = 0; i < inpAmountRef.current.length; ++i) {
+        if (inpAmountRef.current[i].value == "") {
+          dialog.message("Thiếu số lượng");
+          return;
+        }
         tmp.danh_sach_san_pham[i].sl_nhap = inpAmountRef.current[i].value as unknown as number;
       }
 
       // dialog.message("Final data: " + ImportData.ToString(tmp));
 
       tmp.StoreData(GlobalStrings.FileName, GlobalStrings.SaveDirectory, true);
-      dialog.message("Done");
+      dialog.message("Xong");
       // window.location.reload();
     } else {
-      dialog.message("ERROR");
+      dialog.message("Không có sản phẩm");
     }
     // let restored = await ImportData.RestoreData(file_name, dir);
     // restored.forEach((rec) => {
@@ -167,7 +171,7 @@ export default function ImportWarehouse() {
             <div className={`w-1/2 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
             <input
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                if (event.target.value.length < 3) {
+                if (event.target.value.length < 1) {
                   setHopDongValid(false);
                 } else {
                   setHopDongValid(true);
@@ -182,7 +186,7 @@ export default function ImportWarehouse() {
             <div className={`w-1/2  pr-2 ${fixed_text_color}`}>Số bill</div>
             <input
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                if (event.target.value.length < 3) {
+                if (event.target.value.length < 1) {
                   setSoBillValid(false);
                 } else {
                   setSoBillValid(true);
@@ -234,17 +238,11 @@ export default function ImportWarehouse() {
               closeHandler={setOpen}
               codeList={productCodes}
               selectedCode={selectedCodes}
+              productMap={productMap}
               handleCodeChange={setSelectedCodes}
             ></ProductSelection>
           </div>
-          <Button
-            fullWidth
-            onClick={handleSelectCodeClick}
-            variant="gradient"
-            color="green"
-            disabled={hopDongStr.length < 3 || billStr.length < 3}
-            className={``}
-          >
+          <Button fullWidth onClick={handleSelectCodeClick} variant="gradient" color="green" disabled={!hopDongValid || !soBillValid} className={`p-1`}>
             <Typography color="white" variant="h6">
               Chọn mã hàng
             </Typography>
@@ -257,11 +255,13 @@ export default function ImportWarehouse() {
   return (
     <>
       <NavbarDefault></NavbarDefault>
-      <div className="w-full overflow-hidden">
+      <div className="w-full h-max overflow-hidden">
         {fixedPart()}
         {updatingPart()}
         <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>
-        <Button className={`${fixed_button_bg} mt-2 mb-2`} fullWidth size="lg" onClick={handleNewClick}>
+      </div>
+      <div className={`absolute bottom-1 w-[98%]`}>
+        <Button className={`${fixed_button_bg} p-1.5 w-full`} onClick={handleNewClick}>
           <p className="text-xl font-normal">Hoàn thành</p>
         </Button>
       </div>

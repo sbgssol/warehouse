@@ -123,7 +123,7 @@ export default function ProcessingRelease() {
   // Validation
   const [hopDongValid, setHopDongValid] = useState(false);
   const colorInputHopDong = () => {
-    return hopDongValid ? `bg-white` : `bg-red-50 focus:outline-red-400`;
+    return hopDongValid ? `bg-white` : `bg-red-100 focus:outline-red-500`;
   };
 
   const handleNewClick = async () => {
@@ -136,16 +136,20 @@ export default function ProcessingRelease() {
       }
       for (let i = 0; i < inpAmountRef.current.length; ++i) {
         tmp.danh_sach_san_pham[i].noi_xuat = rls_source;
+        if (inpAmountRef.current[i].value == "") {
+          dialog.message("Thiếu số lượng");
+          return;
+        }
         tmp.danh_sach_san_pham[i].sl_xuat_tp = inpAmountRef.current[i].value as unknown as number;
       }
 
       // dialog.message("Final data: " + ImportData.ToString(tmp));
 
       tmp.StoreData(GlobalStrings.FileName, GlobalStrings.SaveDirectory, true);
-      dialog.message("Done");
+      dialog.message("Xong");
       // window.location.reload();
     } else {
-      dialog.message("ERROR");
+      dialog.message("Không có sản phẩm");
     }
   };
 
@@ -177,7 +181,7 @@ export default function ProcessingRelease() {
             <div className={`w-1/2 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
             <input
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                if (event.target.value.length < 3) {
+                if (event.target.value.length < 1) {
                   setHopDongValid(false);
                 } else {
                   setHopDongValid(true);
@@ -222,6 +226,7 @@ export default function ProcessingRelease() {
               closeHandler={setOpen}
               codeList={productCodes}
               selectedCode={selectedCodes}
+              productMap={productMap}
               handleCodeChange={setSelectedCodes}
             ></ProductSelection>
           </div>
@@ -230,8 +235,8 @@ export default function ProcessingRelease() {
             onClick={handleSelectCodeClick}
             variant="gradient"
             color="indigo"
-            disabled={hopDongStr.length < 3 || !rlsSrcRef || !rlsSrcRef.current?.value.length}
-            className={``}
+            disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
+            className={`p-1`}
           >
             <Typography color="white" variant="h6">
               Chọn mã hàng
@@ -249,7 +254,9 @@ export default function ProcessingRelease() {
         {fixedPart()}
         {updatingPart()}
         <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>
-        <Button className={`${fixed_button_bg} mt-2 mb-2`} fullWidth size="lg" onClick={handleNewClick}>
+      </div>
+      <div className={`absolute bottom-1 w-[98%]`}>
+        <Button className={`${fixed_button_bg} p-1.5 w-full`} onClick={handleNewClick}>
           <p className="text-xl font-normal">Hoàn thành</p>
         </Button>
       </div>

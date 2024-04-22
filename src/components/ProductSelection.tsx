@@ -6,6 +6,7 @@ export default function ProductSelection(props: {
   closeHandler: (close: boolean) => void;
   codeList: string[];
   selectedCode: string[];
+  productMap: Map<string, { name: string; unit: string }>;
   handleCodeChange: (strings: string[]) => void;
 }) {
   const checkboxRef = useRef<HTMLInputElement[]>([]);
@@ -59,6 +60,15 @@ export default function ProductSelection(props: {
     setSelectionOrder(new Array(props.codeList.length).fill(0));
   }, [props.codeList]);
 
+  const getProductName = (code: string) => {
+    let name = "-";
+    let tmp = props.productMap.get(code);
+    if (tmp) {
+      name = tmp.name;
+    }
+    return name;
+  };
+
   return (
     <Dialog open={props.open} handler={props.closeHandler} dismiss={{ outsidePress: false, escapeKey: true }}>
       <DialogHeader>Chọn mã hàng cần nhập</DialogHeader>
@@ -66,7 +76,7 @@ export default function ProductSelection(props: {
         <List className="border-2 rounded-md">
           {props.codeList.map((value, index) => (
             <ListItem className="p-0 border-b rounded-none overflow-hidden" key={index} ripple={false}>
-              <label className="flex w-full cursor-pointer items-center px-2 py-1">
+              <label className="flex w-full cursor-pointer items-center px-2 ">
                 <ListItemPrefix className="mr-1 w-5">
                   <span className="font-bold text-green-500">{selectionOrder[index] == 0 ? "" : selectionOrder[index]}</span>
                 </ListItemPrefix>
@@ -111,10 +121,14 @@ export default function ProductSelection(props: {
                     }}
                   />
                 </ListItemPrefix>
-
-                <Typography color="blue-gray" className="font-medium">
-                  {value}
-                </Typography>
+                <div>
+                  <Typography color="pink" className="font-medium" variant="paragraph">
+                    {value}
+                  </Typography>
+                  <Typography color="gray" className="font-medium" variant="small">
+                    {getProductName(value)}
+                  </Typography>
+                </div>
               </label>
             </ListItem>
           ))}

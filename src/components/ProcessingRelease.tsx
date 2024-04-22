@@ -13,26 +13,23 @@ export default function ProcessingRelease() {
   const [hopDongStr, setHopDongStr] = useState("");
   const [rlsDateStr, setRlsDateStr] = useState("");
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
-
-  // References
-  const contractRef = useRef<HTMLInputElement>(null); // To focus when the program starts
-  const rlsDateRef = useRef<HTMLInputElement>(null); // To initialize to current date
-  const inpAmountRef = useRef<HTMLInputElement[]>([]);
-  const rlsSrcRef = useRef<HTMLSelectElement>(null);
-
-  const fixed_text_color = `text-amber-700`;
-  const fixed_area_bg = "bg-amber-100";
-  const fixed_area_border = `border-amber-200`;
-  const fixed_input_outline = `focus:outline-amber-300`;
-  const fixed_button_bg = "bg-amber-800";
-
-  const [currentSessionData, setCurrentSessionData] = useState<ImportData.Data>(new ImportData.Data("", "", "", ""));
-
-  // To load the CSV
   const [csvContent, setCsvContent] = useState<string[]>([]);
   const [csvLocation, setCsvLocation] = useState<string[]>([]);
   const [productCodes, setCodeList] = useState<string[]>([]);
   const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(new Map());
+  const [currentSessionData, setCurrentSessionData] = useState<ImportData.Data>(new ImportData.Data("", "", "", ""));
+
+  // References
+  const contractRef = useRef<HTMLInputElement>(null);
+  const rlsDateRef = useRef<HTMLInputElement>(null);
+  const inpAmountRef = useRef<HTMLInputElement[]>([]);
+  const rlsSrcRef = useRef<HTMLSelectElement>(null);
+
+  const fixed_text_color = `text-teal-700`;
+  const fixed_area_bg = "bg-teal-100";
+  const fixed_area_border = `border-teal-200`;
+  const fixed_input_outline = `focus:outline-teal-300`;
+  const fixed_button_bg = "bg-teal-800";
 
   const fetchCsvFile = async () => {
     let data = await ReadCsvToStrArr(GlobalStrings.ProductCodeFileName);
@@ -40,7 +37,7 @@ export default function ProcessingRelease() {
     data = await ReadCsvToStrArr(GlobalStrings.ReleaseLocationFileName);
     setCsvLocation(data);
   };
-  // Load CSV file once this page is mounted
+
   useEffect(() => {
     fetchCsvFile();
     if (contractRef.current) {
@@ -123,7 +120,7 @@ export default function ProcessingRelease() {
   // Validation
   const [hopDongValid, setHopDongValid] = useState(false);
   const colorInputHopDong = () => {
-    return hopDongValid ? `bg-white` : `bg-red-50 focus:outline-red-400`;
+    return hopDongValid ? `bg-white` : `bg-red-100 focus:outline-red-500`;
   };
 
   const handleNewClick = async () => {
@@ -135,6 +132,10 @@ export default function ProcessingRelease() {
         rls_source = rlsSrcRef.current?.value;
       }
       for (let i = 0; i < inpAmountRef.current.length; ++i) {
+        if (inpAmountRef.current[i].value == "") {
+          dialog.message("Thiếu số lượng");
+          return;
+        }
         tmp.danh_sach_san_pham[i].noi_xuat = rls_source;
         tmp.danh_sach_san_pham[i].sl_xuat_gc = inpAmountRef.current[i].value as unknown as number;
       }
@@ -142,10 +143,10 @@ export default function ProcessingRelease() {
       // dialog.message("Final data: " + ImportData.ToString(tmp));
 
       tmp.StoreData(GlobalStrings.FileName, GlobalStrings.SaveDirectory, true);
-      dialog.message("Done");
+      dialog.message("Xong");
       // window.location.reload();
     } else {
-      dialog.message("ERROR");
+      dialog.message("Không có sản phẩm");
     }
   };
 
@@ -177,7 +178,7 @@ export default function ProcessingRelease() {
             <div className={`w-1/2 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
             <input
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                if (event.target.value.length < 3) {
+                if (event.target.value.length < 1) {
                   setHopDongValid(false);
                 } else {
                   setHopDongValid(true);
@@ -222,6 +223,7 @@ export default function ProcessingRelease() {
               closeHandler={setOpen}
               codeList={productCodes}
               selectedCode={selectedCodes}
+              productMap={productMap}
               handleCodeChange={setSelectedCodes}
             ></ProductSelection>
           </div>
@@ -229,9 +231,9 @@ export default function ProcessingRelease() {
             fullWidth
             onClick={handleSelectCodeClick}
             variant="gradient"
-            color="amber"
-            disabled={hopDongStr.length < 3 || !rlsSrcRef || !rlsSrcRef.current?.value.length}
-            className={``}
+            color="teal"
+            disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
+            className={`p-1`}
           >
             <Typography color="white" variant="h6">
               Chọn mã hàng
@@ -249,7 +251,9 @@ export default function ProcessingRelease() {
         {fixedPart()}
         {updatingPart()}
         <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>
-        <Button className={`${fixed_button_bg} mt-2 mb-2`} fullWidth size="lg" onClick={handleNewClick}>
+      </div>
+      <div className={`absolute bottom-1 w-[98%]`}>
+        <Button className={`${fixed_button_bg} p-1.5 w-full`} onClick={handleNewClick}>
           <p className="text-xl font-normal">Hoàn thành</p>
         </Button>
       </div>

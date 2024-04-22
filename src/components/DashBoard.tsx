@@ -6,8 +6,6 @@ import excel_svg from "../assets/excel.svg";
 import { useNavigate } from "react-router-dom";
 
 export default function DashBoard() {
-  const item_alignment = `flex flex-col justify-center items-center`;
-
   const navigate = useNavigate();
 
   const handleImportClick = () => {
@@ -23,32 +21,34 @@ export default function DashBoard() {
     navigate("/report");
   };
 
+  const inner_button_dimension = `w-full h-full rounded-md flex flex-col justify-center items-center`;
+
   return (
     <div className="w-full h-full">
       <div className="grid grid-cols-2 h-full gap-4 p-4">
         <Button className={`border-4 p-2`} color="cyan" variant="outlined" onClick={handleImportClick}>
-          <div className={`bg-cyan-50 w-full h-full rounded-md ${item_alignment}`}>
+          <div className={`bg-cyan-50 ${inner_button_dimension}`}>
             <Typography variant="h2">Nhập</Typography>
             <Typography variant="h2">hàng</Typography>
             <img src={import_svg} />
           </div>
         </Button>
         <Button className={`border-4 p-2`} color="amber" variant="outlined" onClick={handleProcessingRelease}>
-          <div className={`bg-amber-50 w-full h-full rounded-md ${item_alignment}`}>
+          <div className={`bg-amber-50 ${inner_button_dimension}`}>
             <Typography variant="h2">Xuất</Typography>
             <Typography variant="h2">gia công</Typography>
             <img src={processing_svg} />
           </div>
         </Button>
         <Button className={`border-4 p-2`} color="orange" variant="outlined" onClick={handleProductionRelease}>
-          <div className={`bg-orange-50 w-full h-full rounded-md ${item_alignment}`}>
+          <div className={`bg-orange-50 ${inner_button_dimension}`}>
             <Typography variant="h2">Xuất</Typography>
             <Typography variant="h2">thành phẩm</Typography>
             <img src={product_svg} />
           </div>
         </Button>
         <Button className={`border-4 p-2`} color="light-green" variant="outlined" onClick={handleReport}>
-          <div className={`bg-green-50 w-full h-full rounded-md ${item_alignment}`}>
+          <div className={`bg-green-50 ${inner_button_dimension}`}>
             <Typography variant="h2">Tạo</Typography>
             <Typography variant="h2">báo cáo</Typography>
             <img src={excel_svg} />

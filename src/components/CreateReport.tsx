@@ -2,7 +2,6 @@ import { Button } from "@material-tailwind/react";
 import { ImportData } from "../types/ImportWarehouseData";
 import { dialog } from "@tauri-apps/api";
 import { useState, useEffect } from "react";
-import TableColumn from "../types/TableStrings";
 import GlobalStrings from "../types/Globals";
 import { NavbarDefault } from "./Navbar";
 
@@ -61,7 +60,7 @@ export default function CreateReport() {
       <>
         {Array.from(productSortedByDate).map(([key, data], index) => {
           return (
-            <table key={index} className="text-center text-sm text-wrap mt-2">
+            <table key={index} className="text-center text-sm text-wrap mt-2 mb-2">
               <thead>
                 <tr>
                   <th colSpan={2} className="text-left">
@@ -73,43 +72,43 @@ export default function CreateReport() {
               <thead>
                 <tr>
                   <th rowSpan={3} className="border border-gray-500 p-1">
-                    {TableColumn.STT}
+                    {GlobalStrings.TableColumn.STT}
                   </th>
                   <th rowSpan={3} className="border border-gray-500 p-1">
-                    {TableColumn.NoiXuat}
+                    {GlobalStrings.TableColumn.NoiXuat}
                   </th>
                   <th rowSpan={3} className="border border-gray-500 p-1">
-                    {TableColumn.SoBill}
+                    {GlobalStrings.TableColumn.SoBill}
                   </th>
                   <th rowSpan={3} className="border border-gray-500 p-1">
-                    {TableColumn.NgChTu}
+                    {GlobalStrings.TableColumn.NgChTu}
                   </th>
                   <th rowSpan={3} className="border border-gray-500 p-1">
-                    {TableColumn.MaHD}
+                    {GlobalStrings.TableColumn.MaHD}
                   </th>
                   <th rowSpan={3} className="border border-gray-500 p-1">
-                    {TableColumn.NgThTe}
+                    {GlobalStrings.TableColumn.NgThTe}
                   </th>
                   <th className="border border-gray-500" colSpan={5}>
-                    {TableColumn.Sl}
+                    {GlobalStrings.TableColumn.Sl}
                   </th>
                 </tr>
                 <tr>
                   <th rowSpan={2} className="border border-gray-500">
-                    {TableColumn.Nhap}
+                    {GlobalStrings.TableColumn.Nhap}
                   </th>
                   <th colSpan={2} rowSpan={1} className="border border-gray-500">
-                    {TableColumn.Xuat}
+                    {GlobalStrings.TableColumn.Xuat}
                   </th>
                   <th colSpan={2} rowSpan={1} className="border border-gray-500">
-                    {TableColumn.Ton}
+                    {GlobalStrings.TableColumn.Ton}
                   </th>
                 </tr>
                 <tr>
-                  <th className="border border-gray-500">{TableColumn.Gc}</th>
-                  <th className="border border-gray-500">{TableColumn.Tp}</th>
-                  <th className="border border-gray-500">{TableColumn.Tp}</th>
-                  <th className="border border-gray-500">{TableColumn.Tt}</th>
+                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Gc}</th>
+                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tp}</th>
+                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tp}</th>
+                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tt}</th>
                 </tr>
               </thead>
               <tbody>
@@ -246,8 +245,8 @@ export default function CreateReport() {
 
   return (
     <>
+      <NavbarDefault></NavbarDefault>
       <div className="">
-        <NavbarDefault></NavbarDefault>
         <Button onClick={handleCheck}>Kiểm tra</Button>
         {summaryTable()}
       </div>
