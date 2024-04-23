@@ -1,6 +1,7 @@
 import { BaseDirectory, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
+import { Dialog } from "./Dialog";
 
-export namespace ImportData {
+export module ImportData {
   class Products {
     ma_hang: string;
     ten_hang: string;
@@ -58,11 +59,17 @@ export namespace ImportData {
     }
 
     StoreData = async (file_name: string, directory: BaseDirectory, append?: boolean) => {
-      await writeTextFile(file_name, JSON.stringify(this) + "\n", {
-        dir: directory,
-        append: append,
-      });
-      console.log(`Persistent data stored to ${file_name}`);
+      try {
+        await writeTextFile(file_name, JSON.stringify(this) + "\n", {
+          dir: directory,
+          append: append,
+        });
+      } catch (error) {
+        Dialog.Info(`Data could NOT be stored to ${directory.toString()}`, "Thông tin");
+        // Dialog.Error(error as string);
+        return;
+      }
+      // Dialog.Info(`Data stored to ${directory.toString()}`, "Thông tin");
     };
   }
 

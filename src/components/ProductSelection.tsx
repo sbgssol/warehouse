@@ -1,4 +1,15 @@
-import { Dialog, DialogHeader, DialogBody, List, ListItem, ListItemPrefix, Checkbox, Typography, DialogFooter, Button } from "@material-tailwind/react";
+import {
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  List,
+  ListItem,
+  ListItemPrefix,
+  Checkbox,
+  Typography,
+  DialogFooter,
+  Button,
+} from "@material-tailwind/react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 export default function ProductSelection(props: {
@@ -37,7 +48,7 @@ export default function ProductSelection(props: {
   const handleModalDone = () => {
     if (checkboxRef.current) {
       // Collect selected codes
-      let map = new Map<number, string>();
+      const map = new Map<number, string>();
       for (let i = 0; i < props.codeList.length; ++i) {
         if (selectionOrder[i] != 0 && checkboxRef.current[i].checked) {
           map.set(selectionOrder[i], props.codeList[i]);
@@ -45,8 +56,8 @@ export default function ProductSelection(props: {
         }
       }
 
-      let selected: string[] = [];
-      let sorted = new Map([...map.entries()].sort());
+      const selected: string[] = [];
+      const sorted = new Map([...map.entries()].sort());
       sorted.forEach((value) => {
         selected.push(value);
       });
@@ -62,7 +73,7 @@ export default function ProductSelection(props: {
 
   const getProductName = (code: string) => {
     let name = "-";
-    let tmp = props.productMap.get(code);
+    const tmp = props.productMap.get(code);
     if (tmp) {
       name = tmp.name;
     }
@@ -70,15 +81,25 @@ export default function ProductSelection(props: {
   };
 
   return (
-    <Dialog open={props.open} handler={props.closeHandler} dismiss={{ outsidePress: false, escapeKey: true }}>
+    <Dialog
+      open={props.open}
+      handler={props.closeHandler}
+      dismiss={{ outsidePress: false, escapeKey: true }}
+    >
       <DialogHeader>Chọn mã hàng cần nhập</DialogHeader>
       <DialogBody className="h-[70vh] overflow-y-scroll">
         <List className="border-2 rounded-md">
           {props.codeList.map((value, index) => (
-            <ListItem className="p-0 border-b rounded-none overflow-hidden" key={index} ripple={false}>
+            <ListItem
+              className="p-0 border-b rounded-none overflow-hidden"
+              key={index}
+              ripple={false}
+            >
               <label className="flex w-full cursor-pointer items-center px-2 ">
                 <ListItemPrefix className="mr-1 w-5">
-                  <span className="font-bold text-green-500">{selectionOrder[index] == 0 ? "" : selectionOrder[index]}</span>
+                  <span className="font-bold text-green-500">
+                    {selectionOrder[index] == 0 ? "" : selectionOrder[index]}
+                  </span>
                 </ListItemPrefix>
                 <ListItemPrefix className="mr-3">
                   <Checkbox
@@ -101,7 +122,9 @@ export default function ProductSelection(props: {
                       if (checked) {
                         setSelectionOrder((prevSelectionOrder) => {
                           const newSelectionOrder = [...prevSelectionOrder];
-                          const checkedIndex = newSelectionOrder.filter((order) => order > 0).length + 1;
+                          const checkedIndex =
+                            newSelectionOrder.filter((order) => order > 0)
+                              .length + 1;
                           newSelectionOrder[index] = checkedIndex;
                           return newSelectionOrder;
                         });
@@ -122,10 +145,18 @@ export default function ProductSelection(props: {
                   />
                 </ListItemPrefix>
                 <div>
-                  <Typography color="pink" className="font-medium" variant="paragraph">
+                  <Typography
+                    color="pink"
+                    className="font-medium"
+                    variant="paragraph"
+                  >
                     {value}
                   </Typography>
-                  <Typography color="gray" className="font-medium" variant="small">
+                  <Typography
+                    color="gray"
+                    className="font-medium"
+                    variant="small"
+                  >
                     {getProductName(value)}
                   </Typography>
                 </div>
@@ -135,16 +166,36 @@ export default function ProductSelection(props: {
         </List>
       </DialogBody>
       <DialogFooter className="space-x-2">
-        <Button variant="filled" color="red" onClick={handleModalClose} className={`w-[130px] h-[40px] flex items-center justify-center`}>
+        <Button
+          variant="filled"
+          color="red"
+          onClick={handleModalClose}
+          className={`w-[130px] h-[40px] flex items-center justify-center`}
+        >
           Đóng
         </Button>
-        <Button variant="outlined" color="red" onClick={handleModalReset} className={`w-[130px] h-[40px]`}>
+        <Button
+          variant="outlined"
+          color="red"
+          onClick={handleModalReset}
+          className={`w-[130px] h-[40px]`}
+        >
           Đặt lại
         </Button>
-        <Button variant="outlined" color="orange" onClick={handleModalClear} className={`w-[130px] h-[40px]`}>
+        <Button
+          variant="outlined"
+          color="orange"
+          onClick={handleModalClear}
+          className={`w-[130px] h-[40px]`}
+        >
           Xóa
         </Button>
-        <Button variant="gradient" color="green" onClick={handleModalDone} className="w-[150px] h-[40px]">
+        <Button
+          variant="gradient"
+          color="green"
+          onClick={handleModalDone}
+          className="w-[150px] h-[40px]"
+        >
           Xong
         </Button>
       </DialogFooter>

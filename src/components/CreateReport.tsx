@@ -1,9 +1,10 @@
 import { Button } from "@material-tailwind/react";
 import { ImportData } from "../types/ImportWarehouseData";
-import { dialog } from "@tauri-apps/api";
 import { useState, useEffect } from "react";
 import GlobalStrings from "../types/Globals";
 import { NavbarDefault } from "./Navbar";
+import { useGlobalState } from "../types/GlobalContext";
+import { Dialog } from "../types/Dialog";
 
 export default function CreateReport() {
   class ShortenData {
@@ -28,7 +29,7 @@ export default function CreateReport() {
       sl_xuat_gc?: number,
       sl_xuat_tp?: number,
       sl_ton_tp?: number,
-      sl_ton_tt?: number
+      sl_ton_tt?: number,
     ) {
       this.hop_dong = hop_dong;
       this.bill = bill;
@@ -44,8 +45,16 @@ export default function CreateReport() {
   }
 
   const [restoredData, setRestoredData] = useState<ImportData.Data[]>([]);
-  const [productByCode, setProductByCode] = useState<Map<string, ShortenData[]>>(new Map<string, ShortenData[]>());
-  const [productSortedByDate, setProductSortedByDate] = useState<Map<string, ShortenData[]>>(new Map<string, ShortenData[]>());
+  const [productByCode, setProductByCode] = useState<
+    Map<string, ShortenData[]>
+  >(new Map<string, ShortenData[]>());
+  const [productSortedByDate, setProductSortedByDate] = useState<
+    Map<string, ShortenData[]>
+  >(new Map<string, ShortenData[]>());
+  const { contractName, getRecordFilename } = useGlobalState();
+  const [productMap, setProductMap] = useState<
+    Map<string, { name: string; unit: string }>
+  >(new Map());
 
   const stripeColumn = (index: number) => {
     let str = "";
@@ -55,18 +64,48 @@ export default function CreateReport() {
     return str;
   };
 
+  const getProductInfo = (code: string, type: string) => {
+    let str = "?";
+    const tmp = productMap.get(code);
+    if (tmp) {
+      if (type == "name") {
+        str = tmp.name;
+      } else if (type == "unit") {
+        str = tmp.unit;
+      } else {
+        str = "?";
+      }
+    }
+    return str;
+  };
+
   const summaryTable = () => {
     return (
       <>
         {Array.from(productSortedByDate).map(([key, data], index) => {
           return (
-            <table key={index} className="text-center text-sm text-wrap mt-2 mb-2">
-              <thead>
+            <table
+              key={index}
+              className="text-center text-sm text-wrap mt-2 mb-2 max-w-[100%] "
+            >
+              <thead className="text-left">
                 <tr>
-                  <th colSpan={2} className="text-left">
-                    Ma hang
+                  <th colSpan={2} className="">
+                    Mã hàng:
                   </th>
-                  <th>{key}</th>
+                  <th colSpan={2}>{key}</th>
+                </tr>
+                <tr>
+                  <th colSpan={2} className="">
+                    Tên hàng:
+                  </th>
+                  <th colSpan={2}>{getProductInfo(key, "name")}</th>
+                </tr>
+                <tr>
+                  <th colSpan={2} className="">
+                    Đơn vị tính:
+                  </th>
+                  <th colSpan={2}>{getProductInfo(key, "unit")}</th>
                 </tr>
               </thead>
               <thead>
@@ -97,30 +136,59 @@ export default function CreateReport() {
                   <th rowSpan={2} className="border border-gray-500">
                     {GlobalStrings.TableColumn.Nhap}
                   </th>
-                  <th colSpan={2} rowSpan={1} className="border border-gray-500">
+                  <th
+                    colSpan={2}
+                    rowSpan={1}
+                    className="border border-gray-500"
+                  >
                     {GlobalStrings.TableColumn.Xuat}
                   </th>
-                  <th colSpan={2} rowSpan={1} className="border border-gray-500">
+                  <th
+                    colSpan={2}
+                    rowSpan={1}
+                    className="border border-gray-500"
+                  >
                     {GlobalStrings.TableColumn.Ton}
                   </th>
                 </tr>
                 <tr>
-                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Gc}</th>
-                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tp}</th>
-                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tp}</th>
-                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tt}</th>
+                  <th className="border border-gray-500">
+                    {GlobalStrings.TableColumn.Gc}
+                  </th>
+                  <th className="border border-gray-500">
+                    {GlobalStrings.TableColumn.Tp}
+                  </th>
+                  <th className="border border-gray-500">
+                    {GlobalStrings.TableColumn.Tp}
+                  </th>
+                  <th className="border border-gray-500">
+                    {GlobalStrings.TableColumn.Tt}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((value, innerIndex) => {
                   return (
-                    <tr key={innerIndex} className={`${stripeColumn(innerIndex)}`}>
-                      <td className="border border-gray-500">{innerIndex + 1}</td>
-                      <td className="border border-gray-500">{value.noi_xuat ?? "-"}</td>
+                    <tr
+                      key={innerIndex}
+                      className={`${stripeColumn(innerIndex)}`}
+                    >
+                      <td className="border border-gray-500">
+                        {innerIndex + 1}
+                      </td>
+                      <td className="border border-gray-500">
+                        {value.noi_xuat ?? "-"}
+                      </td>
                       <td className="border border-gray-500">{value.bill}</td>
-                      <td className="border border-gray-500">{value.ngay_chung_tu}</td>
-                      <td className="border border-gray-500">{value.hop_dong}</td>
-                      <td className="border border-gray-500">{value.ngay_thuc_te}</td>
+                      <td className="border border-gray-500">
+                        {value.ngay_chung_tu}
+                      </td>
+                      <td className="border border-gray-500">
+                        {value.hop_dong}
+                      </td>
+                      <td className="border border-gray-500">
+                        {value.ngay_thuc_te}
+                      </td>
                       <td className="border border-gray-500" width={50}>
                         {value.sl_nhap ?? "-"}
                       </td>
@@ -149,25 +217,38 @@ export default function CreateReport() {
 
   const handleCheck = async () => {
     setRestoredData([]);
-    let restored_data = await ImportData.RestoreData(GlobalStrings.FileName, GlobalStrings.SaveDirectory);
-    if (restored_data.length) {
-      let tmp: ImportData.Data[] = [];
-      restored_data.forEach((rec) => {
-        tmp.push(rec);
-        // dialog.message(ImportData.ToString(rec));
-      });
-      setRestoredData(tmp);
-    } else {
-      dialog.message("Không thể tải dữ liệu");
+    try {
+      const restored_data = await ImportData.RestoreData(
+        getRecordFilename(),
+        GlobalStrings.SaveDirectory,
+      );
+      if (restored_data.length) {
+        const tmp: ImportData.Data[] = [];
+        restored_data.forEach((rec) => {
+          tmp.push(rec);
+          // dialog.message(ImportData.ToString(rec));
+        });
+        setRestoredData(tmp);
+      } else {
+        Dialog.Warning("Không tìm thấy dữ liệu hoặc dữ liệu trống");
+      }
+    } catch (error) {
+      console.log(error);
+      Dialog.Error(`Không tìm thấy dữ liệu của mã hợp đồng "${contractName}"`);
     }
   };
 
   useEffect(() => {
+    const tmp = new Map<string, ShortenData[]>();
+    const map_tmp = new Map<string, { name: string; unit: string }>();
     if (restoredData.length > 0) {
-      let tmp = new Map<string, ShortenData[]>();
       restoredData.forEach((record) => {
         record.danh_sach_san_pham.forEach((product) => {
-          let prod = tmp.get(product.ma_hang);
+          map_tmp.set(product.ma_hang, {
+            name: product.ten_hang,
+            unit: product.don_vi_tinh,
+          });
+          const prod = tmp.get(product.ma_hang);
           if (prod) {
             prod.push(
               new ShortenData(
@@ -180,8 +261,8 @@ export default function CreateReport() {
                 product.sl_xuat_gc,
                 product.sl_xuat_tp,
                 product.sl_ton_tp,
-                product.sl_ton_tt
-              )
+                product.sl_ton_tt,
+              ),
             );
           } else {
             tmp.set(product.ma_hang, [
@@ -195,35 +276,36 @@ export default function CreateReport() {
                 product.sl_xuat_gc,
                 product.sl_xuat_tp,
                 product.sl_ton_tp,
-                product.sl_ton_tt
+                product.sl_ton_tt,
               ),
             ]);
           }
         });
       });
-      setProductByCode(tmp);
     }
+    setProductByCode(tmp);
+    setProductMap(map_tmp);
 
     return () => {};
   }, [restoredData]);
 
   useEffect(() => {
+    const sorted: Map<string, ShortenData[]> = new Map();
     if (productByCode.size) {
-      let sorted: Map<string, ShortenData[]> = new Map();
       let code = "";
       let data: ShortenData[] = [];
 
       productByCode.forEach((value, key) => {
-        let tmp: Map<number, { date: number; data: ShortenData }> = new Map();
+        const tmp: Map<number, { date: number; data: ShortenData }> = new Map();
         value.forEach((data, index) => {
           tmp.set(index, { date: Date.parse(data.ngay_thuc_te), data: data });
         });
 
-        let sortedArr = Array.from(tmp.entries()).sort((a, b) => {
+        const sortedArr = Array.from(tmp.entries()).sort((a, b) => {
           return a[1].date - b[1].date;
         });
 
-        let arr = new Map(sortedArr);
+        const arr = new Map(sortedArr);
 
         let str = "";
         arr.forEach((value, innerKey) => {
@@ -236,9 +318,8 @@ export default function CreateReport() {
         code = "";
         data = [];
       });
-
-      setProductSortedByDate(sorted);
     }
+    setProductSortedByDate(sorted);
 
     return () => {};
   }, [productByCode]);

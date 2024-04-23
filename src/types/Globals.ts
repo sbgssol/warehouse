@@ -1,7 +1,8 @@
 import { BaseDirectory } from "@tauri-apps/api/fs";
 
 const GlobalStrings = {
-  FileName: "tmp.dat",
+  SelectContract: "Chọn hợp đồng",
+  RecordFileName: "record.dat",
   SaveDirectory: BaseDirectory.Resource,
   ProductCodeFileName: "ma_hang.csv",
   ReleaseLocationFileName: "noi_xuat.csv",

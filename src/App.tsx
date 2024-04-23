@@ -4,7 +4,6 @@ import CreateReport from "./components/CreateReport";
 import ProductionRelease from "./components/ProductionRelease";
 import { Routes, Route } from "react-router-dom";
 import DashBoard from "./components/DashBoard";
-import SelectContract from "./components/SelectContract";
 
 export default function App() {
   return (
@@ -15,7 +14,6 @@ export default function App() {
           <Route path="import" element={<ImportWarehouse />} />
           <Route path="processing-release" element={<ProcessingRelease />} />
           <Route path="production-release" element={<ProductionRelease />} />
-          <Route path="select-contract" element={<SelectContract />} />
           <Route path="report" element={<CreateReport />} />
           <Route path="*" element={<DashBoard />} />
         </Routes>

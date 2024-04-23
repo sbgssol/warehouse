@@ -7,12 +7,15 @@ import { ReadCsvToStrArr } from "../types/ReadCsv";
 import GlobalStrings from "../types/Globals";
 import { NavbarDefault } from "./Navbar";
 import SummaryTable from "./SummaryTable";
+import SaveButton from "./single/SaveButton";
+import { useGlobalState } from "../types/GlobalContext";
 
 export default function ProcessingRelease() {
   // States
   const [hopDongStr, setHopDongStr] = useState("");
   const [rlsDateStr, setRlsDateStr] = useState("");
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
+  const { getRecordFilename } = useGlobalState();
 
   // References
   const contractRef = useRef<HTMLInputElement>(null); // To focus when the program starts
@@ -26,13 +29,17 @@ export default function ProcessingRelease() {
   const fixed_input_outline = `focus:outline-indigo-300`;
   const fixed_button_bg = "bg-indigo-800";
 
-  const [currentSessionData, setCurrentSessionData] = useState<ImportData.Data>(new ImportData.Data("", "", "", ""));
+  const [currentSessionData, setCurrentSessionData] = useState<ImportData.Data>(
+    new ImportData.Data("", "", "", ""),
+  );
 
   // To load the CSV
   const [csvContent, setCsvContent] = useState<string[]>([]);
   const [csvLocation, setCsvLocation] = useState<string[]>([]);
   const [productCodes, setCodeList] = useState<string[]>([]);
-  const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(new Map());
+  const [productMap, setProductMap] = useState<
+    Map<string, { name: string; unit: string }>
+  >(new Map());
 
   const fetchCsvFile = async () => {
     let data = await ReadCsvToStrArr(GlobalStrings.ProductCodeFileName);
@@ -61,15 +68,15 @@ export default function ProcessingRelease() {
   // To handle the CSV data
   useEffect(() => {
     if (csvContent) {
-      let updatedCodeList = new Set<string>();
-      let updatedProductMap = new Map(productMap);
+      const updatedCodeList = new Set<string>();
+      const updatedProductMap = new Map(productMap);
 
       for (let i = 1; i < csvContent.length; ++i) {
         if (csvContent[i].length < 3) continue;
-        let line = csvContent[i].split(",");
-        let code = line[0].trim();
-        let name = line[1].trim();
-        let unit = line[2].trim();
+        const line = csvContent[i].split(",");
+        const code = line[0].trim();
+        const name = line[1].trim();
+        const unit = line[2].trim();
 
         updatedCodeList.add(code); // Add code to updatedCodeList
         updatedProductMap.set(code, { name, unit }); // Add code and its details to updatedProductMap
@@ -87,7 +94,7 @@ export default function ProcessingRelease() {
   }
   const getProductInfo = (type: ProductInfo, code: string) => {
     let info = "";
-    let tmp = productMap.get(code);
+    const tmp = productMap.get(code);
     if (tmp) {
       if (type == ProductInfo.name) {
         info = tmp.name;
@@ -102,10 +109,14 @@ export default function ProcessingRelease() {
   useEffect(() => {
     console.log("selectedCodes changed");
     // Update session data
-    let tmp = new ImportData.Data(hopDongStr, "-", rlsDateStr, "-");
+    const tmp = new ImportData.Data(hopDongStr, "-", rlsDateStr, "-");
     tmp.ClearProduct();
     selectedCodes.forEach((code) => {
-      tmp.CreateProduct(code, getProductInfo(ProductInfo.name, code), getProductInfo(ProductInfo.unit, code));
+      tmp.CreateProduct(
+        code,
+        getProductInfo(ProductInfo.name, code),
+        getProductInfo(ProductInfo.unit, code),
+      );
     });
     setCurrentSessionData(tmp);
 
@@ -114,7 +125,9 @@ export default function ProcessingRelease() {
 
   useEffect(() => {
     if (currentSessionData) {
-      console.log("Session data updated: " + ImportData.ToString(currentSessionData));
+      console.log(
+        "Session data updated: " + ImportData.ToString(currentSessionData),
+      );
     }
 
     return () => {};
@@ -128,8 +141,12 @@ export default function ProcessingRelease() {
 
   const handleNewClick = async () => {
     // Map amount to product
-    if (inpAmountRef && currentSessionData && currentSessionData.danh_sach_san_pham.length) {
-      let tmp = currentSessionData;
+    if (
+      inpAmountRef &&
+      currentSessionData &&
+      currentSessionData.danh_sach_san_pham.length
+    ) {
+      const tmp = currentSessionData;
       let rls_source;
       if (rlsSrcRef) {
         rls_source = rlsSrcRef.current?.value;
@@ -137,25 +154,36 @@ export default function ProcessingRelease() {
       for (let i = 0; i < inpAmountRef.current.length; ++i) {
         tmp.danh_sach_san_pham[i].noi_xuat = rls_source;
         if (inpAmountRef.current[i].value == "") {
-          dialog.message("Thiếu số lượng");
+          dialog.message("Không thể lưu, kiểm tra lại đã đầy đủ số lượng", {
+            type: "error",
+            title: "Lỗi",
+          });
           return;
         }
-        tmp.danh_sach_san_pham[i].sl_xuat_tp = inpAmountRef.current[i].value as unknown as number;
+        tmp.danh_sach_san_pham[i].sl_xuat_tp = inpAmountRef.current[i]
+          .value as unknown as number;
       }
 
       // dialog.message("Final data: " + ImportData.ToString(tmp));
 
-      tmp.StoreData(GlobalStrings.FileName, GlobalStrings.SaveDirectory, true);
+      tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
       dialog.message("Xong");
       // window.location.reload();
     } else {
-      dialog.message("Không có sản phẩm");
+      dialog.message("Không thể lưu, danh sách mã hàng trống", {
+        type: "error",
+        title: "Lỗi",
+      });
     }
   };
 
   const updateLocationData = () => {
     return (
-      <select name="rlsSrc" className={`w-1/2 bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`} ref={rlsSrcRef}>
+      <select
+        name="rlsSrc"
+        className={`w-1/2 bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
+        ref={rlsSrcRef}
+      >
         <option value="" disabled>
           Chọn nơi xuất hàng
         </option>
@@ -176,7 +204,9 @@ export default function ProcessingRelease() {
             Xuất thành phẩm
           </Typography>
         </div>
-        <div className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2`}>
+        <div
+          className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2`}
+        >
           <div className="flex items-center">
             <div className={`w-1/2 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
             <input
@@ -235,7 +265,9 @@ export default function ProcessingRelease() {
             onClick={handleSelectCodeClick}
             variant="gradient"
             color="indigo"
-            disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
+            disabled={
+              !hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length
+            }
             className={`p-1`}
           >
             <Typography color="white" variant="h6">
@@ -253,13 +285,15 @@ export default function ProcessingRelease() {
       <div className="w-full overflow-hidden">
         {fixedPart()}
         {updatingPart()}
-        <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>
+        <SummaryTable
+          data={currentSessionData}
+          input_ref={inpAmountRef}
+        ></SummaryTable>
       </div>
-      <div className={`absolute bottom-1 w-[98%]`}>
-        <Button className={`${fixed_button_bg} p-1.5 w-full`} onClick={handleNewClick}>
-          <p className="text-xl font-normal">Hoàn thành</p>
-        </Button>
-      </div>
+      <SaveButton
+        className={`${fixed_button_bg}`}
+        onClick={handleNewClick}
+      ></SaveButton>
     </>
   );
 }

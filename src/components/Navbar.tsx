@@ -1,12 +1,13 @@
-import { Navbar, Button, Typography } from "@material-tailwind/react";
+import { Navbar, Button } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 import home_svg from "../assets/home.svg";
 import import_svg from "../assets/import-small.svg";
 import processing_svg from "../assets/processing-small.svg";
 import product_svg from "../assets/product-small.svg";
 import excel_svg from "../assets/excel-small.svg";
-import contract_svg from "../assets/contract-small.svg";
 import { useGlobalState } from "../types/GlobalContext";
+import GlobalStrings from "../types/Globals";
+import CsvToSelect from "./CsvToSelect";
 
 export function NavbarDefault() {
   const navigate = useNavigate();
@@ -27,11 +28,11 @@ export function NavbarDefault() {
     navigate("/report");
   };
 
-  const handleContractClick = () => {
-    navigate("/select-contract");
-  };
+  const { contractName, setContractName } = useGlobalState();
 
-  const { contractName } = useGlobalState();
+  const handleHdChanged = (hd: string) => {
+    setContractName(hd);
+  };
 
   const button_outline = `teal`;
   return (
@@ -41,12 +42,14 @@ export function NavbarDefault() {
           <Button variant="gradient" color="green" className={`p-1`} onClick={handleHomeClick}>
             <img src={home_svg} alt="" />
           </Button>
-          <Button className="p-1 px-2" variant="outlined" onClick={handleContractClick}>
-            <div className="flex space-x-1">
-              <Typography>{contractName}</Typography>
-              <img src={contract_svg} alt="" />
-            </div>
-          </Button>
+          <CsvToSelect
+            file_name={GlobalStrings.ContractFileName}
+            label="Chọn một hợp đồng"
+            onChange={handleHdChanged}
+            default={contractName}
+            select_class="border-2 border-teal-700 rounded-md p-1 text-green-700 font-bold"
+            option_class="font-bold"
+          ></CsvToSelect>
         </div>
         <div className={`space-x-2`}>
           <Button variant="outlined" color={`${button_outline}`} className={`p-1`} onClick={handleInpClick}>
