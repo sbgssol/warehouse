@@ -29,7 +29,7 @@ export default function CreateReport() {
       sl_xuat_gc?: number,
       sl_xuat_tp?: number,
       sl_ton_tp?: number,
-      sl_ton_tt?: number,
+      sl_ton_tt?: number
     ) {
       this.hop_dong = hop_dong;
       this.bill = bill;
@@ -45,16 +45,16 @@ export default function CreateReport() {
   }
 
   const [restoredData, setRestoredData] = useState<ImportData.Data[]>([]);
-  const [productByCode, setProductByCode] = useState<
-    Map<string, ShortenData[]>
-  >(new Map<string, ShortenData[]>());
-  const [productSortedByDate, setProductSortedByDate] = useState<
-    Map<string, ShortenData[]>
-  >(new Map<string, ShortenData[]>());
+  const [productByCode, setProductByCode] = useState<Map<string, ShortenData[]>>(
+    new Map<string, ShortenData[]>()
+  );
+  const [productSortedByDate, setProductSortedByDate] = useState<Map<string, ShortenData[]>>(
+    new Map<string, ShortenData[]>()
+  );
   const { contractName, getRecordFilename } = useGlobalState();
-  const [productMap, setProductMap] = useState<
-    Map<string, { name: string; unit: string }>
-  >(new Map());
+  const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
+    new Map()
+  );
 
   const stripeColumn = (index: number) => {
     let str = "";
@@ -84,10 +84,7 @@ export default function CreateReport() {
       <>
         {Array.from(productSortedByDate).map(([key, data], index) => {
           return (
-            <table
-              key={index}
-              className="text-center text-sm text-wrap mt-2 mb-2 max-w-[100%] "
-            >
+            <table key={index} className="text-center text-sm text-wrap mt-2 mb-2 max-w-[100%] ">
               <thead className="text-left">
                 <tr>
                   <th colSpan={2} className="">
@@ -136,59 +133,30 @@ export default function CreateReport() {
                   <th rowSpan={2} className="border border-gray-500">
                     {GlobalStrings.TableColumn.Nhap}
                   </th>
-                  <th
-                    colSpan={2}
-                    rowSpan={1}
-                    className="border border-gray-500"
-                  >
+                  <th colSpan={2} rowSpan={1} className="border border-gray-500">
                     {GlobalStrings.TableColumn.Xuat}
                   </th>
-                  <th
-                    colSpan={2}
-                    rowSpan={1}
-                    className="border border-gray-500"
-                  >
+                  <th colSpan={2} rowSpan={1} className="border border-gray-500">
                     {GlobalStrings.TableColumn.Ton}
                   </th>
                 </tr>
                 <tr>
-                  <th className="border border-gray-500">
-                    {GlobalStrings.TableColumn.Gc}
-                  </th>
-                  <th className="border border-gray-500">
-                    {GlobalStrings.TableColumn.Tp}
-                  </th>
-                  <th className="border border-gray-500">
-                    {GlobalStrings.TableColumn.Tp}
-                  </th>
-                  <th className="border border-gray-500">
-                    {GlobalStrings.TableColumn.Tt}
-                  </th>
+                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Gc}</th>
+                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tp}</th>
+                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tp}</th>
+                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tt}</th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((value, innerIndex) => {
                   return (
-                    <tr
-                      key={innerIndex}
-                      className={`${stripeColumn(innerIndex)}`}
-                    >
-                      <td className="border border-gray-500">
-                        {innerIndex + 1}
-                      </td>
-                      <td className="border border-gray-500">
-                        {value.noi_xuat ?? "-"}
-                      </td>
+                    <tr key={innerIndex} className={`${stripeColumn(innerIndex)}`}>
+                      <td className="border border-gray-500">{innerIndex + 1}</td>
+                      <td className="border border-gray-500">{value.noi_xuat ?? "-"}</td>
                       <td className="border border-gray-500">{value.bill}</td>
-                      <td className="border border-gray-500">
-                        {value.ngay_chung_tu}
-                      </td>
-                      <td className="border border-gray-500">
-                        {value.hop_dong}
-                      </td>
-                      <td className="border border-gray-500">
-                        {value.ngay_thuc_te}
-                      </td>
+                      <td className="border border-gray-500">{value.ngay_chung_tu}</td>
+                      <td className="border border-gray-500">{value.hop_dong}</td>
+                      <td className="border border-gray-500">{value.ngay_thuc_te}</td>
                       <td className="border border-gray-500" width={50}>
                         {value.sl_nhap ?? "-"}
                       </td>
@@ -220,7 +188,7 @@ export default function CreateReport() {
     try {
       const restored_data = await ImportData.RestoreData(
         getRecordFilename(),
-        GlobalStrings.SaveDirectory,
+        GlobalStrings.SaveDirectory
       );
       if (restored_data.length) {
         const tmp: ImportData.Data[] = [];
@@ -246,7 +214,7 @@ export default function CreateReport() {
         record.danh_sach_san_pham.forEach((product) => {
           map_tmp.set(product.ma_hang, {
             name: product.ten_hang,
-            unit: product.don_vi_tinh,
+            unit: product.don_vi_tinh
           });
           const prod = tmp.get(product.ma_hang);
           if (prod) {
@@ -261,8 +229,8 @@ export default function CreateReport() {
                 product.sl_xuat_gc,
                 product.sl_xuat_tp,
                 product.sl_ton_tp,
-                product.sl_ton_tt,
-              ),
+                product.sl_ton_tt
+              )
             );
           } else {
             tmp.set(product.ma_hang, [
@@ -276,8 +244,8 @@ export default function CreateReport() {
                 product.sl_xuat_gc,
                 product.sl_xuat_tp,
                 product.sl_ton_tp,
-                product.sl_ton_tt,
-              ),
+                product.sl_ton_tt
+              )
             ]);
           }
         });
@@ -307,9 +275,7 @@ export default function CreateReport() {
 
         const arr = new Map(sortedArr);
 
-        let str = "";
-        arr.forEach((value, innerKey) => {
-          str += `${innerKey}:${value.data.ngay_thuc_te}\n`;
+        arr.forEach((value) => {
           code = key;
           data.push(value.data);
         });

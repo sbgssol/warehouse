@@ -18,11 +18,11 @@ export default function ProcessingRelease() {
   const [csvContent, setCsvContent] = useState<string[]>([]);
   const [csvLocation, setCsvLocation] = useState<string[]>([]);
   const [productCodes, setCodeList] = useState<string[]>([]);
-  const [productMap, setProductMap] = useState<
-    Map<string, { name: string; unit: string }>
-  >(new Map());
+  const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
+    new Map()
+  );
   const [currentSessionData, setCurrentSessionData] = useState<ImportData.Data>(
-    new ImportData.Data("", "", "", ""),
+    new ImportData.Data("", "", "", "")
   );
   const { getRecordFilename } = useGlobalState();
   // References
@@ -86,7 +86,7 @@ export default function ProcessingRelease() {
 
   enum ProductInfo {
     name,
-    unit,
+    unit
   }
   const getProductInfo = (type: ProductInfo, code: string) => {
     let info = "";
@@ -111,7 +111,7 @@ export default function ProcessingRelease() {
       tmp.CreateProduct(
         code,
         getProductInfo(ProductInfo.name, code),
-        getProductInfo(ProductInfo.unit, code),
+        getProductInfo(ProductInfo.unit, code)
       );
     });
     setCurrentSessionData(tmp);
@@ -121,9 +121,7 @@ export default function ProcessingRelease() {
 
   useEffect(() => {
     if (currentSessionData) {
-      console.log(
-        "Session data updated: " + ImportData.ToString(currentSessionData),
-      );
+      console.log("Session data updated: " + ImportData.ToString(currentSessionData));
     }
 
     return () => {};
@@ -137,11 +135,7 @@ export default function ProcessingRelease() {
 
   const handleNewClick = async () => {
     // Map amount to product
-    if (
-      inpAmountRef &&
-      currentSessionData &&
-      currentSessionData.danh_sach_san_pham.length
-    ) {
+    if (inpAmountRef && currentSessionData && currentSessionData.danh_sach_san_pham.length) {
       const tmp = currentSessionData;
       let rls_source;
       if (rlsSrcRef) {
@@ -151,13 +145,12 @@ export default function ProcessingRelease() {
         if (inpAmountRef.current[i].value == "") {
           dialog.message("Không thể lưu, kiểm tra lại đã đầy đủ số lượng", {
             type: "error",
-            title: "Lỗi",
+            title: "Lỗi"
           });
           return;
         }
         tmp.danh_sach_san_pham[i].noi_xuat = rls_source;
-        tmp.danh_sach_san_pham[i].sl_xuat_gc = inpAmountRef.current[i]
-          .value as unknown as number;
+        tmp.danh_sach_san_pham[i].sl_xuat_gc = inpAmountRef.current[i].value as unknown as number;
       }
 
       // dialog.message("Final data: " + ImportData.ToString(tmp));
@@ -168,7 +161,7 @@ export default function ProcessingRelease() {
     } else {
       dialog.message("Không thể lưu, danh sách mã hàng trống", {
         type: "error",
-        title: "Lỗi",
+        title: "Lỗi"
       });
     }
   };
@@ -200,9 +193,7 @@ export default function ProcessingRelease() {
             Xuất gia công
           </Typography>
         </div>
-        <div
-          className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2`}
-        >
+        <div className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2`}>
           <div className="flex items-center">
             <div className={`w-1/2 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
             <input
@@ -261,9 +252,7 @@ export default function ProcessingRelease() {
             onClick={handleSelectCodeClick}
             variant="gradient"
             color="teal"
-            disabled={
-              !hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length
-            }
+            disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
             className={`p-1`}
           >
             <Typography color="white" variant="h6">
@@ -281,15 +270,9 @@ export default function ProcessingRelease() {
       <div className="w-full overflow-hidden">
         {fixedPart()}
         {updatingPart()}
-        <SummaryTable
-          data={currentSessionData}
-          input_ref={inpAmountRef}
-        ></SummaryTable>
+        <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>
       </div>
-      <SaveButton
-        className={`${fixed_button_bg}`}
-        onClick={handleNewClick}
-      ></SaveButton>
+      <SaveButton className={`${fixed_button_bg}`} onClick={handleNewClick}></SaveButton>
     </>
   );
 }

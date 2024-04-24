@@ -1,9 +1,4 @@
-import {
-  Button,
-  Dialog,
-  DialogBody,
-  Typography,
-} from "@material-tailwind/react";
+import { Button, Dialog, DialogBody, Typography } from "@material-tailwind/react";
 import CsvToSelect from "./CsvToSelect";
 import GlobalStrings from "../types/Globals";
 import { size } from "@material-tailwind/react/types/components/dialog";
@@ -35,12 +30,7 @@ export default function SelectContract(props: {
               select_class="w-full p-2 text-pink-300"
               option_class="text-pink-200"
             ></CsvToSelect>
-            <Button
-              className="mt-1"
-              fullWidth
-              onClick={props.onOkay}
-              color="pink"
-            >
+            <Button className="mt-1" fullWidth onClick={props.onOkay} color="pink">
               OK
             </Button>
           </div>

@@ -32,12 +32,16 @@ export default function ImportWarehouse() {
   const fixed_input_outline = `focus:outline-green-300`;
   const fixed_button_bg = "bg-green-800";
 
-  const [currentSessionData, setCurrentSessionData] = useState<ImportData.Data>(new ImportData.Data("", "", "", ""));
+  const [currentSessionData, setCurrentSessionData] = useState<ImportData.Data>(
+    new ImportData.Data("", "", "", "")
+  );
 
   // To load the CSV
   const [csvContent, setCsvContent] = useState<string[]>([]);
   const [productCodes, setCodeList] = useState<string[]>([]);
-  const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(new Map());
+  const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
+    new Map()
+  );
 
   const fetchCsvFile = async () => {
     const data = await ReadCsvToStrArr(GlobalStrings.ProductCodeFileName);
@@ -89,7 +93,7 @@ export default function ImportWarehouse() {
 
   enum ProductInfo {
     name,
-    unit,
+    unit
   }
   const getProductInfo = (type: ProductInfo, code: string) => {
     let info = "";
@@ -111,7 +115,11 @@ export default function ImportWarehouse() {
     const tmp = new ImportData.Data(hopDongStr, billStr, realDateStr, docDateStr);
     tmp.ClearProduct();
     selectedCodes.forEach((code) => {
-      tmp.CreateProduct(code, getProductInfo(ProductInfo.name, code), getProductInfo(ProductInfo.unit, code));
+      tmp.CreateProduct(
+        code,
+        getProductInfo(ProductInfo.name, code),
+        getProductInfo(ProductInfo.unit, code)
+      );
     });
     setCurrentSessionData(tmp);
 
@@ -145,7 +153,7 @@ export default function ImportWarehouse() {
         if (inpAmountRef.current[i].value == "") {
           dialog.message("Không thể lưu, kiểm tra lại đã đầy đủ số lượng", {
             type: "error",
-            title: "Lỗi",
+            title: "Lỗi"
           });
           return;
         }
@@ -160,7 +168,7 @@ export default function ImportWarehouse() {
     } else {
       dialog.message("Không thể lưu, danh sách mã hàng trống", {
         type: "error",
-        title: "Lỗi",
+        title: "Lỗi"
       });
     }
     // let restored = await ImportData.RestoreData(file_name, dir);
@@ -252,7 +260,14 @@ export default function ImportWarehouse() {
               handleCodeChange={setSelectedCodes}
             ></ProductSelection>
           </div>
-          <Button fullWidth onClick={handleSelectCodeClick} variant="gradient" color="green" disabled={!hopDongValid || !soBillValid} className={`p-1`}>
+          <Button
+            fullWidth
+            onClick={handleSelectCodeClick}
+            variant="gradient"
+            color="green"
+            disabled={!hopDongValid || !soBillValid}
+            className={`p-1`}
+          >
             <Typography color="white" variant="h6">
               Chọn mã hàng
             </Typography>

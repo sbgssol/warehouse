@@ -23,7 +23,11 @@ export default function CsvToSelect(props: {
   }, [props.file_name]);
 
   return (
-    <select className={props.select_class} onChange={(e: ChangeEvent<HTMLSelectElement>) => props.onChange(e.target.value)} value={props.default}>
+    <select
+      className={props.select_class}
+      onChange={(e: ChangeEvent<HTMLSelectElement>) => props.onChange(e.target.value)}
+      value={props.default}
+    >
       {props.label ? (
         <option value="" disabled className={props.option_class}>
           {props.label}

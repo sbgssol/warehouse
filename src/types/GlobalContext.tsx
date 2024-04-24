@@ -8,14 +8,10 @@ interface GlobalStateContextType {
   getRecordFilename: () => string;
 }
 
-const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
-  undefined,
-);
+const GlobalStateContext = createContext<GlobalStateContextType | undefined>(undefined);
 
 // Define a provider component to wrap your app
-export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [contractName, setContractName] = useState<string>("");
 
   const getRecordFilename = () => {
@@ -23,9 +19,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   return (
-    <GlobalStateContext.Provider
-      value={{ contractName, setContractName, getRecordFilename }}
-    >
+    <GlobalStateContext.Provider value={{ contractName, setContractName, getRecordFilename }}>
       {children}
     </GlobalStateContext.Provider>
   );

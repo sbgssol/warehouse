@@ -2,17 +2,14 @@ import { Button } from "@material-tailwind/react";
 import { useGlobalState } from "../../types/GlobalContext";
 import { dialog } from "@tauri-apps/api";
 
-export default function SaveButton(props: {
-  className?: string;
-  onClick?: () => void;
-}) {
+export default function SaveButton(props: { className?: string; onClick?: () => void }) {
   const { contractName } = useGlobalState();
   const handleClk = async () => {
     const response = await dialog.ask("Bạn có chắc chắn muốn lưu?", {
       type: "info",
       title: "Xác nhận",
       okLabel: "Có",
-      cancelLabel: "Không",
+      cancelLabel: "Không"
     });
     if (response) {
       if (props.onClick) {

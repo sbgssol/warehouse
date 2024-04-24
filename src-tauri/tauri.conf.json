@@ -20,7 +20,7 @@
       },
       "fs": {
         "all": true,
-        "scope": ["$DESKTOP/*","$APPDATA","$RESOURCE/*"]
+        "scope": ["$DESKTOP/*", "$APPDATA", "$RESOURCE/*"]
       },
       "window": {
         "all": true
@@ -50,17 +50,14 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [
-        "ma_hang.csv",
-        "noi_xuat.csv",
-        "hop_dong.csv"
-      ],
+      "resources": ["ma_hang.csv", "noi_xuat.csv", "hop_dong.csv"],
       "shortDescription": "",
       "targets": "nsis",
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
-        "timestampUrl": "","webviewInstallMode": {
+        "timestampUrl": "",
+        "webviewInstallMode": {
           "type": "fixedRuntime",
           "path": "./Microsoft.WebView2.FixedVersionRuntime.124.0.2478.51.x64/"
         }

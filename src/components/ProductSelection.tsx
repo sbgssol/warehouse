@@ -8,7 +8,7 @@ import {
   Checkbox,
   Typography,
   DialogFooter,
-  Button,
+  Button
 } from "@material-tailwind/react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 
@@ -106,12 +106,10 @@ export default function ProductSelection(props: {
                     color="green"
                     className="hover:before:opacity-0 rounded-full"
                     containerProps={{
-                      className: "p-0",
+                      className: "p-0"
                     }}
                     inputRef={(ref) => {
                       if (ref) {
-                        if (selectionOrder.length < index) {
-                        }
                         checkboxRef.current[index] = ref;
                         console.log("Ref assigned successfully!");
                       }
@@ -123,8 +121,7 @@ export default function ProductSelection(props: {
                         setSelectionOrder((prevSelectionOrder) => {
                           const newSelectionOrder = [...prevSelectionOrder];
                           const checkedIndex =
-                            newSelectionOrder.filter((order) => order > 0)
-                              .length + 1;
+                            newSelectionOrder.filter((order) => order > 0).length + 1;
                           newSelectionOrder[index] = checkedIndex;
                           return newSelectionOrder;
                         });
@@ -145,18 +142,10 @@ export default function ProductSelection(props: {
                   />
                 </ListItemPrefix>
                 <div>
-                  <Typography
-                    color="pink"
-                    className="font-medium"
-                    variant="paragraph"
-                  >
+                  <Typography color="pink" className="font-medium" variant="paragraph">
                     {value}
                   </Typography>
-                  <Typography
-                    color="gray"
-                    className="font-medium"
-                    variant="small"
-                  >
+                  <Typography color="gray" className="font-medium" variant="small">
                     {getProductName(value)}
                   </Typography>
                 </div>

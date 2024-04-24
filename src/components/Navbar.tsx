@@ -52,16 +52,36 @@ export function NavbarDefault() {
           ></CsvToSelect>
         </div>
         <div className={`space-x-2`}>
-          <Button variant="outlined" color={`${button_outline}`} className={`p-1`} onClick={handleInpClick}>
+          <Button
+            variant="outlined"
+            color={`${button_outline}`}
+            className={`p-1`}
+            onClick={handleInpClick}
+          >
             <img src={import_svg} alt="" />
           </Button>
-          <Button variant="outlined" color={`${button_outline}`} className={`p-1`} onClick={handleProcClick}>
+          <Button
+            variant="outlined"
+            color={`${button_outline}`}
+            className={`p-1`}
+            onClick={handleProcClick}
+          >
             <img src={processing_svg} alt="" />
           </Button>
-          <Button variant="outlined" color={`${button_outline}`} className={`p-1`} onClick={handleProdClick}>
+          <Button
+            variant="outlined"
+            color={`${button_outline}`}
+            className={`p-1`}
+            onClick={handleProdClick}
+          >
             <img src={product_svg} alt="" />
           </Button>
-          <Button variant="outlined" color={`${button_outline}`} className={`p-1`} onClick={handleRepoClick}>
+          <Button
+            variant="outlined"
+            color={`${button_outline}`}
+            className={`p-1`}
+            onClick={handleRepoClick}
+          >
             <img src={excel_svg} alt="" />
           </Button>
         </div>

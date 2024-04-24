@@ -32,16 +32,10 @@ export default function SummaryTable(props: {
                 >
                   {detail.ten_hang}
                 </td>
-                <td
-                  className="border border-green-600 overflow-hidden max-w-[150px]"
-                  width={150}
-                >
+                <td className="border border-green-600 overflow-hidden max-w-[150px]" width={150}>
                   {detail.don_vi_tinh}
                 </td>
-                <td
-                  className="border border-green-600 overflow-hidden max-w-[150px]"
-                  width={150}
-                >
+                <td className="border border-green-600 overflow-hidden max-w-[150px]" width={150}>
                   <input
                     placeholder="_"
                     type="number"

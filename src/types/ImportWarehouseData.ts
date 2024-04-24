@@ -1,5 +1,6 @@
 import { BaseDirectory, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import { Dialog } from "./Dialog";
+import { Common } from "./GlobalFnc";
 
 export module ImportData {
   class Products {
@@ -34,23 +35,35 @@ export module ImportData {
       this.danh_sach_san_pham = [];
     }
 
-    CreateProduct(ma_hang: string, ten_hang: string, dvt: string, noi_xuat?: string, so_luong?: number) {
+    CreateProduct(
+      ma_hang: string,
+      ten_hang: string,
+      dvt: string,
+      noi_xuat?: string,
+      so_luong?: number
+    ) {
       this.danh_sach_san_pham.push({
         ma_hang: ma_hang,
         ten_hang: ten_hang,
         don_vi_tinh: dvt,
         noi_xuat: noi_xuat,
-        sl_nhap: so_luong,
+        sl_nhap: so_luong
       });
     }
 
-    ImportProduct(ma_hang: string, ten_hang: string, don_vi_tinh: string, noi_xuat: string, so_luong: number) {
+    ImportProduct(
+      ma_hang: string,
+      ten_hang: string,
+      don_vi_tinh: string,
+      noi_xuat: string,
+      so_luong: number
+    ) {
       this.danh_sach_san_pham.push({
         ma_hang: ma_hang,
         ten_hang: ten_hang,
         don_vi_tinh: don_vi_tinh,
         noi_xuat: noi_xuat,
-        sl_nhap: so_luong,
+        sl_nhap: so_luong
       });
     }
 
@@ -62,14 +75,15 @@ export module ImportData {
       try {
         await writeTextFile(file_name, JSON.stringify(this) + "\n", {
           dir: directory,
-          append: append,
+          append: append
         });
       } catch (error) {
         Dialog.Info(`Data could NOT be stored to ${directory.toString()}`, "Thông tin");
         // Dialog.Error(error as string);
         return;
       }
-      // Dialog.Info(`Data stored to ${directory.toString()}`, "Thông tin");
+      // const dir = await Common.BaseDiToStr(directory)
+      Common.Log(`"${file_name}" stored to "${await Common.BaseDiToStr(directory)}"`);
     };
   }
 
@@ -83,7 +97,7 @@ export module ImportData {
 
   export const RestoreData = async (file_name: string, directory: BaseDirectory) => {
     const contents = await readTextFile(file_name, {
-      dir: directory,
+      dir: directory
     });
 
     const objects = contents.split("\n");
