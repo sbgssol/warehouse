@@ -4,14 +4,34 @@ import { ReadCsvToStrArr } from "../types/ReadCsv";
 export default function CsvToSelect(props: {
   file_name: string;
   onChange: (value: string) => void;
+  how_many_columns?: number;
+  target_column?: number;
   select_class?: string;
   option_class?: string;
   default?: string;
-  label: string;
+  label?: string;
 }) {
   const [data, setData] = useState<string[]>([]);
   const onLoad = async () => {
-    const tmp = await ReadCsvToStrArr(props.file_name);
+    let tmp = await ReadCsvToStrArr(props.file_name);
+    console.log(props.how_many_columns, props.target_column);
+
+    if (props.how_many_columns !== undefined && props.how_many_columns !== undefined) {
+    } else if (props.target_column !== undefined) {
+      let t = tmp.slice(0, 0);
+      tmp.forEach((v) => {
+        t.push(v.split(",")[props.target_column ?? 0]);
+      });
+      tmp = t;
+    } else if (props.how_many_columns !== undefined) {
+      let t = tmp.slice(0, 0);
+      tmp.forEach((v) => {
+        const arr = v.split(",");
+        t.push(arr.slice(0, props.how_many_columns).join());
+        console.log("t: ", t);
+      });
+      tmp = t;
+    }
     setData(tmp);
   };
 
@@ -20,14 +40,13 @@ export default function CsvToSelect(props: {
     console.log(`Default value: ${props.default}`);
 
     return () => {};
-  }, [props.file_name]);
+  }, [props.file_name, props.how_many_columns, props.target_column]);
 
   return (
     <select
       className={props.select_class}
       onChange={(e: ChangeEvent<HTMLSelectElement>) => props.onChange(e.target.value)}
-      value={props.default}
-    >
+      value={props.default}>
       {props.label ? (
         <option value="" disabled className={props.option_class}>
           {props.label}

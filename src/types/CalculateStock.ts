@@ -19,3 +19,5 @@ export const CalculateStock = (data: Map<string, ShortenData[]>) => {
   });
   return tmp;
 };
+
+export const ModifyValue = () => {};

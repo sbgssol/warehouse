@@ -22,8 +22,7 @@ export default function SaveButton(props: { className?: string; onClick?: () => 
       <Button
         className={`${props.className} p-1.5 w-full`}
         onClick={handleClk}
-        disabled={!contractName.length}
-      >
+        disabled={!contractName.length}>
         <p className="text-xl font-normal normal-case">Lưu</p>
       </Button>
     </div>

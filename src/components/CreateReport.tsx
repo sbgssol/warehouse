@@ -1,4 +1,4 @@
-import { Button } from "@material-tailwind/react";
+import { Button, IconButton } from "@material-tailwind/react";
 import { ImportData } from "../types/ImportWarehouseData";
 import { useState, useEffect } from "react";
 import GlobalStrings from "../types/Globals";
@@ -7,6 +7,8 @@ import { useGlobalState } from "../types/GlobalContext";
 import { Dialog } from "../types/Dialog";
 import { ShortenData } from "../types/ShortenData";
 import { CalculateStock } from "../types/CalculateStock";
+import edit_svg from "../assets/edit-report-tiny.svg";
+import UpdateModal from "./single/UpdateModal";
 
 export default function CreateReport() {
   const [restoredData, setRestoredData] = useState<ImportData.Data[]>([]);
@@ -20,6 +22,8 @@ export default function CreateReport() {
   const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
     new Map()
   );
+  const [openModal, setOpenModal] = useState(false);
+  const [dataToEdit, setDataToEdit] = useState<ShortenData>(new ShortenData("", "", "", ""));
 
   const stripeColumn = (index: number) => {
     let str = "";
@@ -44,12 +48,29 @@ export default function CreateReport() {
     return str;
   };
 
+  // useEffect(() => {
+  //   if (dataToEdit.hop_dong.length) {
+  //     console.log("New data :", JSON.stringify(dataToEdit));
+  //     setTimeout(() => {
+  //       setOpenModal(true);
+  //     }, 200);
+  //   }
+  //   return () => {};
+  // }, [dataToEdit]);
+
   const summaryTable = () => {
     const str_col = "border border-gray-500 overflow-x-auto max-w-32";
     const num_col = "border border-gray-500 overflow-x-auto max-w-14";
     const tbl_header = "border border-gray-500 p-1 capitalize";
+
     return (
       <>
+        <UpdateModal
+          open={openModal}
+          handler={() => {
+            setOpenModal(false);
+          }}
+          data={dataToEdit}></UpdateModal>
         {Array.from(productSortedByDate).map(([key, data], index) => {
           return (
             <table key={index} className="text-center text-sm text-wrap mt-2 mb-2 max-w-full ">
@@ -96,6 +117,9 @@ export default function CreateReport() {
                   <th className={`${tbl_header}`} colSpan={5}>
                     {GlobalStrings.TableColumn.Sl}
                   </th>
+                  <th className={`${tbl_header}`} rowSpan={3}>
+                    {"Edit"}
+                  </th>
                 </tr>
                 <tr>
                   <th rowSpan={2} className={`${tbl_header}`}>
@@ -140,6 +164,21 @@ export default function CreateReport() {
                       </td>
                       <td className={`${num_col} ${bold}`} width={50}>
                         {value.sl_ton_tt ?? "-"}
+                      </td>
+                      <td className={`${num_col} `} width={10}>
+                        <div className="flex justify-center">
+                          <IconButton
+                            variant="text"
+                            className="p-0 m-0"
+                            onClick={() => {
+                              console.log("Clicked at idx: ", innerIndex);
+
+                              setDataToEdit(data[innerIndex]);
+                              setOpenModal(true);
+                            }}>
+                            <img src={edit_svg}></img>{" "}
+                          </IconButton>
+                        </div>
                       </td>
                     </tr>
                   );
