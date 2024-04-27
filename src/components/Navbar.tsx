@@ -36,7 +36,7 @@ export function NavbarDefault() {
 
   const button_outline = `teal`;
   return (
-    <Navbar className="max-w-screen-xl p-0 shadow-none">
+    <Navbar className="max-w-screen-xl p-0 mb-1 shadow-none">
       <div className="flex items-center justify-between text-blue-gray-900">
         <div className="flex justify-center items-center space-x-2">
           <Button variant="gradient" color="green" className={`p-1`} onClick={handleHomeClick}>
@@ -47,41 +47,36 @@ export function NavbarDefault() {
             label="Chọn một hợp đồng"
             onChange={handleHdChanged}
             default={contractName}
-            select_class="border-2 border-teal-700 rounded-md p-1 text-green-700 font-bold"
-            option_class="font-bold"
-          ></CsvToSelect>
+            select_class="border-2 border-teal-700 rounded-md p-1 text-green-700 font-bold bg-green-50"
+            option_class="font-bold bg-white"></CsvToSelect>
         </div>
         <div className={`space-x-2`}>
           <Button
             variant="outlined"
             color={`${button_outline}`}
             className={`p-1`}
-            onClick={handleInpClick}
-          >
+            onClick={handleInpClick}>
             <img src={import_svg} alt="" />
           </Button>
           <Button
             variant="outlined"
             color={`${button_outline}`}
             className={`p-1`}
-            onClick={handleProcClick}
-          >
+            onClick={handleProcClick}>
             <img src={processing_svg} alt="" />
           </Button>
           <Button
             variant="outlined"
             color={`${button_outline}`}
             className={`p-1`}
-            onClick={handleProdClick}
-          >
+            onClick={handleProdClick}>
             <img src={product_svg} alt="" />
           </Button>
           <Button
             variant="outlined"
             color={`${button_outline}`}
             className={`p-1`}
-            onClick={handleRepoClick}
-          >
+            onClick={handleRepoClick}>
             <img src={excel_svg} alt="" />
           </Button>
         </div>

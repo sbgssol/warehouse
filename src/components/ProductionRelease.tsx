@@ -134,7 +134,7 @@ export default function ProcessingRelease() {
   // Validation
   const [hopDongValid, setHopDongValid] = useState(false);
   const colorInputHopDong = () => {
-    return hopDongValid ? `bg-white` : `bg-red-100 focus:outline-red-500`;
+    return hopDongValid ? `bg-white ${fixed_input_outline}` : `bg-red-100 focus:outline-red-500`;
   };
 
   const handleNewClick = async () => {
@@ -175,8 +175,7 @@ export default function ProcessingRelease() {
       <select
         name="rlsSrc"
         className={`w-1/2 bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
-        ref={rlsSrcRef}
-      >
+        ref={rlsSrcRef}>
         <option value="" disabled>
           Chọn nơi xuất hàng
         </option>
@@ -209,9 +208,8 @@ export default function ProcessingRelease() {
                 }
                 setHopDongStr(event.target.value);
               }}
-              className={`w-1/2 rounded-md p-1 pl-2 bg-white ${fixed_input_outline} ${colorInputHopDong()}`}
-              ref={contractRef}
-            ></input>
+              className={`w-1/2 rounded-md p-1 pl-2 ${colorInputHopDong()}`}
+              ref={contractRef}></input>
           </div>
           <div className="flex pt-2 items-center">
             <div className={`w-1/2  pr-2 ${fixed_text_color}`}>Nơi xuất</div>
@@ -225,8 +223,7 @@ export default function ProcessingRelease() {
               ref={rlsDateRef}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 setRlsDateStr(event.target.value);
-              }}
-            ></input>
+              }}></input>
           </div>
         </div>
       </>
@@ -248,8 +245,7 @@ export default function ProcessingRelease() {
               codeList={productCodes}
               selectedCode={selectedCodes}
               productMap={productMap}
-              handleCodeChange={setSelectedCodes}
-            ></ProductSelection>
+              handleCodeChange={setSelectedCodes}></ProductSelection>
           </div>
           <Button
             fullWidth
@@ -257,8 +253,7 @@ export default function ProcessingRelease() {
             variant="gradient"
             color="indigo"
             disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
-            className={`p-1`}
-          >
+            className={`p-1`}>
             <Typography color="white" variant="h6">
               Chọn mã hàng
             </Typography>

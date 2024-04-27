@@ -84,8 +84,7 @@ export default function ProductSelection(props: {
     <Dialog
       open={props.open}
       handler={props.closeHandler}
-      dismiss={{ outsidePress: false, escapeKey: true }}
-    >
+      dismiss={{ outsidePress: false, escapeKey: true }}>
       <DialogHeader>Chọn mã hàng cần nhập</DialogHeader>
       <DialogBody className="h-[70vh] overflow-y-scroll">
         <List className="border-2 rounded-md">
@@ -93,8 +92,7 @@ export default function ProductSelection(props: {
             <ListItem
               className="p-0 border-b rounded-none overflow-hidden"
               key={index}
-              ripple={false}
-            >
+              ripple={false}>
               <label className="flex w-full cursor-pointer items-center px-2 ">
                 <ListItemPrefix className="mr-1 w-5">
                   <span className="font-bold text-green-500">
@@ -159,32 +157,28 @@ export default function ProductSelection(props: {
           variant="filled"
           color="red"
           onClick={handleModalClose}
-          className={`w-[130px] h-[40px] flex items-center justify-center`}
-        >
+          className={`w-[130px] h-[40px] flex items-center justify-center`}>
           Đóng
         </Button>
         <Button
           variant="outlined"
           color="red"
           onClick={handleModalReset}
-          className={`w-[130px] h-[40px]`}
-        >
+          className={`w-[130px] h-[40px]`}>
           Đặt lại
         </Button>
         <Button
           variant="outlined"
           color="orange"
           onClick={handleModalClear}
-          className={`w-[130px] h-[40px]`}
-        >
+          className={`w-[130px] h-[40px]`}>
           Xóa
         </Button>
         <Button
           variant="gradient"
           color="green"
           onClick={handleModalDone}
-          className="w-[150px] h-[40px]"
-        >
+          className="w-[150px] h-[40px]">
           Xong
         </Button>
       </DialogFooter>

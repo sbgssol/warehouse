@@ -137,12 +137,12 @@ export default function ImportWarehouse() {
   // Validation
   const [hopDongValid, setHopDongValid] = useState(false);
   const colorInputHopDong = () => {
-    return hopDongValid ? `bg-white` : `bg-red-100 focus:outline-red-500`;
+    return hopDongValid ? `bg-white ${fixed_input_outline}` : `bg-red-100 focus:outline-red-500`;
   };
 
   const [soBillValid, setSoBillValid] = useState(false);
   const colorInputSoBill = () => {
-    return soBillValid ? `bg-white` : `bg-red-100 focus:outline-red-500`;
+    return soBillValid ? `bg-white ${fixed_input_outline}` : `bg-red-100 focus:outline-red-500`;
   };
 
   const handleNewClick = async () => {
@@ -196,9 +196,8 @@ export default function ImportWarehouse() {
                 }
                 setHopDongStr(event.target.value);
               }}
-              className={`w-1/2 rounded-md p-1 pl-2 bg-white ${fixed_input_outline} ${colorInputHopDong()}`}
-              ref={contractRef}
-            ></input>
+              className={`w-1/2 rounded-md p-1 pl-2 ${colorInputHopDong()}`}
+              ref={contractRef}></input>
           </div>
           <div className="flex pt-2 items-center">
             <div className={`w-1/2  pr-2 ${fixed_text_color}`}>Số bill</div>
@@ -211,7 +210,7 @@ export default function ImportWarehouse() {
                 }
                 setBillStr(event.target.value);
               }}
-              className={`w-1/2 bg-white rounded-md p-1 pl-2 ${fixed_input_outline} ${colorInputSoBill()}`}
+              className={`w-1/2 rounded-md p-1 pl-2 ${colorInputSoBill()}`}
               // ref={billRef}
             ></input>
           </div>
@@ -223,8 +222,7 @@ export default function ImportWarehouse() {
               ref={realDateRef}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 setRealDateStr(event.target.value);
-              }}
-            ></input>
+              }}></input>
           </div>
           <div className="flex pt-2 items-center">
             <div className={`w-1/2  pr-2 ${fixed_text_color}`}>Ngày chứng từ</div>
@@ -234,8 +232,7 @@ export default function ImportWarehouse() {
               ref={docDateRef}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 setDocDateStr(event.target.value);
-              }}
-            ></input>
+              }}></input>
           </div>
         </div>
       </>
@@ -257,8 +254,7 @@ export default function ImportWarehouse() {
               codeList={productCodes}
               selectedCode={selectedCodes}
               productMap={productMap}
-              handleCodeChange={setSelectedCodes}
-            ></ProductSelection>
+              handleCodeChange={setSelectedCodes}></ProductSelection>
           </div>
           <Button
             fullWidth
@@ -266,8 +262,7 @@ export default function ImportWarehouse() {
             variant="gradient"
             color="green"
             disabled={!hopDongValid || !soBillValid}
-            className={`p-1`}
-          >
+            className={`p-1`}>
             <Typography color="white" variant="h6">
               Chọn mã hàng
             </Typography>

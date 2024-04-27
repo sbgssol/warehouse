@@ -5,45 +5,10 @@ import GlobalStrings from "../types/Globals";
 import { NavbarDefault } from "./Navbar";
 import { useGlobalState } from "../types/GlobalContext";
 import { Dialog } from "../types/Dialog";
+import { ShortenData } from "../types/ShortenData";
+import { CalculateStock } from "../types/CalculateStock";
 
 export default function CreateReport() {
-  class ShortenData {
-    hop_dong: string;
-    bill: string;
-    ngay_thuc_te: string;
-    ngay_chung_tu: string;
-    noi_xuat?: string;
-    sl_nhap?: number;
-    sl_xuat_gc?: number;
-    sl_xuat_tp?: number;
-    sl_ton_tp?: number;
-    sl_ton_tt?: number;
-
-    constructor(
-      hop_dong: string,
-      bill: string,
-      ngay_thuc_te: string,
-      ngay_chung_tu: string,
-      noi_xuat?: string,
-      sl_nhap?: number,
-      sl_xuat_gc?: number,
-      sl_xuat_tp?: number,
-      sl_ton_tp?: number,
-      sl_ton_tt?: number
-    ) {
-      this.hop_dong = hop_dong;
-      this.bill = bill;
-      this.ngay_thuc_te = ngay_thuc_te;
-      this.ngay_chung_tu = ngay_chung_tu;
-      this.noi_xuat = noi_xuat;
-      this.sl_nhap = sl_nhap;
-      this.sl_xuat_gc = sl_xuat_gc;
-      this.sl_xuat_tp = sl_xuat_tp;
-      this.sl_ton_tp = sl_ton_tp;
-      this.sl_ton_tt = sl_ton_tt;
-    }
-  }
-
   const [restoredData, setRestoredData] = useState<ImportData.Data[]>([]);
   const [productByCode, setProductByCode] = useState<Map<string, ShortenData[]>>(
     new Map<string, ShortenData[]>()
@@ -80,11 +45,14 @@ export default function CreateReport() {
   };
 
   const summaryTable = () => {
+    const str_col = "border border-gray-500 overflow-x-auto max-w-32";
+    const num_col = "border border-gray-500 overflow-x-auto max-w-14";
+    const tbl_header = "border border-gray-500 p-1 capitalize";
     return (
       <>
         {Array.from(productSortedByDate).map(([key, data], index) => {
           return (
-            <table key={index} className="text-center text-sm text-wrap mt-2 mb-2 max-w-[100%] ">
+            <table key={index} className="text-center text-sm text-wrap mt-2 mb-2 max-w-full ">
               <thead className="text-left">
                 <tr>
                   <th colSpan={2} className="">
@@ -107,69 +75,70 @@ export default function CreateReport() {
               </thead>
               <thead>
                 <tr>
-                  <th rowSpan={3} className="border border-gray-500 p-1">
+                  <th rowSpan={3} className={`${tbl_header}`}>
                     {GlobalStrings.TableColumn.STT}
                   </th>
-                  <th rowSpan={3} className="border border-gray-500 p-1">
+                  <th rowSpan={3} className={`${tbl_header}`}>
                     {GlobalStrings.TableColumn.NoiXuat}
                   </th>
-                  <th rowSpan={3} className="border border-gray-500 p-1">
+                  <th rowSpan={3} className={`${tbl_header}`}>
                     {GlobalStrings.TableColumn.SoBill}
                   </th>
-                  <th rowSpan={3} className="border border-gray-500 p-1">
+                  <th rowSpan={3} className={`${tbl_header}`}>
                     {GlobalStrings.TableColumn.NgChTu}
                   </th>
-                  <th rowSpan={3} className="border border-gray-500 p-1">
+                  <th rowSpan={3} className={`${tbl_header}`}>
                     {GlobalStrings.TableColumn.MaHD}
                   </th>
-                  <th rowSpan={3} className="border border-gray-500 p-1">
+                  <th rowSpan={3} className={`${tbl_header}`}>
                     {GlobalStrings.TableColumn.NgThTe}
                   </th>
-                  <th className="border border-gray-500" colSpan={5}>
+                  <th className={`${tbl_header}`} colSpan={5}>
                     {GlobalStrings.TableColumn.Sl}
                   </th>
                 </tr>
                 <tr>
-                  <th rowSpan={2} className="border border-gray-500">
+                  <th rowSpan={2} className={`${tbl_header}`}>
                     {GlobalStrings.TableColumn.Nhap}
                   </th>
-                  <th colSpan={2} rowSpan={1} className="border border-gray-500">
+                  <th colSpan={2} rowSpan={1} className={`${tbl_header}`}>
                     {GlobalStrings.TableColumn.Xuat}
                   </th>
-                  <th colSpan={2} rowSpan={1} className="border border-gray-500">
+                  <th colSpan={2} rowSpan={1} className={`${tbl_header}`}>
                     {GlobalStrings.TableColumn.Ton}
                   </th>
                 </tr>
                 <tr>
-                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Gc}</th>
-                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tp}</th>
-                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tp}</th>
-                  <th className="border border-gray-500">{GlobalStrings.TableColumn.Tt}</th>
+                  <th className={`${tbl_header}`}>{GlobalStrings.TableColumn.Gc}</th>
+                  <th className={`${tbl_header}`}>{GlobalStrings.TableColumn.Tp}</th>
+                  <th className={`${tbl_header}`}>{GlobalStrings.TableColumn.Tp}</th>
+                  <th className={`${tbl_header}`}>{GlobalStrings.TableColumn.Tt}</th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((value, innerIndex) => {
+                  const bold = innerIndex == data.length - 1 ? "font-bold" : "";
                   return (
                     <tr key={innerIndex} className={`${stripeColumn(innerIndex)}`}>
-                      <td className="border border-gray-500">{innerIndex + 1}</td>
-                      <td className="border border-gray-500">{value.noi_xuat ?? "-"}</td>
-                      <td className="border border-gray-500">{value.bill}</td>
-                      <td className="border border-gray-500">{value.ngay_chung_tu}</td>
-                      <td className="border border-gray-500">{value.hop_dong}</td>
-                      <td className="border border-gray-500">{value.ngay_thuc_te}</td>
-                      <td className="border border-gray-500" width={50}>
+                      <td className={`${num_col}`}>{innerIndex + 1}</td>
+                      <td className={`${str_col}`}>{value.noi_xuat ?? "-"}</td>
+                      <td className={`${str_col}`}>{value.bill}</td>
+                      <td className={`${str_col} w-20`}>{value.ngay_chung_tu}</td>
+                      <td className={`${str_col}`}>{value.hop_dong}</td>
+                      <td className={`${str_col} w-20`}>{value.ngay_thuc_te}</td>
+                      <td className={`${num_col}`} width={50}>
                         {value.sl_nhap ?? "-"}
                       </td>
-                      <td className="border border-gray-500" width={50}>
+                      <td className={`${num_col}`} width={50}>
                         {value.sl_xuat_gc ?? "-"}
                       </td>
-                      <td className="border border-gray-500" width={50}>
+                      <td className={`${num_col}`} width={50}>
                         {value.sl_xuat_tp ?? "-"}
                       </td>
-                      <td className="border border-gray-500" width={50}>
+                      <td className={`${num_col} ${bold}`} width={50}>
                         {value.sl_ton_tp ?? "-"}
                       </td>
-                      <td className="border border-gray-500" width={50}>
+                      <td className={`${num_col} ${bold}`} width={50}>
                         {value.sl_ton_tt ?? "-"}
                       </td>
                     </tr>
@@ -225,7 +194,7 @@ export default function CreateReport() {
                 record.ngay_thuc_te,
                 record.ngay_chung_tu,
                 product.noi_xuat,
-                product.sl_nhap as unknown as number,
+                product.sl_nhap,
                 product.sl_xuat_gc,
                 product.sl_xuat_tp,
                 product.sl_ton_tp,
@@ -240,7 +209,7 @@ export default function CreateReport() {
                 record.ngay_thuc_te,
                 record.ngay_chung_tu,
                 product.noi_xuat,
-                product.sl_nhap as unknown as number,
+                product.sl_nhap,
                 product.sl_xuat_gc,
                 product.sl_xuat_tp,
                 product.sl_ton_tp,
@@ -285,7 +254,8 @@ export default function CreateReport() {
         data = [];
       });
     }
-    setProductSortedByDate(sorted);
+    const tmp = CalculateStock(sorted);
+    setProductSortedByDate(tmp);
 
     return () => {};
   }, [productByCode]);
@@ -293,7 +263,7 @@ export default function CreateReport() {
   return (
     <>
       <NavbarDefault></NavbarDefault>
-      <div className="">
+      <div className="max-w-full">
         <Button onClick={handleCheck}>Kiểm tra</Button>
         {summaryTable()}
       </div>
