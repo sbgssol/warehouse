@@ -54,7 +54,6 @@ export default function DashBoard() {
 
   return (
     <>
-      {/* <Popup message="Hello" type="info"></Popup> */}
       <div className="w-full h-full">
         <SelectContract
           open={openDialog}

@@ -1,29 +1,23 @@
-import { Dialog, Typography, DialogBody, DialogFooter, Button } from "@material-tailwind/react";
-import { useState } from "react";
+import { Dialog, DialogBody, Button } from "@material-tailwind/react";
 import icon_info from "../../assets/info.svg";
 import icon_warn from "../../assets/warning.svg";
 import icon_erro from "../../assets/error.svg";
+import { useGlobalState } from "../../types/GlobalContext";
 
-type Type = "info" | "warning" | "error";
+export type PopupType = "info" | "warning" | "error";
 
-interface Props {
-  message: string;
-  type?: Type;
-}
+export default function Popup() {
+  const { popup } = useGlobalState();
 
-export default function Popup(props: Props) {
-  const { type = "info", message } = props;
-  const [propsType, setPropsType] = useState(type);
-  const [open, setOpen] = useState(false);
   const handleOpen = () => {
-    setOpen(false);
+    popup.setOpen(false);
   };
 
   const SelectIcon = () => {
-    if (propsType === "error") {
+    if (popup.type === "error") {
       return <img width={48} src={icon_erro} alt="" />;
     }
-    if (propsType === "warning") {
+    if (popup.type === "warning") {
       return <img width={48} src={icon_warn} alt="" />;
     }
     return <img width={48} src={icon_info} alt="" />;
@@ -31,68 +25,76 @@ export default function Popup(props: Props) {
 
   const SelectButtons = () => {
     const className = "w-[100px] p-2 rounded-md";
-    if (propsType === "error") {
+    if (popup.type === "error") {
       return (
         <>
-          <Button color="red" className={`${className}`}>
-            Error
+          <Button
+            color="red"
+            className={`${className}`}
+            onClick={() => {
+              popup.setOpen(false);
+            }}>
+            đóng
           </Button>
         </>
       );
     }
-    if (propsType === "warning") {
+    if (popup.type === "warning") {
       return (
         <>
-          <Button color="orange" className={`${className}`}>
-            Error
+          <Button color="orange" className={`${className}`} onClick={() => popup.setOpen(false)}>
+            không
+          </Button>
+          <Button color="orange" variant="outlined" className={`${className}`}>
+            có
           </Button>
         </>
       );
     }
     return (
       <>
-        <Button color="blue" className={`${className}`}>
+        <Button color="blue" className={`${className}`} onClick={() => popup.setOpen(false)}>
           OK
         </Button>
       </>
     );
   };
 
+  const WrapButtons = () => {
+    return <div className="w-full flex justify-end space-x-2 pt-1">{SelectButtons()}</div>;
+  };
+
   const SelectDialogBorder = () => {
     let className = "border-4 border-teal-500";
-    if (propsType === "error") {
+    if (popup.type === "error") {
       className = "border-4 border-red-500";
     }
-    if (propsType === "warning") {
+    if (popup.type === "warning") {
       className = "border-4 border-orange-500";
     }
     return className;
   };
 
   const Message = () => {
-    return <Typography variant="paragraph">{message}</Typography>;
+    return <div className="pl-2">{popup.message}</div>;
   };
 
   return (
     <>
-      <Button
-        onClick={() => {
-          setOpen(true);
-        }}>
-        Click
-      </Button>
       <Dialog
-        open={open}
+        open={popup.open}
         handler={handleOpen}
         size="xs"
-        dismiss={{ escapeKey: false, outsidePress: false }}
+        // dismiss={{ escapeKey: false, outsidePress: false }}
         className={`${SelectDialogBorder()} select-none`}>
         <DialogBody>
-          {SelectIcon()}
-          {SelectButtons()}
-          {Message()}
+          <div className="flex items-center border-b-2 pb-1">
+            {SelectIcon()}
+            {Message()}
+          </div>
+          {WrapButtons()}
         </DialogBody>
-        <DialogFooter className="space-x-2">
+        {/* <DialogFooter className="space-x-2">
           <Button
             onClick={() => {
               setPropsType("info");
@@ -111,7 +113,7 @@ export default function Popup(props: Props) {
             }}>
             error
           </Button>
-        </DialogFooter>
+        </DialogFooter> */}
       </Dialog>
     </>
   );

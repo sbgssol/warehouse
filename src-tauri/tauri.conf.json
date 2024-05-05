@@ -74,7 +74,7 @@
         "height": 650,
         "resizable": true,
         "title": "Quản lí đơn hàng",
-        "width": 800,
+        "width": 1000,
         "center": true
       }
     ]

@@ -30,7 +30,8 @@ const GlobalStrings = {
       ContractNotSelected: `Vui lòng chọn một mã hợp đồng trước khi Kiểm Tra`,
       ReportFileNotFound: `Không thể tìm thấy dữ liệu của mã hợp đồng`
     }
-  }
+  },
+  InputStock: "_NhapTonDauKi_"
 };
 
 export default GlobalStrings;

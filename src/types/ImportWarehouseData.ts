@@ -83,7 +83,7 @@ export module WarehouseData {
       });
     }
 
-    AddProduct(
+    public AddProduct(
       ma_hang: string,
       ten_hang: string,
       dvt: string,
@@ -213,11 +213,12 @@ export module WarehouseData {
         "Thông tin"
       );
       // Dialog.Error(error as string);
-      return;
+      return -1;
     }
     // const dir = await Common.BaseDiToStr(directory)
     Common.Log(
       `"${GlobalStrings.RecordFileName}" stored to "${await Common.BaseDiToStr(GlobalStrings.SaveDirectory)}"`
     );
+    return 0;
   };
 }

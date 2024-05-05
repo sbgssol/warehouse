@@ -1,6 +1,5 @@
 import { Button, Typography } from "@material-tailwind/react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { dialog } from "@tauri-apps/api";
 import { WarehouseData } from "../types/ImportWarehouseData";
 import MultipleProdCodeSelector from "./ProductSelection";
 import GlobalStrings from "../types/Globals";
@@ -9,7 +8,7 @@ import SummaryTable from "./SummaryTable";
 import { ReadCsvToStrArr } from "../types/ReadCsv";
 import SaveButton from "./single/SaveButton";
 import { useGlobalState } from "../types/GlobalContext";
-import { Popup } from "../types/Dialog";
+import PopUp from "./single/PopUp";
 
 export default function ImportWarehouse() {
   // States
@@ -19,6 +18,7 @@ export default function ImportWarehouse() {
   const [docDateStr, setDocDateStr] = useState("");
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
   const { getRecordFilename } = useGlobalState();
+  const { popup } = useGlobalState();
 
   // References
   const contractRef = useRef<HTMLInputElement>(null); // To focus when the program starts
@@ -151,10 +151,7 @@ export default function ImportWarehouse() {
       const tmp = currentSessionData;
       for (let i = 0; i < inpAmountRef.current.length; ++i) {
         if (inpAmountRef.current[i].value == "") {
-          dialog.message("Không thể lưu, kiểm tra lại đã đầy đủ số lượng", {
-            type: "error",
-            title: "Lỗi"
-          });
+          popup.show("Không thể lưu, kiểm tra lại đã đầy đủ số lượng", "error");
           return;
         }
         tmp.danh_sach_san_pham[i].sl_nhap = inpAmountRef.current[i].value as unknown as number;
@@ -163,14 +160,12 @@ export default function ImportWarehouse() {
       // dialog.message("Final data: " + ImportData.ToString(tmp));
 
       tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
-      Popup.Info("Xong", "Thông tin");
+      // Popup.Info("Xong", "Thông tin");
+      popup.show("Xong", "info");
       setCurrentSessionData(new WarehouseData.Record("", ""));
       // window.location.reload();
     } else {
-      dialog.message("Không thể lưu, danh sách mã hàng trống", {
-        type: "error",
-        title: "Lỗi"
-      });
+      popup.show("Không thể lưu, danh sách mã hàng trống", "error");
     }
     // let restored = await ImportData.RestoreData(file_name, dir);
     // restored.forEach((rec) => {
@@ -274,6 +269,7 @@ export default function ImportWarehouse() {
 
   return (
     <>
+      <PopUp></PopUp>
       <NavbarDefault></NavbarDefault>
       <div className="w-full h-max overflow-hidden">
         {fixedPart()}

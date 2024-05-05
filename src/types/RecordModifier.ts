@@ -1,4 +1,5 @@
 import { Popup } from "./Dialog";
+import GlobalStrings from "./Globals";
 import { WarehouseData } from "./ImportWarehouseData";
 import { ShortenData, UpdateRecord } from "./ShortenData";
 
@@ -182,6 +183,45 @@ export const Remove = (
   // console.log(`Data after:\n${JSON.stringify(full_data[idx.contract_idx].danh_sach_san_pham)}\n`);
 
   WarehouseData.StoreDataPersistently(file_name, full_data);
+};
+
+function formatDate(date: Date): string {
+  const year = date.getFullYear();
+  let month: string | number = date.getMonth() + 1; // Month is zero-based
+  let day: string | number = date.getDate();
+
+  // Add leading zeros if needed
+  if (month < 10) {
+    month = "0" + month;
+  }
+  if (day < 10) {
+    day = "0" + day;
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
+export const AddStock = async (
+  report_file_name: string,
+  full_data: WarehouseData.Record[],
+  prod_code: string,
+  prod_name: string,
+  prod_unit: string,
+  amount: number
+) => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const firstDayOfYear = new Date(year, 0, 1); // January is 0
+  const formattedDate = formatDate(firstDayOfYear);
+  full_data.push({
+    hop_dong: GlobalStrings.InputStock,
+    so_bill: GlobalStrings.InputStock,
+    ngay_thuc_te: formattedDate,
+    danh_sach_san_pham: [
+      { ma_hang: prod_code, ten_hang: prod_name, don_vi_tinh: prod_unit, sl_nhap: amount }
+    ]
+  } as WarehouseData.Record);
+  WarehouseData.StoreDataPersistently(report_file_name, full_data);
 };
 
 export type ImportUpdate = {

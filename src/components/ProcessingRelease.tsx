@@ -8,7 +8,7 @@ import { NavbarDefault } from "./Navbar";
 import SummaryTable from "./SummaryTable";
 import SaveButton from "./single/SaveButton";
 import { useGlobalState } from "../types/GlobalContext";
-import { Popup } from "../types/Dialog";
+import Popup from "./single/PopUp";
 
 export default function ProcessingRelease() {
   // States
@@ -24,7 +24,7 @@ export default function ProcessingRelease() {
   const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>(
     new WarehouseData.Record("", "", "", "")
   );
-  const { getRecordFilename } = useGlobalState();
+  const { getRecordFilename, popup } = useGlobalState();
   // References
   const contractRef = useRef<HTMLInputElement>(null);
   const rlsDateRef = useRef<HTMLInputElement>(null);
@@ -143,7 +143,8 @@ export default function ProcessingRelease() {
       }
       for (let i = 0; i < inpAmountRef.current.length; ++i) {
         if (inpAmountRef.current[i].value == "") {
-          Popup.Error("Không thể lưu, kiểm tra lại đã đầy đủ số lượng");
+          // Popup.Error("Không thể lưu, kiểm tra lại đã đầy đủ số lượng");
+          popup.show("Không thể lưu, kiểm tra lại đã đầy đủ số lượng", "error");
           return;
         }
         tmp.danh_sach_san_pham[i].noi_xuat = rls_source;
@@ -153,11 +154,12 @@ export default function ProcessingRelease() {
       // dialog.message("Final data: " + ImportData.ToString(tmp));
 
       tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
-      Popup.Info("Xong");
+      //Popup.Info("Xong");
+      popup.show("Xong", "info");
       setCurrentSessionData(new WarehouseData.Record("", ""));
       // window.location.reload();
     } else {
-      Popup.Error("Không thể lưu, danh sách mã hàng trống");
+      popup.show("Không thể lưu, danh sách mã hàng trống", "error");
     }
   };
 
@@ -255,6 +257,7 @@ export default function ProcessingRelease() {
 
   return (
     <>
+      <Popup />
       <NavbarDefault></NavbarDefault>
       <div className="w-full overflow-hidden">
         {fixedPart()}

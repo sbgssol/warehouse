@@ -4,14 +4,16 @@ import { useState, useEffect } from "react";
 import GlobalStrings from "../types/Globals";
 import { NavbarDefault } from "./Navbar";
 import { useGlobalState } from "../types/GlobalContext";
-import { Popup } from "../types/Dialog";
 import { ShortenData, UpdateRecord } from "../types/ShortenData";
 import { CalculateStock } from "../types/CalculateStock";
 import edit_svg from "../assets/edit-report-tiny.svg";
 import delete_svg from "../assets/delete-report-tiny.svg";
 import UpdateModal from "./single/UpdateModal";
-import { Modify, Remove } from "../types/RecordModifier";
+import { AddStock, Modify, Remove } from "../types/RecordModifier";
 import { dialog } from "@tauri-apps/api";
+import import_stock from "../assets/import-stock.svg";
+import InputStock from "./single/InputStock";
+import Popup from "./single/PopUp";
 
 export default function CreateReport() {
   const [restoredData, setRestoredData] = useState<WarehouseData.Record[]>([]);
@@ -27,11 +29,14 @@ export default function CreateReport() {
   );
   const [openModalUpdate, setOpenModalUpdate] = useState(false);
   const [openModalDelete, setOpenModalDelete] = useState(false);
+  const [openModalStock, setOpenModalStock] = useState(false);
   const [dataToEdit, setDataToEdit] = useState<ShortenData>(new ShortenData("", "", "", ""));
   const [maHang, setMaHang] = useState("");
-  // const [tenHang, setTenHang] = useState("");
-  // const [dvt, setDvt] = useState("");
-  // const [updatedData, setUpdatedData] = useState<ShortenData>();
+
+  const { popup } = useGlobalState();
+  // const [popupMessage, setPopupMessage] = useState("");
+  // const [popupType, setPopupType] = useState<PopupType | undefined>();
+  // const [popupOpen, setPopupOpen] = useState(false);
 
   const stripeColumn = (index: number) => {
     let str = "";
@@ -66,22 +71,6 @@ export default function CreateReport() {
     }, 100);
   };
 
-  // useEffect(() => {
-  //   console.log(`Record updated: ${JSON.stringify(updatedData)}`);
-
-  //   return () => {};
-  // }, [updatedData]);
-
-  // useEffect(() => {
-  //   if (dataToEdit.hop_dong.length) {
-  //     console.log("New data :", JSON.stringify(dataToEdit));
-  //     setTimeout(() => {
-  //       setOpenModal(true);
-  //     }, 200);
-  //   }
-  //   return () => {};
-  // }, [dataToEdit]);
-
   const handleUpdateClick = (the_record: ShortenData, code: string) => {
     setOpenModalUpdate(true);
     setDataToEdit(the_record);
@@ -92,9 +81,6 @@ export default function CreateReport() {
     setOpenModalDelete(true);
     setDataToEdit(old_record);
     setMaHang(product_code);
-    // setTenHang(getProductInfo(product_code, "name"));
-    // setDvt(getProductInfo(product_code, "unit"));
-    // Remove(restoredData, old_record, product_code, getRecordFilename());
   };
 
   const handleRemoveRecord = async () => {
@@ -112,13 +98,45 @@ export default function CreateReport() {
     }
   };
 
+  const handleInputStockOk = async (amount: number) => {
+    await AddStock(
+      getRecordFilename(),
+      restoredData,
+      maHang,
+      getProductInfo(maHang, "name"),
+      getProductInfo(maHang, "unit"),
+      amount
+    );
+
+    setTimeout(() => {
+      handleCheck();
+    }, 200);
+    setOpenModalStock(false);
+  };
+
+  const NeedInputStock = (records: ShortenData[], code?: string) => {
+    console.log(`Checking for code ${code}, data:\n${JSON.stringify(records)}`);
+
+    if (records.some((value) => value.so_bill === GlobalStrings.InputStock)) {
+      console.log(`-> true`);
+      return false;
+    }
+    console.log(`-> true`);
+    return true;
+  };
+
   const summaryTable = () => {
     const str_col = "border border-gray-500 overflow-x-auto max-w-32";
     const num_col = "border border-gray-500 overflow-x-auto max-w-14";
     const tbl_header = "border border-gray-500 p-1 capitalize";
-
     return (
       <>
+        <InputStock
+          open={openModalStock}
+          closeHandler={() => setOpenModalStock(false)}
+          okHandler={handleInputStockOk}
+          product_code={maHang}
+          product_name={getProductInfo(maHang, "name")}></InputStock>
         <UpdateModal
           open={openModalUpdate}
           handler={() => {
@@ -161,6 +179,27 @@ export default function CreateReport() {
                     Đơn vị tính:
                   </th>
                   <th colSpan={2}>{getProductInfo(key, "unit")}</th>
+                </tr>
+                <tr>
+                  {/* <th colSpan={2} className=""></th> */}
+                  <th colSpan={3}>
+                    <Button
+                      className={`pt-1 pb-1 pl-2 pr-2 rounded-md w-[85%]`}
+                      variant="gradient"
+                      color="blue-gray"
+                      disabled={!NeedInputStock(data, key)}
+                      onClick={() => {
+                        setMaHang(key);
+                        setOpenModalStock(true);
+                      }}>
+                      <div className="flex items-center justify-evenly">
+                        {"nhập tồn đầu kì"}
+                        <span>
+                          <img width={32} src={import_stock} alt="" />
+                        </span>
+                      </div>
+                    </Button>
+                  </th>
                 </tr>
               </thead>
               <thead>
@@ -289,14 +328,15 @@ export default function CreateReport() {
         });
         setRestoredData(tmp);
       } else {
-        Popup.Warning("Không tìm thấy dữ liệu hoặc dữ liệu trống");
+        popup.show("Không tìm thấy dữ liệu hoặc dữ liệu trống", "error");
       }
     } catch (error) {
       const msg = contractName.length
         ? `${GlobalStrings.ErrorMsg.Report.ReportFileNotFound} "${contractName}"`
         : `${GlobalStrings.ErrorMsg.Report.ContractNotSelected}`;
       console.log(msg);
-      Popup.Error(msg);
+
+      popup.show(msg, "error");
     }
   };
 
@@ -387,6 +427,7 @@ export default function CreateReport() {
 
   return (
     <>
+      <Popup />
       <NavbarDefault></NavbarDefault>
       <div className="max-w-full w-full">
         <Button onClick={handleCheck}>Kiểm tra</Button>
