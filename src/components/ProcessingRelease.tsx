@@ -8,7 +8,6 @@ import { NavbarDefault } from "./Navbar";
 import SummaryTable from "./SummaryTable";
 import SaveButton from "./single/SaveButton";
 import { useGlobalState } from "../types/GlobalContext";
-import Popup from "./single/PopUp";
 
 export default function ProcessingRelease() {
   // States
@@ -184,12 +183,12 @@ export default function ProcessingRelease() {
   const fixedPart = () => {
     return (
       <>
-        <div className="flex justify-center">
+        <div className="flex justify-center w-full">
           <Typography variant="h3" className={`uppercase ${fixed_text_color}`}>
             Xuất gia công
           </Typography>
         </div>
-        <div className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2`}>
+        <div className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2 w-full`}>
           <div className="flex items-center">
             <div className={`w-1/2 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
             <input
@@ -257,9 +256,8 @@ export default function ProcessingRelease() {
 
   return (
     <>
-      <Popup />
       <NavbarDefault></NavbarDefault>
-      <div className="w-full overflow-hidden">
+      <div className="w-full overflow-hidden flex flex-col items-center">
         {fixedPart()}
         {updatingPart()}
         <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>

@@ -7,33 +7,29 @@ export default function SummaryTable(props: {
 }) {
   if (props.data.danh_sach_san_pham.length) {
     return (
-      <div className="max-w-[780px] w-full overflow-y-auto max-h-[38vh] mt-2">
+      <div className="max-w-[98%] w-full overflow-y-auto max-h-[38vh] mt-2">
         <table className="text-center mt-2">
           <thead className="">
             <tr>
-              <th className="uppercase text-green-700">Mã hàng</th>
-              <th className="uppercase text-green-700">Tên hàng</th>
-              <th className="uppercase text-green-700">Đơn vị tính</th>
-              <th className="uppercase text-green-700">Số lượng</th>
+              <th className="uppercase ">Mã hàng</th>
+              <th className="uppercase ">Tên hàng</th>
+              <th className="uppercase ">Đơn vị tính</th>
+              <th className="uppercase ">Số lượng</th>
             </tr>
           </thead>
           <tbody className="">
             {props.data.danh_sach_san_pham.flatMap((detail, index) => (
               <tr key={index}>
-                <td
-                  className="text-left border border-green-600 overflow-hidden max-w-[200px] pl-1"
-                  width={200}>
+                <td className="text-left border border-black overflow-hidden max-w-[25%] pl-1 w-[25%]">
                   {detail.ma_hang}
                 </td>
-                <td
-                  className="text-left border  border-green-600 overflow-hidden max-w-[500px] pl-1"
-                  width={500}>
+                <td className="text-left border  border-black overflow-hidden max-w-[45%] pl-1 w-[45%]">
                   {detail.ten_hang}
                 </td>
-                <td className="border border-green-600 overflow-hidden max-w-[150px]" width={150}>
+                <td className="border border-black overflow-hidden max-w-[14%] w-[14%]">
                   {detail.don_vi_tinh}
                 </td>
-                <td className="border border-green-600 overflow-hidden max-w-[150px]" width={150}>
+                <td className="border border-black overflow-hidden max-w-[14%] w-[14%]">
                   <input
                     placeholder="_"
                     type="number"

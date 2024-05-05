@@ -1,4 +1,4 @@
-import { Dialog, DialogBody, Button } from "@material-tailwind/react";
+import { Dialog, Button } from "@material-tailwind/react";
 import icon_info from "../../assets/info.svg";
 import icon_warn from "../../assets/warning.svg";
 import icon_erro from "../../assets/error.svg";
@@ -42,10 +42,23 @@ export default function Popup() {
     if (popup.type === "warning") {
       return (
         <>
-          <Button color="orange" className={`${className}`} onClick={() => popup.setOpen(false)}>
+          <Button
+            color="orange"
+            className={`${className}`}
+            onClick={() => {
+              popup.setAnswer(false);
+              popup.setOpen(false);
+            }}>
             không
           </Button>
-          <Button color="orange" variant="outlined" className={`${className}`}>
+          <Button
+            color="orange"
+            variant="outlined"
+            className={`${className}`}
+            onClick={() => {
+              popup.setAnswer(true);
+              popup.setOpen(false);
+            }}>
             có
           </Button>
         </>
@@ -86,14 +99,12 @@ export default function Popup() {
         handler={handleOpen}
         size="xs"
         // dismiss={{ escapeKey: false, outsidePress: false }}
-        className={`${SelectDialogBorder()} select-none`}>
-        <DialogBody>
-          <div className="flex items-center border-b-2 pb-1">
-            {SelectIcon()}
-            {Message()}
-          </div>
-          {WrapButtons()}
-        </DialogBody>
+        className={`${SelectDialogBorder()} select-none p-4 pb-2`}>
+        <div className="flex items-center border-b-2 pb-2 mb-2">
+          {SelectIcon()}
+          {Message()}
+        </div>
+        {WrapButtons()}
         {/* <DialogFooter className="space-x-2">
           <Button
             onClick={() => {

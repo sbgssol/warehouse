@@ -10,6 +10,8 @@ interface GlobalStateContextType {
 
   popup: {
     show: (msg: string | ReactNode | ReactNode[], type: PopupType) => void;
+    answer: boolean;
+    setAnswer: (ans: boolean) => void;
     open: boolean;
     message: string | ReactNode | ReactNode[];
     type?: PopupType;
@@ -29,6 +31,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [popupMessage, setPopupMessage] = useState<string | ReactNode | ReactNode[]>();
   const [popupType, setPopupType] = useState<PopupType | undefined>();
   const [popupOpen, setPopupOpen] = useState(false);
+  const [ans, setAns] = useState(false);
 
   const getRecordFilename = () => {
     return contractName + "_" + GlobalStrings.RecordFileName;
@@ -48,6 +51,8 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
         getRecordFilename,
         popup: {
           show: ShowPopUp,
+          answer: ans,
+          setAnswer: setAns,
           open: popupOpen,
           message: popupMessage,
           type: popupType,

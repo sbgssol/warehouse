@@ -8,7 +8,6 @@ import SummaryTable from "./SummaryTable";
 import { ReadCsvToStrArr } from "../types/ReadCsv";
 import SaveButton from "./single/SaveButton";
 import { useGlobalState } from "../types/GlobalContext";
-import PopUp from "./single/PopUp";
 
 export default function ImportWarehouse() {
   // States
@@ -180,7 +179,7 @@ export default function ImportWarehouse() {
             Nhập kho
           </Typography>
         </div>
-        <div className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2`}>
+        <div className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2 w-full`}>
           <div className="flex items-center">
             <div className={`w-1/2 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
             <input
@@ -269,9 +268,8 @@ export default function ImportWarehouse() {
 
   return (
     <>
-      <PopUp></PopUp>
       <NavbarDefault></NavbarDefault>
-      <div className="w-full h-max overflow-hidden">
+      <div className="w-full h-max overflow-hidden flex flex-col items-center">
         {fixedPart()}
         {updatingPart()}
         <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>

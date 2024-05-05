@@ -195,7 +195,7 @@ export default function ProcessingRelease() {
             Xuất thành phẩm
           </Typography>
         </div>
-        <div className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2`}>
+        <div className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2 w-full`}>
           <div className="flex items-center">
             <div className={`w-1/2 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
             <input
@@ -264,7 +264,7 @@ export default function ProcessingRelease() {
   return (
     <>
       <NavbarDefault></NavbarDefault>
-      <div className="w-full overflow-hidden">
+      <div className="w-full overflow-hidden flex flex-col items-center">
         {fixedPart()}
         {updatingPart()}
         <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>

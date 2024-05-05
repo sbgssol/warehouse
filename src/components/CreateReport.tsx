@@ -13,7 +13,6 @@ import { AddStock, Modify, Remove } from "../types/RecordModifier";
 import { dialog } from "@tauri-apps/api";
 import import_stock from "../assets/import-stock.svg";
 import InputStock from "./single/InputStock";
-import Popup from "./single/PopUp";
 
 export default function CreateReport() {
   const [restoredData, setRestoredData] = useState<WarehouseData.Record[]>([]);
@@ -34,9 +33,6 @@ export default function CreateReport() {
   const [maHang, setMaHang] = useState("");
 
   const { popup } = useGlobalState();
-  // const [popupMessage, setPopupMessage] = useState("");
-  // const [popupType, setPopupType] = useState<PopupType | undefined>();
-  // const [popupOpen, setPopupOpen] = useState(false);
 
   const stripeColumn = (index: number) => {
     let str = "";
@@ -131,36 +127,9 @@ export default function CreateReport() {
     const tbl_header = "border border-gray-500 p-1 capitalize";
     return (
       <>
-        <InputStock
-          open={openModalStock}
-          closeHandler={() => setOpenModalStock(false)}
-          okHandler={handleInputStockOk}
-          product_code={maHang}
-          product_name={getProductInfo(maHang, "name")}></InputStock>
-        <UpdateModal
-          open={openModalUpdate}
-          handler={() => {
-            setOpenModalUpdate(false);
-          }}
-          ma_hang={maHang}
-          product_map={productMap}
-          data={dataToEdit}
-          updater={handleRecordUpdate}
-          type="update"></UpdateModal>
-
-        <UpdateModal
-          open={openModalDelete}
-          handler={() => {
-            setOpenModalDelete(false);
-          }}
-          ma_hang={maHang}
-          product_map={productMap}
-          data={dataToEdit}
-          updater={handleRemoveRecord}
-          type="delete"></UpdateModal>
         {Array.from(productSortedByDate).map(([key, data], index) => {
           return (
-            <table key={index} className="text-center text-sm text-wrap mt-2 mb-2 max-w-full ">
+            <table key={index} className="text-center text-sm text-wrap mt-2 mb-2 w-full">
               <thead className="text-left">
                 <tr>
                   <th colSpan={2} className="">
@@ -184,7 +153,7 @@ export default function CreateReport() {
                   {/* <th colSpan={2} className=""></th> */}
                   <th colSpan={3}>
                     <Button
-                      className={`pt-1 pb-1 pl-2 pr-2 rounded-md w-[85%]`}
+                      className={`p-1 rounded-md`}
                       variant="gradient"
                       color="blue-gray"
                       disabled={!NeedInputStock(data, key)}
@@ -195,7 +164,7 @@ export default function CreateReport() {
                       <div className="flex items-center justify-evenly">
                         {"nhập tồn đầu kì"}
                         <span>
-                          <img width={32} src={import_stock} alt="" />
+                          <img width={32} src={import_stock} alt="" className="pl-1" />
                         </span>
                       </div>
                     </Button>
@@ -204,22 +173,22 @@ export default function CreateReport() {
               </thead>
               <thead>
                 <tr>
-                  <th rowSpan={3} className={`${tbl_header}`}>
+                  <th rowSpan={3} className={`${tbl_header} w-[2%]`}>
                     {GlobalStrings.TableColumn.STT}
                   </th>
-                  <th rowSpan={3} className={`${tbl_header}`}>
+                  <th rowSpan={3} className={`${tbl_header} w-[10%]`}>
                     {GlobalStrings.TableColumn.NoiXuat}
                   </th>
-                  <th rowSpan={3} className={`${tbl_header}`}>
+                  <th rowSpan={3} className={`${tbl_header} w-[15%]`}>
                     {GlobalStrings.TableColumn.SoBill}
                   </th>
-                  <th rowSpan={3} className={`${tbl_header}`}>
+                  <th rowSpan={3} className={`${tbl_header} w-[9%]`}>
                     {GlobalStrings.TableColumn.NgChTu}
                   </th>
-                  <th rowSpan={3} className={`${tbl_header}`}>
+                  <th rowSpan={3} className={`${tbl_header} w-[17%]`}>
                     {GlobalStrings.TableColumn.MaHD}
                   </th>
-                  <th rowSpan={3} className={`${tbl_header}`}>
+                  <th rowSpan={3} className={`${tbl_header} w-[9%]`}>
                     {GlobalStrings.TableColumn.NgThTe}
                   </th>
                   <th className={`${tbl_header}`} colSpan={5}>
@@ -427,8 +396,34 @@ export default function CreateReport() {
 
   return (
     <>
-      <Popup />
       <NavbarDefault></NavbarDefault>
+      <InputStock
+        open={openModalStock}
+        closeHandler={() => setOpenModalStock(false)}
+        okHandler={handleInputStockOk}
+        product_code={maHang}
+        product_name={getProductInfo(maHang, "name")}></InputStock>
+      <UpdateModal
+        open={openModalUpdate}
+        handler={() => {
+          setOpenModalUpdate(false);
+        }}
+        ma_hang={maHang}
+        product_map={productMap}
+        data={dataToEdit}
+        updater={handleRecordUpdate}
+        type="update"></UpdateModal>
+
+      <UpdateModal
+        open={openModalDelete}
+        handler={() => {
+          setOpenModalDelete(false);
+        }}
+        ma_hang={maHang}
+        product_map={productMap}
+        data={dataToEdit}
+        updater={handleRemoveRecord}
+        type="delete"></UpdateModal>
       <div className="max-w-full w-full">
         <Button onClick={handleCheck}>Kiểm tra</Button>
         {summaryTable()}
