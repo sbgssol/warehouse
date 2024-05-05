@@ -21,7 +21,15 @@ const GlobalStrings = {
     Ton: "tồn",
     Gc: "gia công",
     Tp: "thành phẩm",
-    Tt: "thực tế"
+    Tt: "thực tế",
+    Update: "sửa",
+    Delete: "xóa"
+  },
+  ErrorMsg: {
+    Report: {
+      ContractNotSelected: `Vui lòng chọn một mã hợp đồng trước khi Kiểm Tra`,
+      ReportFileNotFound: `Không thể tìm thấy dữ liệu của mã hợp đồng`
+    }
   }
 };
 

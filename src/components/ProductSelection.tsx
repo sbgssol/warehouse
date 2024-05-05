@@ -12,10 +12,10 @@ import {
 } from "@material-tailwind/react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 
-export default function ProductSelection(props: {
+export default function MultipleProdCodeSelector(props: {
   open: boolean;
   closeHandler: (close: boolean) => void;
-  codeList: string[];
+  // codeList: string[];
   selectedCode: string[];
   productMap: Map<string, { name: string; unit: string }>;
   handleCodeChange: (strings: string[]) => void;
@@ -23,6 +23,21 @@ export default function ProductSelection(props: {
   const checkboxRef = useRef<HTMLInputElement[]>([]);
   const selectedCode = new Set<string>(props.selectedCode);
   const [selectionOrder, setSelectionOrder] = useState<number[]>([]);
+  const [codeArray, setCodeArray] = useState<string[]>([]);
+
+  const constructCodeArrayFromProductCode = () => {
+    const tmp: string[] = [];
+    props.productMap.forEach((_value, key) => {
+      tmp.push(key);
+    });
+    setCodeArray(tmp);
+  };
+
+  useEffect(() => {
+    constructCodeArrayFromProductCode();
+
+    return () => {};
+  }, [props.productMap]);
 
   const handleModalReset = () => {
     props.handleCodeChange([]);
@@ -31,7 +46,7 @@ export default function ProductSelection(props: {
         value.checked = false;
       });
     }
-    setSelectionOrder(new Array(props.codeList.length).fill(0));
+    setSelectionOrder(new Array(codeArray.length).fill(0));
   };
   const handleModalClose = () => {
     props.closeHandler(false);
@@ -43,16 +58,16 @@ export default function ProductSelection(props: {
         value.checked = false;
       });
     }
-    setSelectionOrder(new Array(props.codeList.length).fill(0));
+    setSelectionOrder(new Array(codeArray.length).fill(0));
   };
   const handleModalDone = () => {
     if (checkboxRef.current) {
       // Collect selected codes
       const map = new Map<number, string>();
-      for (let i = 0; i < props.codeList.length; ++i) {
+      for (let i = 0; i < codeArray.length; ++i) {
         if (selectionOrder[i] != 0 && checkboxRef.current[i].checked) {
-          map.set(selectionOrder[i], props.codeList[i]);
-          console.log(`${props.codeList[i]} -> ${selectionOrder[i]}`);
+          map.set(selectionOrder[i], codeArray[i]);
+          console.log(`${codeArray[i]} -> ${selectionOrder[i]}`);
         }
       }
 
@@ -68,8 +83,8 @@ export default function ProductSelection(props: {
   };
 
   useEffect(() => {
-    setSelectionOrder(new Array(props.codeList.length).fill(0));
-  }, [props.codeList]);
+    setSelectionOrder(new Array(codeArray.length).fill(0));
+  }, [codeArray]);
 
   const getProductName = (code: string) => {
     let name = "-";
@@ -84,11 +99,12 @@ export default function ProductSelection(props: {
     <Dialog
       open={props.open}
       handler={props.closeHandler}
-      dismiss={{ outsidePress: false, escapeKey: true }}>
+      dismiss={{ outsidePress: false, escapeKey: true }}
+      className="select-none">
       <DialogHeader>Chọn mã hàng cần nhập</DialogHeader>
       <DialogBody className="h-[70vh] overflow-y-scroll">
         <List className="border-2 rounded-md">
-          {props.codeList.map((value, index) => (
+          {codeArray.map((value, index) => (
             <ListItem
               className="p-0 border-b rounded-none overflow-hidden"
               key={index}
@@ -109,7 +125,7 @@ export default function ProductSelection(props: {
                     inputRef={(ref) => {
                       if (ref) {
                         checkboxRef.current[index] = ref;
-                        console.log("Ref assigned successfully!");
+                        // console.log("Ref assigned successfully!");
                       }
                     }}
                     defaultChecked={selectedCode.has(value)}

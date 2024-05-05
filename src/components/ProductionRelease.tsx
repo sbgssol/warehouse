@@ -1,8 +1,8 @@
 import { Button, Typography } from "@material-tailwind/react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { dialog } from "@tauri-apps/api";
-import { ImportData } from "../types/ImportWarehouseData";
-import ProductSelection from "./ProductSelection";
+import { WarehouseData } from "../types/ImportWarehouseData";
+import MultipleProdCodeSelector from "./ProductSelection";
 import { ReadCsvToStrArr } from "../types/ReadCsv";
 import GlobalStrings from "../types/Globals";
 import { NavbarDefault } from "./Navbar";
@@ -29,14 +29,13 @@ export default function ProcessingRelease() {
   const fixed_input_outline = `focus:outline-indigo-300`;
   const fixed_button_bg = "bg-indigo-800";
 
-  const [currentSessionData, setCurrentSessionData] = useState<ImportData.Data>(
-    new ImportData.Data("", "", "", "")
+  const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>(
+    new WarehouseData.Record("", "")
   );
 
   // To load the CSV
   const [csvContent, setCsvContent] = useState<string[]>([]);
   const [csvLocation, setCsvLocation] = useState<string[]>([]);
-  const [productCodes, setCodeList] = useState<string[]>([]);
   const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
     new Map()
   );
@@ -83,7 +82,6 @@ export default function ProcessingRelease() {
       }
 
       // Update the state with the final values
-      setCodeList(Array.from(updatedCodeList).sort());
       setProductMap(updatedProductMap);
     }
   }, [csvContent]); // Run this effect only when csvContent changes
@@ -107,9 +105,9 @@ export default function ProcessingRelease() {
     return info;
   };
   useEffect(() => {
-    console.log("selectedCodes changed");
+    // console.log("selectedCodes changed");
     // Update session data
-    const tmp = new ImportData.Data(hopDongStr, "-", rlsDateStr, "-");
+    const tmp = new WarehouseData.Record(hopDongStr, rlsDateStr);
     tmp.ClearProduct();
     selectedCodes.forEach((code) => {
       tmp.CreateProduct(
@@ -125,7 +123,7 @@ export default function ProcessingRelease() {
 
   useEffect(() => {
     if (currentSessionData) {
-      console.log("Session data updated: " + ImportData.ToString(currentSessionData));
+      console.log("Session data updated: " + WarehouseData.ToString(currentSessionData));
     }
 
     return () => {};
@@ -161,6 +159,7 @@ export default function ProcessingRelease() {
 
       tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
       dialog.message("Xong");
+      setCurrentSessionData(new WarehouseData.Record("", ""));
       // window.location.reload();
     } else {
       dialog.message("Không thể lưu, danh sách mã hàng trống", {
@@ -239,13 +238,12 @@ export default function ProcessingRelease() {
       <>
         <div className={`w-full max-h-[400px] h-min mt-1`}>
           <div>
-            <ProductSelection
+            <MultipleProdCodeSelector
               open={open}
               closeHandler={setOpen}
-              codeList={productCodes}
               selectedCode={selectedCodes}
               productMap={productMap}
-              handleCodeChange={setSelectedCodes}></ProductSelection>
+              handleCodeChange={setSelectedCodes}></MultipleProdCodeSelector>
           </div>
           <Button
             fullWidth

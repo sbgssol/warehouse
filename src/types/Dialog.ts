@@ -1,6 +1,6 @@
 import { dialog } from "@tauri-apps/api";
 
-export module Dialog {
+export module Popup {
   export const Info = (msg: string, title?: string) => {
     dialog.message(msg, { title: title ?? "Thông báo", type: "info" });
   };

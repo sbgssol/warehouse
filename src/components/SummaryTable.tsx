@@ -1,8 +1,8 @@
 import { ChangeEvent, MutableRefObject } from "react";
-import { ImportData } from "../types/ImportWarehouseData";
+import { WarehouseData } from "../types/ImportWarehouseData";
 
 export default function SummaryTable(props: {
-  data: ImportData.Data;
+  data: WarehouseData.Record;
   input_ref: MutableRefObject<HTMLInputElement[]>;
 }) {
   if (props.data.danh_sach_san_pham.length) {
@@ -22,14 +22,12 @@ export default function SummaryTable(props: {
               <tr key={index}>
                 <td
                   className="text-left border border-green-600 overflow-hidden max-w-[200px] pl-1"
-                  width={200}
-                >
+                  width={200}>
                   {detail.ma_hang}
                 </td>
                 <td
                   className="text-left border  border-green-600 overflow-hidden max-w-[500px] pl-1"
-                  width={500}
-                >
+                  width={500}>
                   {detail.ten_hang}
                 </td>
                 <td className="border border-green-600 overflow-hidden max-w-[150px]" width={150}>
@@ -50,8 +48,7 @@ export default function SummaryTable(props: {
                         props.input_ref.current[index] = ref;
                       }
                     }}
-                    className={`w-full pl-2 bg-gray-50`}
-                  ></input>
+                    className={`w-full pl-2 bg-gray-50`}></input>
                 </td>
               </tr>
             ))}

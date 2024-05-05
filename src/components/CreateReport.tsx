@@ -1,17 +1,20 @@
 import { Button, IconButton } from "@material-tailwind/react";
-import { ImportData } from "../types/ImportWarehouseData";
+import { WarehouseData } from "../types/ImportWarehouseData";
 import { useState, useEffect } from "react";
 import GlobalStrings from "../types/Globals";
 import { NavbarDefault } from "./Navbar";
 import { useGlobalState } from "../types/GlobalContext";
-import { Dialog } from "../types/Dialog";
-import { ShortenData } from "../types/ShortenData";
+import { Popup } from "../types/Dialog";
+import { ShortenData, UpdateRecord } from "../types/ShortenData";
 import { CalculateStock } from "../types/CalculateStock";
 import edit_svg from "../assets/edit-report-tiny.svg";
+import delete_svg from "../assets/delete-report-tiny.svg";
 import UpdateModal from "./single/UpdateModal";
+import { Modify, Remove } from "../types/RecordModifier";
+import { dialog } from "@tauri-apps/api";
 
 export default function CreateReport() {
-  const [restoredData, setRestoredData] = useState<ImportData.Data[]>([]);
+  const [restoredData, setRestoredData] = useState<WarehouseData.Record[]>([]);
   const [productByCode, setProductByCode] = useState<Map<string, ShortenData[]>>(
     new Map<string, ShortenData[]>()
   );
@@ -22,8 +25,13 @@ export default function CreateReport() {
   const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
     new Map()
   );
-  const [openModal, setOpenModal] = useState(false);
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
+  const [openModalDelete, setOpenModalDelete] = useState(false);
   const [dataToEdit, setDataToEdit] = useState<ShortenData>(new ShortenData("", "", "", ""));
+  const [maHang, setMaHang] = useState("");
+  // const [tenHang, setTenHang] = useState("");
+  // const [dvt, setDvt] = useState("");
+  // const [updatedData, setUpdatedData] = useState<ShortenData>();
 
   const stripeColumn = (index: number) => {
     let str = "";
@@ -33,7 +41,8 @@ export default function CreateReport() {
     return str;
   };
 
-  const getProductInfo = (code: string, type: string) => {
+  type Type = "name" | "unit";
+  const getProductInfo = (code: string, type: Type) => {
     let str = "?";
     const tmp = productMap.get(code);
     if (tmp) {
@@ -48,6 +57,21 @@ export default function CreateReport() {
     return str;
   };
 
+  const handleRecordUpdate = (new_data?: UpdateRecord.Details) => {
+    if (new_data === undefined) return;
+    Modify(restoredData, dataToEdit, new_data, maHang, getRecordFilename());
+    setOpenModalUpdate(false);
+    setTimeout(() => {
+      handleCheck();
+    }, 100);
+  };
+
+  // useEffect(() => {
+  //   console.log(`Record updated: ${JSON.stringify(updatedData)}`);
+
+  //   return () => {};
+  // }, [updatedData]);
+
   // useEffect(() => {
   //   if (dataToEdit.hop_dong.length) {
   //     console.log("New data :", JSON.stringify(dataToEdit));
@@ -58,6 +82,36 @@ export default function CreateReport() {
   //   return () => {};
   // }, [dataToEdit]);
 
+  const handleUpdateClick = (the_record: ShortenData, code: string) => {
+    setOpenModalUpdate(true);
+    setDataToEdit(the_record);
+    setMaHang(code);
+  };
+
+  const handleRemoveClick = (old_record: ShortenData, product_code: string) => {
+    setOpenModalDelete(true);
+    setDataToEdit(old_record);
+    setMaHang(product_code);
+    // setTenHang(getProductInfo(product_code, "name"));
+    // setDvt(getProductInfo(product_code, "unit"));
+    // Remove(restoredData, old_record, product_code, getRecordFilename());
+  };
+
+  const handleRemoveRecord = async () => {
+    const yes = await dialog.ask(`Bạn có chắc chắn muốn xóa?`, {
+      cancelLabel: "KHÔNG",
+      okLabel: "CÓ",
+      type: "warning"
+    });
+    if (yes) {
+      Remove(restoredData, dataToEdit, maHang, getRecordFilename());
+      setOpenModalDelete(false);
+      setTimeout(() => {
+        handleCheck();
+      }, 100);
+    }
+  };
+
   const summaryTable = () => {
     const str_col = "border border-gray-500 overflow-x-auto max-w-32";
     const num_col = "border border-gray-500 overflow-x-auto max-w-14";
@@ -66,11 +120,26 @@ export default function CreateReport() {
     return (
       <>
         <UpdateModal
-          open={openModal}
+          open={openModalUpdate}
           handler={() => {
-            setOpenModal(false);
+            setOpenModalUpdate(false);
           }}
-          data={dataToEdit}></UpdateModal>
+          ma_hang={maHang}
+          product_map={productMap}
+          data={dataToEdit}
+          updater={handleRecordUpdate}
+          type="update"></UpdateModal>
+
+        <UpdateModal
+          open={openModalDelete}
+          handler={() => {
+            setOpenModalDelete(false);
+          }}
+          ma_hang={maHang}
+          product_map={productMap}
+          data={dataToEdit}
+          updater={handleRemoveRecord}
+          type="delete"></UpdateModal>
         {Array.from(productSortedByDate).map(([key, data], index) => {
           return (
             <table key={index} className="text-center text-sm text-wrap mt-2 mb-2 max-w-full ">
@@ -118,7 +187,10 @@ export default function CreateReport() {
                     {GlobalStrings.TableColumn.Sl}
                   </th>
                   <th className={`${tbl_header}`} rowSpan={3}>
-                    {"Edit"}
+                    {GlobalStrings.TableColumn.Update}
+                  </th>
+                  <th className={`${tbl_header}`} rowSpan={3}>
+                    {GlobalStrings.TableColumn.Delete}
                   </th>
                 </tr>
                 <tr>
@@ -146,8 +218,8 @@ export default function CreateReport() {
                     <tr key={innerIndex} className={`${stripeColumn(innerIndex)}`}>
                       <td className={`${num_col}`}>{innerIndex + 1}</td>
                       <td className={`${str_col}`}>{value.noi_xuat ?? "-"}</td>
-                      <td className={`${str_col}`}>{value.bill}</td>
-                      <td className={`${str_col} w-20`}>{value.ngay_chung_tu}</td>
+                      <td className={`${str_col}`}>{value.so_bill ?? "-"}</td>
+                      <td className={`${str_col} w-20`}>{value.ngay_chung_tu ?? "-"}</td>
                       <td className={`${str_col}`}>{value.hop_dong}</td>
                       <td className={`${str_col} w-20`}>{value.ngay_thuc_te}</td>
                       <td className={`${num_col}`} width={50}>
@@ -168,15 +240,26 @@ export default function CreateReport() {
                       <td className={`${num_col} `} width={10}>
                         <div className="flex justify-center">
                           <IconButton
+                            ripple={false}
                             variant="text"
-                            className="p-0 m-0"
+                            className="p-0 m-0 rounded-none"
                             onClick={() => {
-                              console.log("Clicked at idx: ", innerIndex);
-
-                              setDataToEdit(data[innerIndex]);
-                              setOpenModal(true);
+                              handleUpdateClick(data[innerIndex], key);
                             }}>
-                            <img src={edit_svg}></img>{" "}
+                            <img src={edit_svg}></img>
+                          </IconButton>
+                        </div>
+                      </td>
+                      <td className={`${num_col} `} width={10}>
+                        <div className="flex justify-center">
+                          <IconButton
+                            ripple={false}
+                            variant="text"
+                            className="p-0 m-0 rounded-none"
+                            onClick={() => {
+                              handleRemoveClick(data[innerIndex], key);
+                            }}>
+                            <img src={delete_svg}></img>
                           </IconButton>
                         </div>
                       </td>
@@ -194,23 +277,26 @@ export default function CreateReport() {
   const handleCheck = async () => {
     setRestoredData([]);
     try {
-      const restored_data = await ImportData.RestoreData(
+      const restored_data = await WarehouseData.RestoreData(
         getRecordFilename(),
         GlobalStrings.SaveDirectory
       );
       if (restored_data.length) {
-        const tmp: ImportData.Data[] = [];
+        const tmp: WarehouseData.Record[] = [];
         restored_data.forEach((rec) => {
           tmp.push(rec);
           // dialog.message(ImportData.ToString(rec));
         });
         setRestoredData(tmp);
       } else {
-        Dialog.Warning("Không tìm thấy dữ liệu hoặc dữ liệu trống");
+        Popup.Warning("Không tìm thấy dữ liệu hoặc dữ liệu trống");
       }
     } catch (error) {
-      console.log(error);
-      Dialog.Error(`Không tìm thấy dữ liệu của mã hợp đồng "${contractName}"`);
+      const msg = contractName.length
+        ? `${GlobalStrings.ErrorMsg.Report.ReportFileNotFound} "${contractName}"`
+        : `${GlobalStrings.ErrorMsg.Report.ContractNotSelected}`;
+      console.log(msg);
+      Popup.Error(msg);
     }
   };
 
@@ -229,8 +315,8 @@ export default function CreateReport() {
             prod.push(
               new ShortenData(
                 record.hop_dong,
-                record.so_bill,
                 record.ngay_thuc_te,
+                record.so_bill,
                 record.ngay_chung_tu,
                 product.noi_xuat,
                 product.sl_nhap,
@@ -244,8 +330,8 @@ export default function CreateReport() {
             tmp.set(product.ma_hang, [
               new ShortenData(
                 record.hop_dong,
-                record.so_bill,
                 record.ngay_thuc_te,
+                record.so_bill,
                 record.ngay_chung_tu,
                 product.noi_xuat,
                 product.sl_nhap,
@@ -302,7 +388,7 @@ export default function CreateReport() {
   return (
     <>
       <NavbarDefault></NavbarDefault>
-      <div className="max-w-full">
+      <div className="max-w-full w-full">
         <Button onClick={handleCheck}>Kiểm tra</Button>
         {summaryTable()}
       </div>

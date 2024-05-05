@@ -10,11 +10,13 @@ export default function CsvToSelect(props: {
   option_class?: string;
   default?: string;
   label?: string;
+  has_header?: boolean;
+  disabled?: boolean;
 }) {
   const [data, setData] = useState<string[]>([]);
   const onLoad = async () => {
     let tmp = await ReadCsvToStrArr(props.file_name);
-    console.log(props.how_many_columns, props.target_column);
+    // console.log(props.how_many_columns, props.target_column);
 
     if (props.how_many_columns !== undefined && props.how_many_columns !== undefined) {
     } else if (props.target_column !== undefined) {
@@ -28,8 +30,12 @@ export default function CsvToSelect(props: {
       tmp.forEach((v) => {
         const arr = v.split(",");
         t.push(arr.slice(0, props.how_many_columns).join());
-        console.log("t: ", t);
+        // console.log("t: ", t);
       });
+      tmp = t;
+    }
+    if (props.has_header) {
+      const t = tmp.slice(1);
       tmp = t;
     }
     setData(tmp);
@@ -37,13 +43,14 @@ export default function CsvToSelect(props: {
 
   useEffect(() => {
     onLoad();
-    console.log(`Default value: ${props.default}`);
+    // console.log(`Default value: ${props.default}`);
 
     return () => {};
   }, [props.file_name, props.how_many_columns, props.target_column]);
 
   return (
     <select
+      disabled={props.disabled}
       className={props.select_class}
       onChange={(e: ChangeEvent<HTMLSelectElement>) => props.onChange(e.target.value)}
       value={props.default}>

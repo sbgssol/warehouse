@@ -1,15 +1,15 @@
 import { Button, Typography } from "@material-tailwind/react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { dialog } from "@tauri-apps/api";
-import { ImportData } from "../types/ImportWarehouseData";
-import ProductSelection from "./ProductSelection";
+import { WarehouseData } from "../types/ImportWarehouseData";
+import MultipleProdCodeSelector from "./ProductSelection";
 import GlobalStrings from "../types/Globals";
 import { NavbarDefault } from "./Navbar";
 import SummaryTable from "./SummaryTable";
 import { ReadCsvToStrArr } from "../types/ReadCsv";
 import SaveButton from "./single/SaveButton";
 import { useGlobalState } from "../types/GlobalContext";
-import { Dialog } from "../types/Dialog";
+import { Popup } from "../types/Dialog";
 
 export default function ImportWarehouse() {
   // States
@@ -32,13 +32,13 @@ export default function ImportWarehouse() {
   const fixed_input_outline = `focus:outline-green-300`;
   const fixed_button_bg = "bg-green-800";
 
-  const [currentSessionData, setCurrentSessionData] = useState<ImportData.Data>(
-    new ImportData.Data("", "", "", "")
+  const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>(
+    new WarehouseData.Record("", "", "", "")
   );
 
   // To load the CSV
   const [csvContent, setCsvContent] = useState<string[]>([]);
-  const [productCodes, setCodeList] = useState<string[]>([]);
+  // const [productCodes, setCodeList] = useState<string[]>([]);
   const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
     new Map()
   );
@@ -86,7 +86,7 @@ export default function ImportWarehouse() {
       }
 
       // Update the state with the final values
-      setCodeList(Array.from(updatedCodeList).sort());
+      // setCodeList(Array.from(updatedCodeList).sort());
       setProductMap(updatedProductMap);
     }
   }, [csvContent]); // Run this effect only when csvContent changes
@@ -110,9 +110,9 @@ export default function ImportWarehouse() {
     return info;
   };
   useEffect(() => {
-    console.log("selectedCodes changed");
+    // console.log("selectedCodes changed");
     // Update session data
-    const tmp = new ImportData.Data(hopDongStr, billStr, realDateStr, docDateStr);
+    const tmp = new WarehouseData.Record(hopDongStr, realDateStr, billStr, docDateStr);
     tmp.ClearProduct();
     selectedCodes.forEach((code) => {
       tmp.CreateProduct(
@@ -128,7 +128,7 @@ export default function ImportWarehouse() {
 
   useEffect(() => {
     if (currentSessionData) {
-      console.log("Session data updated: " + ImportData.ToString(currentSessionData));
+      console.log("Session data updated: " + WarehouseData.ToString(currentSessionData));
     }
 
     return () => {};
@@ -145,7 +145,7 @@ export default function ImportWarehouse() {
     return soBillValid ? `bg-white ${fixed_input_outline}` : `bg-red-100 focus:outline-red-500`;
   };
 
-  const handleNewClick = async () => {
+  const handleSaveClick = async () => {
     // Map amount to product
     if (inpAmountRef && currentSessionData && currentSessionData.danh_sach_san_pham.length) {
       const tmp = currentSessionData;
@@ -163,7 +163,8 @@ export default function ImportWarehouse() {
       // dialog.message("Final data: " + ImportData.ToString(tmp));
 
       tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
-      Dialog.Info("Xong", "Thông tin");
+      Popup.Info("Xong", "Thông tin");
+      setCurrentSessionData(new WarehouseData.Record("", ""));
       // window.location.reload();
     } else {
       dialog.message("Không thể lưu, danh sách mã hàng trống", {
@@ -248,13 +249,12 @@ export default function ImportWarehouse() {
       <>
         <div className={`w-full max-h-[400px] h-min mt-1`}>
           <div>
-            <ProductSelection
+            <MultipleProdCodeSelector
               open={open}
               closeHandler={setOpen}
-              codeList={productCodes}
               selectedCode={selectedCodes}
               productMap={productMap}
-              handleCodeChange={setSelectedCodes}></ProductSelection>
+              handleCodeChange={setSelectedCodes}></MultipleProdCodeSelector>
           </div>
           <Button
             fullWidth
@@ -280,7 +280,7 @@ export default function ImportWarehouse() {
         {updatingPart()}
         <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>
       </div>
-      <SaveButton className={`${fixed_button_bg}`} onClick={handleNewClick}></SaveButton>
+      <SaveButton className={`${fixed_button_bg}`} onClick={handleSaveClick}></SaveButton>
     </>
   );
 }
