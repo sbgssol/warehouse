@@ -13,6 +13,7 @@ import { AddStock, Modify, Remove } from "../types/RecordModifier";
 import { dialog } from "@tauri-apps/api";
 import import_stock from "../assets/import-stock.svg";
 import InputStock from "./single/InputStock";
+import { CreateExcel } from "../types/CreateExcel";
 
 export default function CreateReport() {
   const [restoredData, setRestoredData] = useState<WarehouseData.Record[]>([]);
@@ -31,6 +32,41 @@ export default function CreateReport() {
   const [openModalStock, setOpenModalStock] = useState(false);
   const [dataToEdit, setDataToEdit] = useState<ShortenData>(new ShortenData("", "", "", ""));
   const [maHang, setMaHang] = useState("");
+
+  type CongCuoiKi = {
+    nhap: number;
+    xuat_gc: number;
+    xuat_tp: number;
+    ton_tp: number;
+    ton_tt: number;
+  };
+  const [congCuoiKi, setCongCuoiKi] = useState<Map<string, CongCuoiKi>>(
+    new Map<string, CongCuoiKi>()
+  );
+
+  const CalculateSummary = (data: Map<string, ShortenData[]>) => {
+    const tmp = new Map<string, CongCuoiKi>();
+
+    data.forEach((records, code) => {
+      let cuoi_ki = {
+        nhap: 0,
+        xuat_gc: 0,
+        xuat_tp: 0,
+        ton_tp: 0,
+        ton_tt: 0
+      } as CongCuoiKi;
+      records.forEach((value) => {
+        cuoi_ki.nhap += Number(value.sl_nhap ?? 0);
+        cuoi_ki.xuat_gc += Number(value.sl_xuat_gc ?? 0);
+        cuoi_ki.xuat_tp += Number(value.sl_xuat_tp ?? 0);
+        cuoi_ki.ton_tp += Number(value.sl_ton_tp ?? 0);
+        cuoi_ki.ton_tt = Number(value.sl_ton_tt ?? 0);
+      });
+      tmp.set(code, cuoi_ki);
+    });
+
+    setCongCuoiKi(tmp);
+  };
 
   const { popup } = useGlobalState();
 
@@ -221,7 +257,6 @@ export default function CreateReport() {
               </thead>
               <tbody>
                 {data.map((value, innerIndex) => {
-                  const bold = innerIndex == data.length - 1 ? "font-bold" : "";
                   return (
                     <tr key={innerIndex} className={`${stripeColumn(innerIndex)}`}>
                       <td className={`${num_col}`}>{innerIndex + 1}</td>
@@ -239,10 +274,10 @@ export default function CreateReport() {
                       <td className={`${num_col}`} width={50}>
                         {value.sl_xuat_tp ?? "-"}
                       </td>
-                      <td className={`${num_col} ${bold}`} width={50}>
+                      <td className={`${num_col}`} width={50}>
                         {value.sl_ton_tp ?? "-"}
                       </td>
-                      <td className={`${num_col} ${bold}`} width={50}>
+                      <td className={`${num_col}`} width={50}>
                         {value.sl_ton_tt ?? "-"}
                       </td>
                       <td className={`${num_col} `} width={10}>
@@ -274,6 +309,18 @@ export default function CreateReport() {
                     </tr>
                   );
                 })}
+              </tbody>
+              <tbody>
+                <tr className="uppercase font-bold">
+                  <td colSpan={6} className={`text-right pr-2 ${num_col}`}>
+                    cộng cuối kì
+                  </td>
+                  <td className={`${num_col}`}>{congCuoiKi.get(key)?.nhap}</td>
+                  <td className={`${num_col}`}>{congCuoiKi.get(key)?.xuat_gc}</td>
+                  <td className={`${num_col}`}>{congCuoiKi.get(key)?.xuat_tp}</td>
+                  <td className={`${num_col}`}>{congCuoiKi.get(key)?.ton_tp}</td>
+                  <td className={`${num_col}`}>{congCuoiKi.get(key)?.ton_tt}</td>
+                </tr>
               </tbody>
             </table>
           );
@@ -389,6 +436,7 @@ export default function CreateReport() {
       });
     }
     const tmp = CalculateStock(sorted);
+    CalculateSummary(tmp);
     setProductSortedByDate(tmp);
 
     return () => {};
@@ -426,6 +474,12 @@ export default function CreateReport() {
         type="delete"></UpdateModal>
       <div className="max-w-full w-full">
         <Button onClick={handleCheck}>Kiểm tra</Button>
+        <Button
+          onClick={() => {
+            CreateExcel.BaoCaoQuyetToan(productSortedByDate, productMap);
+          }}>
+          Create Excel
+        </Button>
         {summaryTable()}
       </div>
     </>

@@ -31,7 +31,8 @@ const GlobalStrings = {
       ReportFileNotFound: `Không thể tìm thấy dữ liệu của mã hợp đồng`
     }
   },
-  InputStock: "_NhapTonDauKi_"
+  InputStock: "_NhapTonDauKi_",
+  NameBaoCaoQuyetToan: "BaoCaoQuyetToan.csv"
 };
 
 export default GlobalStrings;
