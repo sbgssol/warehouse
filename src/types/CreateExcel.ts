@@ -1,8 +1,5 @@
-import { writeTextFile } from "@tauri-apps/api/fs";
 import { ShortenData } from "./ShortenData";
-import GlobalStrings from "./Globals";
-import { utils, writeFile, writeFileAsync, writeFileXLSX } from "xlsx";
-import { Workbook } from "exceljs";
+import { utils, writeFileXLSX } from "xlsx";
 
 export namespace CreateExcel {
   function formatDate(date: Date): string {
