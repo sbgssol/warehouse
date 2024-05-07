@@ -476,7 +476,7 @@ export default function CreateReport() {
         <Button onClick={handleCheck}>Kiểm tra</Button>
         <Button
           onClick={() => {
-            CreateExcel.BaoCaoQuyetToan(productSortedByDate, productMap);
+            CreateExcel.BaoCaoQuyetToan(contractName, productSortedByDate, productMap);
           }}>
           Create Excel
         </Button>

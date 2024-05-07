@@ -1,6 +1,8 @@
 import { writeTextFile } from "@tauri-apps/api/fs";
 import { ShortenData } from "./ShortenData";
 import GlobalStrings from "./Globals";
+import { utils, writeFile, writeFileAsync, writeFileXLSX } from "xlsx";
+import { Workbook } from "exceljs";
 
 export namespace CreateExcel {
   function formatDate(date: Date): string {
@@ -32,17 +34,43 @@ export namespace CreateExcel {
   }
 
   export const BaoCaoQuyetToan = async (
+    hop_dong: string,
     records: Map<string, ShortenData[]>,
     product_map: Map<string, { name: string; unit: string }>
   ) => {
+    /* generate worksheet from state */
+
     const formattedDate = formatDate(new Date());
-    let text = "";
-    records.forEach((_data, code) => {
-      text += `${code},${product_map.get(code)?.name}`;
+    let arr: {
+      STT: number;
+      "Mã hàng": string;
+      "Tên hàng": string;
+      ĐVT: string;
+      "Tồn đầu kì": number;
+    }[] = [];
+    let stt = 0;
+
+    const TonDauKi = (data: ShortenData[]) => {
+      let num = 0;
+      data.forEach((value) => {
+        num += Number(value.sl_nhap ?? 0);
+      });
+      return num;
+    };
+
+    records.forEach((data, code) => {
+      arr.push({
+        STT: ++stt,
+        "Mã hàng": code,
+        "Tên hàng": product_map.get(code)?.name ?? "",
+        ĐVT: product_map.get(code)?.unit ?? "",
+        "Tồn đầu kì": TonDauKi(data)
+      });
+      console.log(arr);
     });
-    await writeTextFile(formattedDate + "-" + GlobalStrings.NameBaoCaoQuyetToan, text, {
-      dir: GlobalStrings.SaveDirectory,
-      append: false
-    });
+    const wb = utils.book_new();
+    const ws = utils.json_to_sheet(arr);
+    utils.book_append_sheet(wb, ws, "Data");
+    writeFileXLSX(wb, "BCQT_" + hop_dong + "_" + formattedDate + ".xlsx");
   };
 }
