@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import { ReadCsvToStrArr } from "../types/ReadCsv";
+import { FileOperation } from "../types/FileOperation";
 
 export default function CsvToSelect(props: {
   file_name: string;
@@ -15,7 +15,7 @@ export default function CsvToSelect(props: {
 }) {
   const [data, setData] = useState<string[]>([]);
   const onLoad = async () => {
-    let tmp = await ReadCsvToStrArr(props.file_name);
+    let tmp = await FileOperation.ReadResourceCsvToArr(props.file_name);
     // console.log(props.how_many_columns, props.target_column);
 
     if (props.how_many_columns !== undefined && props.how_many_columns !== undefined) {

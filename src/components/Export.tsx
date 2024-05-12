@@ -1,15 +1,15 @@
-import { Button, Typography } from "@material-tailwind/react";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { WarehouseData } from "../types/ImportWarehouseData";
-import MultipleProdCodeSelector from "./ProductSelection";
+import { Typography, Button, Radio } from "@material-tailwind/react";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
+import { FileOperation } from "../types/FileOperation";
+import { useGlobalState } from "../types/GlobalContext";
 import GlobalStrings from "../types/Globals";
+import { WarehouseData } from "../types/ImportWarehouseData";
 import { NavbarDefault } from "./Navbar";
+import MultipleProdCodeSelector from "./ProductSelection";
 import SummaryTable from "./SummaryTable";
 import SaveButton from "./single/SaveButton";
-import { useGlobalState } from "../types/GlobalContext";
-import { FileOperation } from "../types/FileOperation";
 
-export default function ProcessingRelease() {
+export default function Export() {
   // States
   const [hopDongStr, setHopDongStr] = useState("");
   const [rlsDateStr, setRlsDateStr] = useState("");
@@ -23,18 +23,36 @@ export default function ProcessingRelease() {
   const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>(
     new WarehouseData.Record("", "", "", "")
   );
-  const { getRecordFilename, popup } = useGlobalState();
+  const { getRecordFilename, popup, product } = useGlobalState();
+  const [exportGC, setExportTypeRadio] = useState(true);
+
   // References
   const contractRef = useRef<HTMLInputElement>(null);
   const rlsDateRef = useRef<HTMLInputElement>(null);
   const inpAmountRef = useRef<HTMLInputElement[]>([]);
   const rlsSrcRef = useRef<HTMLSelectElement>(null);
 
-  const fixed_text_color = `text-teal-700`;
-  const fixed_area_bg = "bg-teal-100";
-  const fixed_area_border = `border-teal-200`;
-  const fixed_input_outline = `focus:outline-teal-300`;
-  const fixed_button_bg = "bg-teal-800";
+  // const fixed_text_color = `text-teal-700`;
+  // const fixed_area_bg = "bg-teal-100";
+  // const fixed_area_border = `border-teal-200`;
+  // const fixed_input_outline = `focus:outline-teal-300`;
+  // const fixed_button_bg = "bg-teal-800";
+
+  const LabelColor = () => {
+    return exportGC ? "text-blue-600" : "text-green-600";
+  };
+  const RegularTextColor = () => {
+    return exportGC ? "text-blue-400" : "text-green-400";
+  };
+  const ButtonBackgroundColor = () => {
+    return exportGC ? "bg-blue-400" : "bg-green-400";
+  };
+  const BorderColor = () => {
+    return exportGC ? "border-blue-700" : "border-green-700";
+  };
+  const OutlineColor = () => {
+    return exportGC ? "focus:outline-blue-700" : "focus:outline-green-700";
+  };
 
   const fetchCsvFile = async () => {
     let data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.ProductCodeFileName);
@@ -98,6 +116,7 @@ export default function ProcessingRelease() {
 
   useEffect(() => {
     if (currentSessionData) {
+      product.fetch();
       console.log("Session data updated: " + WarehouseData.ToString(currentSessionData));
     }
 
@@ -106,9 +125,9 @@ export default function ProcessingRelease() {
 
   // Validation
   const [hopDongValid, setHopDongValid] = useState(false);
-  const colorInputHopDong = () => {
-    return hopDongValid ? `bg-white ${fixed_input_outline}` : `bg-red-100 focus:outline-red-500`;
-  };
+  // const colorInputHopDong = () => {
+  //   return hopDongValid ? `bg-white ${fixed_input_outline}` : `bg-red-100 focus:outline-red-500`;
+  // };
 
   const handleNewClick = async () => {
     // Map amount to product
@@ -125,7 +144,11 @@ export default function ProcessingRelease() {
           return;
         }
         tmp.danh_sach_san_pham[i].noi_xuat = rls_source;
-        tmp.danh_sach_san_pham[i].sl_xuat_gc = inpAmountRef.current[i].value as unknown as number;
+        if (exportGC) {
+          tmp.danh_sach_san_pham[i].sl_xuat_gc = inpAmountRef.current[i].value as unknown as number;
+        } else {
+          tmp.danh_sach_san_pham[i].sl_xuat_tp = inpAmountRef.current[i].value as unknown as number;
+        }
       }
 
       // dialog.message("Final data: " + ImportData.ToString(tmp));
@@ -144,7 +167,7 @@ export default function ProcessingRelease() {
     return (
       <select
         name="rlsSrc"
-        className={`w-1/2 bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
+        className={`w-1/2 bg-white rounded-md p-1.5 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
         ref={rlsSrcRef}>
         <option value="" disabled>
           Chọn nơi xuất hàng
@@ -158,17 +181,17 @@ export default function ProcessingRelease() {
     );
   };
 
-  const fixedPart = () => {
+  const fixedPart = (label: string) => {
     return (
       <>
         <div className="flex justify-center w-full">
-          <Typography variant="h3" className={`uppercase ${fixed_text_color}`}>
-            Xuất gia công
+          <Typography variant="h3" className={`uppercase ${LabelColor()}`}>
+            {label}
           </Typography>
         </div>
-        <div className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2 w-full`}>
+        <div className={`border-2 ${BorderColor()} rounded-lg p-2 w-full`}>
           <div className="flex items-center">
-            <div className={`w-1/2 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
+            <div className={`w-1/2 pr-2 ${RegularTextColor()}`}>Hợp đồng</div>
             <input
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 if (event.target.value.length < 1) {
@@ -178,17 +201,17 @@ export default function ProcessingRelease() {
                 }
                 setHopDongStr(event.target.value);
               }}
-              className={`w-1/2 rounded-md p-1 pl-2  ${colorInputHopDong()}`}
+              className={`w-1/2 rounded-md p-1 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
               ref={contractRef}></input>
           </div>
           <div className="flex pt-2 items-center">
-            <div className={`w-1/2  pr-2 ${fixed_text_color}`}>Nơi xuất</div>
+            <div className={`w-1/2  pr-2 ${RegularTextColor()}`}>Nơi xuất</div>
             {updateLocationData()}
           </div>
           <div className="flex pt-2 items-center">
-            <div className={`w-1/2  pr-2 ${fixed_text_color}`}>Ngày xuất</div>
+            <div className={`w-1/2  pr-2 ${RegularTextColor()}`}>Ngày xuất</div>
             <input
-              className={`w-1/2 bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
+              className={`w-1/2 bg-white rounded-md p-1 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
               type="date"
               ref={rlsDateRef}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
@@ -219,10 +242,8 @@ export default function ProcessingRelease() {
           <Button
             fullWidth
             onClick={handleSelectCodeClick}
-            variant="gradient"
-            color="teal"
             disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
-            className={`p-1`}>
+            className={`p-1 ${ButtonBackgroundColor()}`}>
             <Typography color="white" variant="h6">
               Chọn mã hàng
             </Typography>
@@ -232,15 +253,95 @@ export default function ProcessingRelease() {
     );
   };
 
+  useEffect(() => {
+    console.log(`Export type: ${exportGC ? "GC" : "TP"}`);
+
+    return () => {};
+  }, [exportGC]);
+
+  const BoldRadioLabel = (expected: boolean) => {
+    let str_twstyles = "";
+    if (expected == true) {
+      str_twstyles = "text-blue-500";
+    } else {
+      str_twstyles = "text-green-500";
+    }
+    if (exportGC != expected) {
+      str_twstyles = "";
+    }
+    return exportGC == expected ? str_twstyles + " font-bold" : str_twstyles + "";
+  };
+
+  const RadioTypes = () => {
+    return (
+      <div className="flex w-2/3 justify-evenly items-center shadow-md border rounded-lg mt-1 mb-1">
+        <div>
+          <Radio
+            name="color"
+            color="blue"
+            label={
+              <div className={`flex flex-col items-center w-max`}>
+                <Typography className={`font-myRegular text-xl capitalize ${BoldRadioLabel(true)}`}>
+                  xuất gia công
+                </Typography>
+                {/* <img src={svg_robot} className={`w-[48px]`} /> */}
+              </div>
+            }
+            checked={exportGC}
+            onChange={() => {
+              setExportTypeRadio(!exportGC);
+            }}
+          />
+        </div>
+        <div>
+          <Radio
+            name="color"
+            color="green"
+            label={
+              <div className={`flex flex-col items-center w-max`}>
+                <Typography
+                  className={`font-myRegular text-xl capitalize ${BoldRadioLabel(false)}`}>
+                  xuất thành phẩm
+                </Typography>
+                {/* <img src={svg_box} className={`w-[48px]`} /> */}
+              </div>
+            }
+            checked={!exportGC}
+            onChange={() => {
+              setExportTypeRadio(!exportGC);
+            }}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const ExportGC = () => {
+    return (
+      <>
+        {fixedPart("xuất gia công")} {updatingPart()}
+      </>
+    );
+  };
+  const ExportTP = () => {
+    return (
+      <>
+        {fixedPart("xuất thành phẩm")} {updatingPart()}
+      </>
+    );
+  };
+
   return (
     <>
       <NavbarDefault></NavbarDefault>
       <div className="w-full overflow-hidden flex flex-col items-center">
-        {fixedPart()}
-        {updatingPart()}
+        {RadioTypes()}
+        {exportGC ? ExportGC() : ExportTP()}
+        {/* {fixedPart()}
+        {updatingPart()} */}
         <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>
       </div>
-      <SaveButton className={`${fixed_button_bg}`} onClick={handleNewClick}></SaveButton>
+      <SaveButton className={`${ButtonBackgroundColor()}`} onClick={handleNewClick}></SaveButton>
     </>
   );
 }

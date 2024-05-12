@@ -19,8 +19,6 @@ export module WarehouseData {
   type ChiTietPhanLoai = PhanLoaiNhap | PhanLoaiXuat;
   class Products {
     ma_hang: string;
-    ten_hang: string;
-    don_vi_tinh: string;
     phan_loai?: RecordType;
     chi_tiet?: ChiTietPhanLoai;
     noi_xuat?: string;
@@ -30,10 +28,8 @@ export module WarehouseData {
     sl_ton_tp?: number;
     sl_ton_tt?: number;
 
-    constructor(ma_hang: string, ten_hang: string, don_vi_tinh: string) {
+    constructor(ma_hang: string) {
       this.ma_hang = ma_hang;
-      this.ten_hang = ten_hang;
-      this.don_vi_tinh = don_vi_tinh;
     }
   }
   export class Record {
@@ -51,33 +47,17 @@ export module WarehouseData {
       this.danh_sach_san_pham = [];
     }
 
-    CreateProduct(
-      ma_hang: string,
-      ten_hang: string,
-      dvt: string,
-      noi_xuat?: string,
-      so_luong?: number
-    ) {
+    CreateProduct(ma_hang: string, noi_xuat?: string, so_luong?: number) {
       this.danh_sach_san_pham.push({
         ma_hang: ma_hang,
-        ten_hang: ten_hang,
-        don_vi_tinh: dvt,
         noi_xuat: noi_xuat,
         sl_nhap: so_luong
       });
     }
 
-    ImportProduct(
-      ma_hang: string,
-      ten_hang: string,
-      don_vi_tinh: string,
-      noi_xuat: string,
-      so_luong: number
-    ) {
+    ImportProduct(ma_hang: string, noi_xuat: string, so_luong: number) {
       this.danh_sach_san_pham.push({
         ma_hang: ma_hang,
-        ten_hang: ten_hang,
-        don_vi_tinh: don_vi_tinh,
         noi_xuat: noi_xuat,
         sl_nhap: so_luong
       });
@@ -85,8 +65,6 @@ export module WarehouseData {
 
     public AddProduct(
       ma_hang: string,
-      ten_hang: string,
-      dvt: string,
       noi_xuat?: string,
       sl_nhap?: number,
       sl_xuat_gc?: number,
@@ -94,8 +72,6 @@ export module WarehouseData {
     ) {
       this.danh_sach_san_pham.push({
         ma_hang: ma_hang,
-        ten_hang: ten_hang,
-        don_vi_tinh: dvt,
         noi_xuat: noi_xuat,
         sl_nhap: sl_nhap,
         sl_xuat_gc: sl_xuat_gc,
@@ -151,7 +127,7 @@ export module WarehouseData {
   export const ToString = (data: Record) => {
     let str = `HỢP ĐỒNG: ${data.hop_dong}\nSỐ BILL: ${data.so_bill}\nNGÀY NHẬP THỰC TẾ: ${data.ngay_thuc_te}\nNGÀY CHỨNG TỪ: ${data.ngay_chung_tu}\n`;
     for (let i = 0; i < data.danh_sach_san_pham.length; ++i) {
-      str += `  Mã hàng: ${data.danh_sach_san_pham[i].ma_hang}, Tên hàng: ${data.danh_sach_san_pham[i].ten_hang}, Đơn vị tính: ${data.danh_sach_san_pham[i].don_vi_tinh}, Số lượng: ${data.danh_sach_san_pham[i].sl_nhap}.\n`;
+      str += `  Mã hàng: ${data.danh_sach_san_pham[i].ma_hang}, Số lượng: ${data.danh_sach_san_pham[i].sl_nhap}.\n`;
     }
     return str;
   };

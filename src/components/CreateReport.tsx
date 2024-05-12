@@ -33,6 +33,8 @@ export default function CreateReport() {
   const [dataToEdit, setDataToEdit] = useState<ShortenData>(new ShortenData("", "", "", ""));
   const [maHang, setMaHang] = useState("");
 
+  const { popup, product } = useGlobalState();
+
   type CongCuoiKi = {
     nhap: number;
     xuat_gc: number;
@@ -67,8 +69,6 @@ export default function CreateReport() {
 
     setCongCuoiKi(tmp);
   };
-
-  const { popup } = useGlobalState();
 
   const stripeColumn = (index: number) => {
     let str = "";
@@ -131,14 +131,7 @@ export default function CreateReport() {
   };
 
   const handleInputStockOk = async (amount: number) => {
-    await AddStock(
-      getRecordFilename(),
-      restoredData,
-      maHang,
-      getProductInfo(maHang, "name"),
-      getProductInfo(maHang, "unit"),
-      amount
-    );
+    await AddStock(getRecordFilename(), restoredData, maHang, amount);
 
     setTimeout(() => {
       handleCheck();
@@ -177,13 +170,13 @@ export default function CreateReport() {
                   <th colSpan={2} className="">
                     Tên hàng:
                   </th>
-                  <th colSpan={2}>{getProductInfo(key, "name")}</th>
+                  <th colSpan={2}>{product.getInfo(key, "name")}</th>
                 </tr>
                 <tr>
                   <th colSpan={2} className="">
                     Đơn vị tính:
                   </th>
-                  <th colSpan={2}>{getProductInfo(key, "unit")}</th>
+                  <th colSpan={2}>{product.getInfo(key, "unit")}</th>
                 </tr>
                 <tr>
                   {/* <th colSpan={2} className=""></th> */}
@@ -331,6 +324,7 @@ export default function CreateReport() {
 
   const handleCheck = async () => {
     setRestoredData([]);
+    product.fetch();
     try {
       const restored_data = await WarehouseData.RestoreData(
         getRecordFilename(),
@@ -363,8 +357,8 @@ export default function CreateReport() {
       restoredData.forEach((record) => {
         record.danh_sach_san_pham.forEach((product) => {
           map_tmp.set(product.ma_hang, {
-            name: product.ten_hang,
-            unit: product.don_vi_tinh
+            name: getProductInfo(product.ma_hang, "name"),
+            unit: getProductInfo(product.ma_hang, "unit")
           });
           const prod = tmp.get(product.ma_hang);
           if (prod) {

@@ -3,12 +3,12 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { dialog } from "@tauri-apps/api";
 import { WarehouseData } from "../types/ImportWarehouseData";
 import MultipleProdCodeSelector from "./ProductSelection";
-import { ReadCsvToStrArr } from "../types/ReadCsv";
 import GlobalStrings from "../types/Globals";
 import { NavbarDefault } from "./Navbar";
 import SummaryTable from "./SummaryTable";
 import SaveButton from "./single/SaveButton";
 import { useGlobalState } from "../types/GlobalContext";
+import { FileOperation } from "../types/FileOperation";
 
 export default function ProcessingRelease() {
   // States
@@ -41,9 +41,9 @@ export default function ProcessingRelease() {
   );
 
   const fetchCsvFile = async () => {
-    let data = await ReadCsvToStrArr(GlobalStrings.ProductCodeFileName);
+    let data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.ProductCodeFileName);
     setCsvContent(data);
-    data = await ReadCsvToStrArr(GlobalStrings.ReleaseLocationFileName);
+    data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.ReleaseLocationFileName);
     setCsvLocation(data);
   };
   // Load CSV file once this page is mounted
@@ -86,35 +86,13 @@ export default function ProcessingRelease() {
     }
   }, [csvContent]); // Run this effect only when csvContent changes
 
-  enum ProductInfo {
-    name,
-    unit
-  }
-  const getProductInfo = (type: ProductInfo, code: string) => {
-    let info = "";
-    const tmp = productMap.get(code);
-    if (tmp) {
-      if (type == ProductInfo.name) {
-        info = tmp.name;
-      } else if (type == ProductInfo.unit) {
-        info = tmp.unit;
-      } else {
-        info = "??";
-      }
-    }
-    return info;
-  };
   useEffect(() => {
     // console.log("selectedCodes changed");
     // Update session data
     const tmp = new WarehouseData.Record(hopDongStr, rlsDateStr);
     tmp.ClearProduct();
     selectedCodes.forEach((code) => {
-      tmp.CreateProduct(
-        code,
-        getProductInfo(ProductInfo.name, code),
-        getProductInfo(ProductInfo.unit, code)
-      );
+      tmp.CreateProduct(code);
     });
     setCurrentSessionData(tmp);
 

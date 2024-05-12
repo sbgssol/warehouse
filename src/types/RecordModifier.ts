@@ -205,22 +205,21 @@ export const AddStock = async (
   report_file_name: string,
   full_data: WarehouseData.Record[],
   prod_code: string,
-  prod_name: string,
-  prod_unit: string,
+  // prod_name: string,
+  // prod_unit: string,
   amount: number
 ) => {
   const now = new Date();
   const year = now.getFullYear();
   const firstDayOfYear = new Date(year, 0, 1); // January is 0
   const formattedDate = formatDate(firstDayOfYear);
-  full_data.push({
-    hop_dong: GlobalStrings.InputStock,
-    so_bill: GlobalStrings.InputStock,
-    ngay_thuc_te: formattedDate,
-    danh_sach_san_pham: [
-      { ma_hang: prod_code, ten_hang: prod_name, don_vi_tinh: prod_unit, sl_nhap: amount }
-    ]
-  } as WarehouseData.Record);
+  const record: WarehouseData.Record = new WarehouseData.Record(
+    GlobalStrings.InputStock,
+    formattedDate,
+    GlobalStrings.InputStock
+  );
+  record.danh_sach_san_pham.push({ ma_hang: prod_code, sl_nhap: amount });
+  full_data.push(record);
   WarehouseData.StoreDataPersistently(report_file_name, full_data);
 };
 

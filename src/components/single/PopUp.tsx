@@ -66,7 +66,7 @@ export default function Popup() {
     }
     return (
       <>
-        <Button color="blue" className={`${className}`} onClick={() => popup.setOpen(false)}>
+        <Button color="teal" className={`${className}`} onClick={() => popup.setOpen(false)}>
           OK
         </Button>
       </>

@@ -5,9 +5,12 @@ import MultipleProdCodeSelector from "./ProductSelection";
 import GlobalStrings from "../types/Globals";
 import { NavbarDefault } from "./Navbar";
 import SummaryTable from "./SummaryTable";
-import { ReadCsvToStrArr } from "../types/ReadCsv";
 import SaveButton from "./single/SaveButton";
 import { useGlobalState } from "../types/GlobalContext";
+import { FileOperation } from "../types/FileOperation";
+import { dialog } from "@tauri-apps/api";
+import { Common } from "../types/GlobalFnc";
+import { BaseDirectory } from "@tauri-apps/api/fs";
 
 export default function ImportWarehouse() {
   // States
@@ -16,8 +19,9 @@ export default function ImportWarehouse() {
   const [realDateStr, setRealDateStr] = useState("");
   const [docDateStr, setDocDateStr] = useState("");
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
+  const [importedAmount, setImportedAmount] = useState<number[]>([]);
   const { getRecordFilename } = useGlobalState();
-  const { popup } = useGlobalState();
+  const { popup, product } = useGlobalState();
 
   // References
   const contractRef = useRef<HTMLInputElement>(null); // To focus when the program starts
@@ -37,13 +41,9 @@ export default function ImportWarehouse() {
 
   // To load the CSV
   const [csvContent, setCsvContent] = useState<string[]>([]);
-  // const [productCodes, setCodeList] = useState<string[]>([]);
-  const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
-    new Map()
-  );
 
   const fetchCsvFile = async () => {
-    const data = await ReadCsvToStrArr(GlobalStrings.ProductCodeFileName);
+    const data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.ProductCodeFileName);
     setCsvContent(data);
   };
   // Load CSV file once this page is mounted
@@ -71,7 +71,7 @@ export default function ImportWarehouse() {
   useEffect(() => {
     if (csvContent) {
       const updatedCodeList = new Set<string>();
-      const updatedProductMap = new Map(productMap);
+      const updatedProductMap = new Map(product.map);
 
       for (let i = 1; i < csvContent.length; ++i) {
         if (csvContent[i].length < 3) continue;
@@ -86,39 +86,17 @@ export default function ImportWarehouse() {
 
       // Update the state with the final values
       // setCodeList(Array.from(updatedCodeList).sort());
-      setProductMap(updatedProductMap);
+      product.setMap(updatedProductMap);
     }
   }, [csvContent]); // Run this effect only when csvContent changes
 
-  enum ProductInfo {
-    name,
-    unit
-  }
-  const getProductInfo = (type: ProductInfo, code: string) => {
-    let info = "";
-    const tmp = productMap.get(code);
-    if (tmp) {
-      if (type == ProductInfo.name) {
-        info = tmp.name;
-      } else if (type == ProductInfo.unit) {
-        info = tmp.unit;
-      } else {
-        info = "??";
-      }
-    }
-    return info;
-  };
   useEffect(() => {
     // console.log("selectedCodes changed");
     // Update session data
     const tmp = new WarehouseData.Record(hopDongStr, realDateStr, billStr, docDateStr);
     tmp.ClearProduct();
     selectedCodes.forEach((code) => {
-      tmp.CreateProduct(
-        code,
-        getProductInfo(ProductInfo.name, code),
-        getProductInfo(ProductInfo.unit, code)
-      );
+      tmp.CreateProduct(code);
     });
     setCurrentSessionData(tmp);
 
@@ -144,7 +122,7 @@ export default function ImportWarehouse() {
     return soBillValid ? `bg-white ${fixed_input_outline}` : `bg-red-100 focus:outline-red-500`;
   };
 
-  const handleSaveClick = async () => {
+  const handleSaveClick = () => {
     // Map amount to product
     if (inpAmountRef && currentSessionData && currentSessionData.danh_sach_san_pham.length) {
       const tmp = currentSessionData;
@@ -153,7 +131,7 @@ export default function ImportWarehouse() {
           popup.show("Không thể lưu, kiểm tra lại đã đầy đủ số lượng", "error");
           return;
         }
-        tmp.danh_sach_san_pham[i].sl_nhap = inpAmountRef.current[i].value as unknown as number;
+        tmp.danh_sach_san_pham[i].sl_nhap = Number(inpAmountRef.current[i].value);
       }
 
       // dialog.message("Final data: " + ImportData.ToString(tmp));
@@ -238,6 +216,39 @@ export default function ImportWarehouse() {
     // Open modal
     setOpen(true);
   };
+
+  const handleSelectFromCsv = async () => {
+    const selected = await dialog.open({
+      defaultPath: await Common.BaseDiToStr(BaseDirectory.Resource),
+      filters: [{ name: "CSV", extensions: ["csv"] }],
+      multiple: false
+    });
+    console.log(`Selected file: ${selected}`);
+    const data = await FileOperation.ReadCsvToArr(selected as string);
+    console.log(
+      `read data: ${data}\nValid -> ${data.every((value) => {
+        const s = value.split(",");
+        return s.every((v) => v.trim().length);
+      })}`
+    );
+    if (
+      data.every((value) => {
+        const s = value.split(",");
+        console.log(`size: ${s.length}, value: ${s}`);
+
+        return s.every((v) => v.trim().length);
+      })
+    ) {
+      let tmp: string[] = [];
+      let amt: number[] = [];
+      data.forEach((v) => {
+        tmp.push(v.split(",")[0]);
+        amt.push(Number(v.split(",")[1]));
+      });
+      setSelectedCodes(tmp);
+      setImportedAmount(amt);
+    }
+  };
   const updatingPart = () => {
     return (
       <>
@@ -247,20 +258,33 @@ export default function ImportWarehouse() {
               open={open}
               closeHandler={setOpen}
               selectedCode={selectedCodes}
-              productMap={productMap}
+              productMap={product.map}
               handleCodeChange={setSelectedCodes}></MultipleProdCodeSelector>
           </div>
-          <Button
-            fullWidth
-            onClick={handleSelectCodeClick}
-            variant="gradient"
-            color="green"
-            disabled={!hopDongValid || !soBillValid}
-            className={`p-1`}>
-            <Typography color="white" variant="h6">
-              Chọn mã hàng
-            </Typography>
-          </Button>
+          <div className={`flex space-x-2`}>
+            <Button
+              fullWidth
+              onClick={handleSelectCodeClick}
+              variant="gradient"
+              color="green"
+              disabled={!hopDongValid || !soBillValid}
+              className={`p-1`}>
+              <Typography color="white" variant="h6">
+                Chọn mã hàng
+              </Typography>
+            </Button>
+            <Button
+              fullWidth
+              onClick={handleSelectFromCsv}
+              variant="gradient"
+              color="green"
+              disabled={!hopDongValid || !soBillValid}
+              className={`p-1`}>
+              <Typography color="white" variant="h6">
+                nhập từ file CSV
+              </Typography>
+            </Button>
+          </div>
         </div>
       </>
     );
@@ -272,7 +296,10 @@ export default function ImportWarehouse() {
       <div className="w-full h-max overflow-hidden flex flex-col items-center">
         {fixedPart()}
         {updatingPart()}
-        <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>
+        <SummaryTable
+          data={currentSessionData}
+          amount={importedAmount}
+          input_ref={inpAmountRef}></SummaryTable>
       </div>
       <SaveButton className={`${fixed_button_bg}`} onClick={handleSaveClick}></SaveButton>
     </>

@@ -1,8 +1,12 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import GlobalStrings from "./Globals";
 import { PopupType } from "../components/single/PopUp";
+import { FileOperation } from "./FileOperation";
 
 // Define a context for the global state
+export type ModifyType = "default" | "edit" | "delete";
+export type ProductCat = "name" | "unit";
+
 interface GlobalStateContextType {
   contractName: string;
   setContractName: (name: string) => void;
@@ -20,6 +24,21 @@ interface GlobalStateContextType {
     setType: (type: PopupType) => void;
   };
 
+  modify: {
+    show: () => void;
+    type: ModifyType;
+    setType: (type: ModifyType) => void;
+    open: boolean;
+    setOpen: (open: boolean) => void;
+  };
+
+  product: {
+    fetch: () => void;
+    map: Map<string, { name: string; unit: string }>;
+    setMap: (map: Map<string, { name: string; unit: string }>) => void;
+    getInfo: (code: string, cat: ProductCat) => string;
+  };
+
   // showPopup: (msg: string | ReactNode | ReactNode[], type: PopupType) => void;
 }
 
@@ -32,6 +51,12 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [popupType, setPopupType] = useState<PopupType | undefined>();
   const [popupOpen, setPopupOpen] = useState(false);
   const [ans, setAns] = useState(false);
+  // Modify popup
+  const [modOpen, setModOpen] = useState(false);
+  const [type, setType] = useState<ModifyType>("edit");
+
+  // Product
+  const [map, setMap] = useState(new Map<string, { name: string; unit: string }>());
 
   const getRecordFilename = () => {
     return contractName + "_" + GlobalStrings.RecordFileName;
@@ -41,6 +66,34 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
     setPopupOpen(true);
     setPopupMessage(msg);
     setPopupType(type);
+  };
+
+  const GetProductInfo = (code: string, cat: ProductCat) => {
+    let res = "UNDEFINED";
+    const tmp = map.get(code);
+    if (tmp !== undefined) {
+      if (cat == "name") {
+        res = tmp.name;
+      } else if (cat == "unit") {
+        res = tmp.unit;
+      }
+    }
+    return res;
+  };
+
+  const FetchProductMap = async () => {
+    console.log(`[GlobalContext] -> Fetching product map`);
+
+    const data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.ProductCodeFileName);
+    let tmp = new Map<string, { name: string; unit: string }>();
+    data.forEach((line) => {
+      const s = line.split(",");
+      if (s.length == 3) {
+        tmp.set(s[0], { name: s[1], unit: s[2] });
+      }
+    });
+    console.log(`[GlobalContext] -> Fetching product map -> Done:\n${JSON.stringify(tmp)}`);
+    setMap(tmp);
   };
 
   return (
@@ -59,6 +112,19 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
           setOpen: setPopupOpen,
           setMessage: setPopupMessage,
           setType: setPopupType
+        },
+        modify: {
+          show: () => {},
+          type: type,
+          setType: setType,
+          open: modOpen,
+          setOpen: setModOpen
+        },
+        product: {
+          map: map,
+          setMap: setMap,
+          getInfo: GetProductInfo,
+          fetch: FetchProductMap
         }
       }}>
       {children}
