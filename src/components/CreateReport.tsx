@@ -78,22 +78,6 @@ export default function CreateReport() {
     return str;
   };
 
-  type Type = "name" | "unit";
-  const getProductInfo = (code: string, type: Type) => {
-    let str = "?";
-    const tmp = productMap.get(code);
-    if (tmp) {
-      if (type == "name") {
-        str = tmp.name;
-      } else if (type == "unit") {
-        str = tmp.unit;
-      } else {
-        str = "?";
-      }
-    }
-    return str;
-  };
-
   const handleRecordUpdate = (new_data?: UpdateRecord.Details) => {
     if (new_data === undefined) return;
     Modify(restoredData, dataToEdit, new_data, maHang, getRecordFilename());
@@ -355,12 +339,12 @@ export default function CreateReport() {
     const map_tmp = new Map<string, { name: string; unit: string }>();
     if (restoredData.length > 0) {
       restoredData.forEach((record) => {
-        record.danh_sach_san_pham.forEach((product) => {
-          map_tmp.set(product.ma_hang, {
-            name: getProductInfo(product.ma_hang, "name"),
-            unit: getProductInfo(product.ma_hang, "unit")
+        record.danh_sach_san_pham.forEach((innerProd) => {
+          map_tmp.set(innerProd.ma_hang, {
+            name: product.getInfo(innerProd.ma_hang, "name"),
+            unit: product.getInfo(innerProd.ma_hang, "unit")
           });
-          const prod = tmp.get(product.ma_hang);
+          const prod = tmp.get(innerProd.ma_hang);
           if (prod) {
             prod.push(
               new ShortenData(
@@ -368,27 +352,27 @@ export default function CreateReport() {
                 record.ngay_thuc_te,
                 record.so_bill,
                 record.ngay_chung_tu,
-                product.noi_xuat,
-                product.sl_nhap,
-                product.sl_xuat_gc,
-                product.sl_xuat_tp,
-                product.sl_ton_tp,
-                product.sl_ton_tt
+                innerProd.noi_xuat,
+                innerProd.sl_nhap,
+                innerProd.sl_xuat_gc,
+                innerProd.sl_xuat_tp,
+                innerProd.sl_ton_tp,
+                innerProd.sl_ton_tt
               )
             );
           } else {
-            tmp.set(product.ma_hang, [
+            tmp.set(innerProd.ma_hang, [
               new ShortenData(
                 record.hop_dong,
                 record.ngay_thuc_te,
                 record.so_bill,
                 record.ngay_chung_tu,
-                product.noi_xuat,
-                product.sl_nhap,
-                product.sl_xuat_gc,
-                product.sl_xuat_tp,
-                product.sl_ton_tp,
-                product.sl_ton_tt
+                innerProd.noi_xuat,
+                innerProd.sl_nhap,
+                innerProd.sl_xuat_gc,
+                innerProd.sl_xuat_tp,
+                innerProd.sl_ton_tp,
+                innerProd.sl_ton_tt
               )
             ]);
           }
@@ -444,7 +428,7 @@ export default function CreateReport() {
         closeHandler={() => setOpenModalStock(false)}
         okHandler={handleInputStockOk}
         product_code={maHang}
-        product_name={getProductInfo(maHang, "name")}></InputStock>
+        product_name={product.getInfo(maHang, "name")}></InputStock>
       <UpdateModal
         open={openModalUpdate}
         handler={() => {

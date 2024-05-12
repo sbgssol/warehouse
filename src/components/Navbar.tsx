@@ -36,7 +36,7 @@ export function NavbarDefault() {
 
   const button_outline = `teal`;
   return (
-    <Navbar className="max-w-full mb-1 shadow-none sticky top-0 border-b-2 border-b-gray-600 p-1 rounded-none z-50 ">
+    <Navbar className="max-w-full mb-1 shadow-none sticky top-0 border-b-2 border-b-gray-600 p-1 rounded-none z-50">
       <div className="flex items-center justify-between text-blue-gray-900">
         <div className="flex justify-center items-center space-x-2">
           <Button variant="gradient" color="green" className={`p-1`} onClick={handleHomeClick}>

@@ -15,13 +15,13 @@ interface ModifyProps {
 export default function ModifyPopup(props?: ModifyProps) {
   const { modify } = useGlobalState();
 
-  const btn_width_twstyles = "max-w-[150px] w-[110px]";
+  const btn_width_twstyles = "max-w-[150px] w-[100px]";
   const CancelButton = () => {
     return (
       <Button
         variant="text"
-        color="amber"
-        className={`${btn_width_twstyles} flex items-center justify-evenly py-1 px-1 border-2 border-amber-400`}
+        color="deep-orange"
+        className={`${btn_width_twstyles} flex items-center justify-evenly py-1 px-1 border-2 border-deep-orange-400`}
         onClick={() => {
           modify.setOpen(false);
         }}>

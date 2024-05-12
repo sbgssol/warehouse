@@ -8,12 +8,14 @@ import { NavbarDefault } from "./Navbar";
 import MultipleProdCodeSelector from "./ProductSelection";
 import SummaryTable from "./SummaryTable";
 import SaveButton from "./single/SaveButton";
+import TypeProductCodeModal from "./single/TypeProductCodeModal";
 
 export default function Export() {
   // States
   const [hopDongStr, setHopDongStr] = useState("");
   const [rlsDateStr, setRlsDateStr] = useState("");
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
+  const [importedAmount, setImportedAmount] = useState<number[]>([]);
   const [csvContent, setCsvContent] = useState<string[]>([]);
   const [csvLocation, setCsvLocation] = useState<string[]>([]);
   // const [productCodes, setCodeList] = useState<string[]>([]);
@@ -23,7 +25,7 @@ export default function Export() {
   const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>(
     new WarehouseData.Record("", "", "", "")
   );
-  const { getRecordFilename, popup, product } = useGlobalState();
+  const { getRecordFilename, popup, product, input_code } = useGlobalState();
   const [exportGC, setExportTypeRadio] = useState(true);
 
   // References
@@ -52,6 +54,11 @@ export default function Export() {
   };
   const OutlineColor = () => {
     return exportGC ? "focus:outline-blue-700" : "focus:outline-green-700";
+  };
+  const SaveButtonStyle = () => {
+    const gc_twstyles = "text-blue-600 border-blue-600 hover:bg-blue-50";
+    const tp_twstyles = "text-green-600 border-green-600 hover:bg-green-50";
+    return exportGC ? gc_twstyles : tp_twstyles;
   };
 
   const fetchCsvFile = async () => {
@@ -104,6 +111,7 @@ export default function Export() {
   useEffect(() => {
     // console.log("selectedCodes changed");
     // Update session data
+    inpAmountRef.current = [];
     const tmp = new WarehouseData.Record(hopDongStr, rlsDateStr);
     tmp.ClearProduct();
     selectedCodes.forEach((code) => {
@@ -133,16 +141,31 @@ export default function Export() {
     // Map amount to product
     if (inpAmountRef && currentSessionData && currentSessionData.danh_sach_san_pham.length) {
       const tmp = currentSessionData;
+      if (
+        inpAmountRef.current.some((value) => {
+          console.log(`check value: ${value.value} -> ${Number(value.value)}`);
+
+          return Number(value.value) <= 0;
+        })
+      ) {
+        popup.show("Không thể lưu, kiểm tra lại số lượng", "error");
+        return;
+      }
+
+      if (tmp.danh_sach_san_pham.length != inpAmountRef.current.length) {
+        console.log(
+          `tmp.danh_sach_san_pham.length = ${tmp.danh_sach_san_pham.length}, inpAmountRef.current.length = ${inpAmountRef.current.length}`
+        );
+
+        popup.show("Có lỗi xảy ra, hãy thử lại", "error");
+        return;
+      }
+
       let rls_source;
       if (rlsSrcRef) {
         rls_source = rlsSrcRef.current?.value;
       }
       for (let i = 0; i < inpAmountRef.current.length; ++i) {
-        if (inpAmountRef.current[i].value == "") {
-          // Popup.Error("Không thể lưu, kiểm tra lại đã đầy đủ số lượng");
-          popup.show("Không thể lưu, kiểm tra lại đã đầy đủ số lượng", "error");
-          return;
-        }
         tmp.danh_sach_san_pham[i].noi_xuat = rls_source;
         if (exportGC) {
           tmp.danh_sach_san_pham[i].sl_xuat_gc = inpAmountRef.current[i].value as unknown as number;
@@ -227,6 +250,26 @@ export default function Export() {
     // Open modal
     setOpen(true);
   };
+  const handleImportFromCsv = async () => {
+    const data = await FileOperation.OpenAndReadCsvFile();
+    if (
+      data.every((value) => {
+        const s = value.split(",");
+        console.log(`size: ${s.length}, value: ${s}`);
+
+        return s.every((v) => v.trim().length);
+      })
+    ) {
+      let tmp: string[] = [];
+      let amt: number[] = [];
+      data.forEach((v) => {
+        tmp.push(v.split(",")[0]);
+        amt.push(Number(v.split(",")[1]));
+      });
+      setSelectedCodes(tmp);
+      setImportedAmount(amt);
+    }
+  };
   const updatingPart = () => {
     return (
       <>
@@ -239,15 +282,37 @@ export default function Export() {
               productMap={productMap}
               handleCodeChange={setSelectedCodes}></MultipleProdCodeSelector>
           </div>
-          <Button
-            fullWidth
-            onClick={handleSelectCodeClick}
-            disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
-            className={`p-1 ${ButtonBackgroundColor()}`}>
-            <Typography color="white" variant="h6">
-              Chọn mã hàng
-            </Typography>
-          </Button>
+          <div className={`flex space-x-2`}>
+            <Button
+              fullWidth
+              onClick={handleSelectCodeClick}
+              disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
+              className={`p-1 ${ButtonBackgroundColor()}`}>
+              <Typography color="white" variant="h6">
+                Chọn mã hàng
+              </Typography>
+            </Button>
+            <Button
+              fullWidth
+              onClick={() => {
+                input_code.show();
+              }}
+              disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
+              className={`p-1 ${ButtonBackgroundColor()}`}>
+              <Typography color="white" variant="h6">
+                Tự nhập mã hàng
+              </Typography>
+            </Button>
+            <Button
+              fullWidth
+              onClick={handleImportFromCsv}
+              disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
+              className={`p-1 ${ButtonBackgroundColor()}`}>
+              <Typography color="white" variant="h6">
+                nhập từ file csv
+              </Typography>
+            </Button>
+          </div>
         </div>
       </>
     );
@@ -331,17 +396,31 @@ export default function Export() {
     );
   };
 
+  const handleTypeProductCode = (codes: string[], amounts?: number[]) => {
+    input_code.setOpen(false);
+    if (amounts !== undefined && codes.length < amounts.length) {
+      popup.show("Kiếm tra lại mã hàng và số lượng", "error");
+      return;
+    }
+    setSelectedCodes(codes);
+    if (amounts !== undefined) {
+      setImportedAmount(amounts);
+    }
+  };
+
   return (
     <>
       <NavbarDefault></NavbarDefault>
+      <TypeProductCodeModal saveHandler={handleTypeProductCode}></TypeProductCodeModal>
       <div className="w-full overflow-hidden flex flex-col items-center">
         {RadioTypes()}
         {exportGC ? ExportGC() : ExportTP()}
-        {/* {fixedPart()}
-        {updatingPart()} */}
-        <SummaryTable data={currentSessionData} input_ref={inpAmountRef}></SummaryTable>
+        <SaveButton className={`${SaveButtonStyle()}`} onClick={handleNewClick}></SaveButton>
+        <SummaryTable
+          data={currentSessionData}
+          amount={importedAmount}
+          input_ref={inpAmountRef}></SummaryTable>
       </div>
-      <SaveButton className={`${ButtonBackgroundColor()}`} onClick={handleNewClick}></SaveButton>
     </>
   );
 }

@@ -39,6 +39,12 @@ interface GlobalStateContextType {
     getInfo: (code: string, cat: ProductCat) => string;
   };
 
+  input_code: {
+    open: boolean;
+    setOpen: (open: boolean) => void;
+    show: () => void;
+  };
+
   // showPopup: (msg: string | ReactNode | ReactNode[], type: PopupType) => void;
 }
 
@@ -58,6 +64,12 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   // Product
   const [map, setMap] = useState(new Map<string, { name: string; unit: string }>());
 
+  // Input code
+  const [inputOpen, setInputOpen] = useState(false);
+  const ShowInputCode = () => {
+    setInputOpen(true);
+  };
+
   const getRecordFilename = () => {
     return contractName + "_" + GlobalStrings.RecordFileName;
   };
@@ -69,7 +81,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   };
 
   const GetProductInfo = (code: string, cat: ProductCat) => {
-    let res = "UNDEFINED";
+    let res = "LỖI";
     const tmp = map.get(code);
     if (tmp !== undefined) {
       if (cat == "name") {
@@ -125,6 +137,11 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
           setMap: setMap,
           getInfo: GetProductInfo,
           fetch: FetchProductMap
+        },
+        input_code: {
+          open: inputOpen,
+          setOpen: setInputOpen,
+          show: ShowInputCode
         }
       }}>
       {children}

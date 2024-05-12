@@ -1,5 +1,7 @@
+import { dialog } from "@tauri-apps/api";
 import { BaseDirectory, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import { resolveResource } from "@tauri-apps/api/path";
+import { Common } from "./GlobalFnc";
 
 export namespace FileOperation {
   export const WriteCsv = async (
@@ -64,5 +66,22 @@ export namespace FileOperation {
     }
 
     return res;
+  };
+
+  export const OpenAndReadCsvFile = async () => {
+    const selected = await dialog.open({
+      defaultPath: await Common.BaseDiToStr(BaseDirectory.Resource),
+      filters: [{ name: "CSV", extensions: ["csv"] }],
+      multiple: false
+    });
+    console.log(`Selected file: ${selected}`);
+    const data = await FileOperation.ReadCsvToArr(selected as string);
+    console.log(
+      `read data: ${data}\nValid -> ${data.every((value) => {
+        const s = value.split(",");
+        return s.every((v) => v.trim().length);
+      })}`
+    );
+    return data;
   };
 }

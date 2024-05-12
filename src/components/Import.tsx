@@ -8,11 +8,9 @@ import SummaryTable from "./SummaryTable";
 import SaveButton from "./single/SaveButton";
 import { useGlobalState } from "../types/GlobalContext";
 import { FileOperation } from "../types/FileOperation";
-import { dialog } from "@tauri-apps/api";
-import { Common } from "../types/GlobalFnc";
-import { BaseDirectory } from "@tauri-apps/api/fs";
+import TypeProductCodeModal from "./single/TypeProductCodeModal";
 
-export default function ImportWarehouse() {
+export default function Import() {
   // States
   const [hopDongStr, setHopDongStr] = useState("");
   const [billStr, setBillStr] = useState("");
@@ -21,7 +19,7 @@ export default function ImportWarehouse() {
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
   const [importedAmount, setImportedAmount] = useState<number[]>([]);
   const { getRecordFilename } = useGlobalState();
-  const { popup, product } = useGlobalState();
+  const { popup, product, input_code } = useGlobalState();
 
   // References
   const contractRef = useRef<HTMLInputElement>(null); // To focus when the program starts
@@ -29,14 +27,13 @@ export default function ImportWarehouse() {
   const docDateRef = useRef<HTMLInputElement>(null); // To initialize to current date
   const inpAmountRef = useRef<HTMLInputElement[]>([]);
 
-  const fixed_text_color = `text-green-700`;
-  const fixed_area_bg = "bg-green-100";
-  const fixed_area_border = `border-green-200`;
-  const fixed_input_outline = `focus:outline-green-300`;
-  const fixed_button_bg = "bg-green-800";
+  const fixed_text_color = `text-amber-700`;
+  const fixed_area_bg = "bg-amber-100";
+  const fixed_area_border = `border-amber-200`;
+  const fixed_input_outline = `focus:outline-amber-300`;
 
   const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>(
-    new WarehouseData.Record("", "", "", "")
+    new WarehouseData.Record("", "")
   );
 
   // To load the CSV
@@ -91,8 +88,7 @@ export default function ImportWarehouse() {
   }, [csvContent]); // Run this effect only when csvContent changes
 
   useEffect(() => {
-    // console.log("selectedCodes changed");
-    // Update session data
+    inpAmountRef.current = [];
     const tmp = new WarehouseData.Record(hopDongStr, realDateStr, billStr, docDateStr);
     tmp.ClearProduct();
     selectedCodes.forEach((code) => {
@@ -126,11 +122,26 @@ export default function ImportWarehouse() {
     // Map amount to product
     if (inpAmountRef && currentSessionData && currentSessionData.danh_sach_san_pham.length) {
       const tmp = currentSessionData;
+
+      if (
+        inpAmountRef.current.some((value) => {
+          return Number(value.value) <= 0;
+        })
+      ) {
+        popup.show("Không thể lưu, kiểm tra lại số lượng", "error");
+        return;
+      }
+
+      if (tmp.danh_sach_san_pham.length != inpAmountRef.current.length) {
+        console.log(
+          `tmp.danh_sach_san_pham.length = ${tmp.danh_sach_san_pham.length}, inpAmountRef.current.length = ${inpAmountRef.current.length}`
+        );
+
+        popup.show("Có lỗi xảy ra, hãy thử lại", "error");
+        return;
+      }
+
       for (let i = 0; i < inpAmountRef.current.length; ++i) {
-        if (inpAmountRef.current[i].value == "") {
-          popup.show("Không thể lưu, kiểm tra lại đã đầy đủ số lượng", "error");
-          return;
-        }
         tmp.danh_sach_san_pham[i].sl_nhap = Number(inpAmountRef.current[i].value);
       }
 
@@ -142,12 +153,8 @@ export default function ImportWarehouse() {
       setCurrentSessionData(new WarehouseData.Record("", ""));
       // window.location.reload();
     } else {
-      popup.show("Không thể lưu, danh sách mã hàng trống", "error");
+      popup.show("Không thể lưu, danh sách trống", "error");
     }
-    // let restored = await ImportData.RestoreData(file_name, dir);
-    // restored.forEach((rec) => {
-    //   dialog.message("Restored: " + ImportData.ToString(rec));
-    // });
   };
   const fixedPart = () => {
     return (
@@ -218,19 +225,7 @@ export default function ImportWarehouse() {
   };
 
   const handleSelectFromCsv = async () => {
-    const selected = await dialog.open({
-      defaultPath: await Common.BaseDiToStr(BaseDirectory.Resource),
-      filters: [{ name: "CSV", extensions: ["csv"] }],
-      multiple: false
-    });
-    console.log(`Selected file: ${selected}`);
-    const data = await FileOperation.ReadCsvToArr(selected as string);
-    console.log(
-      `read data: ${data}\nValid -> ${data.every((value) => {
-        const s = value.split(",");
-        return s.every((v) => v.trim().length);
-      })}`
-    );
+    const data = await FileOperation.OpenAndReadCsvFile();
     if (
       data.every((value) => {
         const s = value.split(",");
@@ -266,7 +261,7 @@ export default function ImportWarehouse() {
               fullWidth
               onClick={handleSelectCodeClick}
               variant="gradient"
-              color="green"
+              color="amber"
               disabled={!hopDongValid || !soBillValid}
               className={`p-1`}>
               <Typography color="white" variant="h6">
@@ -275,9 +270,22 @@ export default function ImportWarehouse() {
             </Button>
             <Button
               fullWidth
+              onClick={() => {
+                input_code.show();
+              }}
+              variant="gradient"
+              color="amber"
+              disabled={!hopDongValid || !soBillValid}
+              className={`p-1`}>
+              <Typography color="white" variant="h6">
+                Tự nhập mã hàng
+              </Typography>
+            </Button>
+            <Button
+              fullWidth
               onClick={handleSelectFromCsv}
               variant="gradient"
-              color="green"
+              color="amber"
               disabled={!hopDongValid || !soBillValid}
               className={`p-1`}>
               <Typography color="white" variant="h6">
@@ -290,18 +298,33 @@ export default function ImportWarehouse() {
     );
   };
 
+  const handleTypeProductCode = (codes: string[], amounts?: number[]) => {
+    input_code.setOpen(false);
+    if (amounts !== undefined && codes.length < amounts.length) {
+      popup.show("Kiếm tra lại mã hàng và số lượng", "error");
+      return;
+    }
+    setSelectedCodes(codes);
+    if (amounts !== undefined) {
+      setImportedAmount(amounts);
+    }
+  };
+
   return (
     <>
       <NavbarDefault></NavbarDefault>
+      <TypeProductCodeModal saveHandler={handleTypeProductCode}></TypeProductCodeModal>
       <div className="w-full h-max overflow-hidden flex flex-col items-center">
         {fixedPart()}
         {updatingPart()}
+        <SaveButton
+          className={`text-amber-600 border-amber-600 hover:bg-amber-50`}
+          onClick={handleSaveClick}></SaveButton>
         <SummaryTable
           data={currentSessionData}
           amount={importedAmount}
           input_ref={inpAmountRef}></SummaryTable>
       </div>
-      <SaveButton className={`${fixed_button_bg}`} onClick={handleSaveClick}></SaveButton>
     </>
   );
 }

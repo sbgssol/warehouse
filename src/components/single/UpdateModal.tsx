@@ -106,10 +106,10 @@ export default function UpdateModal(props: {
           <tr className="">
             <td>
               <div className="flex justify-between w-full">
-                <div className="w-1/2 flex items-center justify-end capitalize pr-4">
+                <div className="w-1/3 flex items-center justify-end capitalize pr-4">
                   <p>{GlobalStrings.TableColumn.SoBill}</p>
                 </div>
-                <div className="w-1/2 mb-2">
+                <div className="w-2/3 mb-2">
                   <input
                     disabled={props.type == "delete"}
                     value={bill}
@@ -124,10 +124,10 @@ export default function UpdateModal(props: {
           <tr className="">
             <td>
               <div className="flex justify-between w-full">
-                <div className="w-1/2 flex items-center justify-end capitalize pr-4">
+                <div className="w-1/3 flex items-center justify-end capitalize pr-4">
                   <p>{GlobalStrings.TableColumn.NgThTe}</p>
                 </div>
-                <div className="w-1/2 mb-2">
+                <div className="w-2/3 mb-2">
                   <input
                     disabled={props.type == "delete"}
                     type="date"
@@ -143,10 +143,10 @@ export default function UpdateModal(props: {
           <tr className="">
             <td>
               <div className="flex justify-between w-full">
-                <div className="w-1/2 flex items-center justify-end capitalize pr-4">
+                <div className="w-1/3 flex items-center justify-end capitalize pr-4">
                   <p>{GlobalStrings.TableColumn.NgChTu}</p>
                 </div>
-                <div className="w-1/2 mb-2">
+                <div className="w-2/3 mb-2">
                   <input
                     disabled={props.type == "delete"}
                     type="date"
@@ -163,12 +163,12 @@ export default function UpdateModal(props: {
           <tr className="">
             <td>
               <div className="flex justify-between w-full">
-                <div className="w-1/2 flex items-center justify-end capitalize pr-4">
+                <div className="w-1/3 flex items-center justify-end capitalize pr-4">
                   <p>
                     {GlobalStrings.TableColumn.Sl} {GlobalStrings.TableColumn.Nhap}
                   </p>
                 </div>
-                <div className="w-1/2 mb-2">
+                <div className="w-2/3 mb-2">
                   <input
                     disabled={props.type == "delete"}
                     type={"number"}
@@ -196,10 +196,10 @@ export default function UpdateModal(props: {
           <tr className="">
             <td>
               <div className="flex justify-between w-full">
-                <div className="w-1/2 flex items-center justify-end capitalize pr-4">
+                <div className="w-1/3 flex items-center justify-end capitalize pr-4">
                   <p>{GlobalStrings.TableColumn.NoiXuat}</p>
                 </div>
-                <div className="w-1/2 mb-2">
+                <div className="w-2/3 mb-2">
                   <CsvToSelect
                     disabled={props.type == "delete"}
                     file_name={GlobalStrings.ReleaseLocationFileName}
@@ -217,10 +217,10 @@ export default function UpdateModal(props: {
           <tr className="">
             <td>
               <div className="flex justify-between w-full">
-                <div className="w-1/2 flex items-center justify-end capitalize pr-4">
+                <div className="w-1/3 flex items-center justify-end capitalize pr-4">
                   <p>{GlobalStrings.TableColumn.NgThTe}</p>
                 </div>
-                <div className="w-1/2 mb-2">
+                <div className="w-2/3 mb-2">
                   <input
                     disabled={props.type == "delete"}
                     type="date"
@@ -237,11 +237,10 @@ export default function UpdateModal(props: {
           <tr className="">
             <td>
               <div className="flex justify-between w-full">
-                <div className="w-1/2 flex items-center justify-end capitalize pr-4">
-                  {GlobalStrings.TableColumn.Sl} {GlobalStrings.TableColumn.Xuat}{" "}
-                  {GlobalStrings.TableColumn.Gc}
+                <div className="w-1/3 flex items-center justify-end capitalize pr-4">
+                  SL {GlobalStrings.TableColumn.Xuat} GC
                 </div>
-                <div className="w-1/2 mb-2">
+                <div className="w-2/3 mb-2">
                   <input
                     type={"number"}
                     disabled={props.type == "delete"}
@@ -260,11 +259,10 @@ export default function UpdateModal(props: {
           <tr className="">
             <td>
               <div className="flex justify-between w-full">
-                <div className="w-1/2 flex items-center justify-end capitalize pr-4">
-                  {GlobalStrings.TableColumn.Sl} {GlobalStrings.TableColumn.Xuat}{" "}
-                  {GlobalStrings.TableColumn.Tp}
+                <div className="w-1/3 flex items-center justify-end capitalize pr-4">
+                  SL {GlobalStrings.TableColumn.Xuat} TP
                 </div>
-                <div className="w-1/2 mb-2">
+                <div className="w-2/3 mb-2">
                   <input
                     type={"number"}
                     disabled={props.type == "delete"}
@@ -289,19 +287,20 @@ export default function UpdateModal(props: {
     return <></>;
   };
   const FixedEntries = () => {
+    const fixed_twstyles = "border-2 border-gray-500 text-gray-500 hover:cursor-not-allowed";
     return (
       <>
-        <tr className="">
+        <tr className={``}>
           <td>
             <div className="flex justify-between w-full">
-              <div className="w-1/2 flex items-center justify-end capitalize pr-4">
+              <div className="w-1/3 flex items-center justify-end capitalize pr-4">
                 <p>Mã hàng</p>
               </div>
-              <div className="w-1/2 mb-2">
+              <div className="w-2/3 mb-2">
                 <input
                   defaultValue={maHang}
                   disabled={true}
-                  className={`p-1 pl-2 border-2 border-teal-700 rounded-md w-full focus:outline-none ${disabled_delete}`}></input>
+                  className={`p-1 pl-2 ${fixed_twstyles} rounded-md w-full focus:outline-none ${disabled_delete}`}></input>
               </div>
             </div>
           </td>
@@ -309,14 +308,14 @@ export default function UpdateModal(props: {
         <tr className="">
           <td>
             <div className="flex justify-between w-full">
-              <div className="w-1/2 flex items-center justify-end capitalize pr-4">
+              <div className="w-1/3 flex items-center justify-end capitalize pr-4">
                 <p>Tên hàng</p>
               </div>
-              <div className="w-1/2 mb-2">
+              <div className="w-2/3 mb-2">
                 <input
                   defaultValue={tenHang}
                   disabled={true}
-                  className={`p-1 pl-2 border-2 border-teal-700 rounded-md w-full focus:outline-none ${disabled_delete}`}></input>
+                  className={`p-1 pl-2 ${fixed_twstyles} rounded-md w-full focus:outline-none ${disabled_delete}`}></input>
               </div>
             </div>
           </td>
@@ -324,14 +323,14 @@ export default function UpdateModal(props: {
         <tr className="">
           <td>
             <div className="flex justify-between w-full">
-              <div className="w-1/2 flex items-center justify-end capitalize pr-4">
+              <div className="w-1/3 flex items-center justify-end capitalize pr-4">
                 <p>{GlobalStrings.TableColumn.MaHD}</p>
               </div>
-              <div className="w-1/2 mb-2">
+              <div className="w-2/3 mb-2">
                 <input
                   value={hopdong}
                   disabled={true}
-                  className={`p-1 pl-2 border-2 border-teal-700 rounded-md w-full focus:outline-none ${disabled_delete}`}></input>
+                  className={`p-1 pl-2 ${fixed_twstyles} rounded-md w-full focus:outline-none ${disabled_delete}`}></input>
               </div>
             </div>
           </td>

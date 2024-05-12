@@ -4,6 +4,8 @@ import exort_svg from "../assets/xuat-hang.svg";
 import excel_svg from "../assets/list.svg";
 import category_svg from "../assets/barcode.svg";
 import { useNavigate } from "react-router-dom";
+import { ReactNode } from "react";
+import { color } from "@material-tailwind/react/types/components/button";
 
 export default function DashBoard() {
   const navigate = useNavigate();
@@ -26,56 +28,68 @@ export default function DashBoard() {
 
   const font_twstyles = "font-myBold";
 
+  const CreateButton = (
+    label: string | ReactNode,
+    icon: string,
+    color: color,
+    handler: () => void
+  ) => {
+    return (
+      <Button className={`border-4 p-2`} color={color} variant="outlined" onClick={handler}>
+        <div className={`${btn_twstyles}`}>
+          <Typography variant="h2" className={`${font_twstyles}`}>
+            {label}
+          </Typography>
+          <img src={icon} className="w-[128px]" />
+        </div>
+      </Button>
+    );
+  };
+
   return (
     <>
       <div className="w-full h-[98svh]">
         <div className="grid grid-cols-2 h-full gap-4 p-4 bg-red">
-          <Button
-            className={`border-4 p-2`}
-            color="amber"
-            variant="outlined"
-            onClick={handleImportClick}>
-            <div className={`bg-amber-50 ${btn_twstyles}`}>
-              <Typography variant="h3" className={`${font_twstyles}`}>
-                Nhập
-                <br />
-                hàng
-              </Typography>
-              <img src={import_svg} className="w-[128px]" />
-            </div>
-          </Button>
-          <Button
-            className={`border-4 p-2`}
-            color="green"
-            variant="outlined"
-            onClick={handleExportClick}>
-            <div className={`bg-green-50 ${btn_twstyles}`}>
-              <Typography variant="h3" className={`${font_twstyles}`}>
-                Xuất <br /> hàng
-              </Typography>
-              <img src={exort_svg} className={`w-[128px]`} />
-            </div>
-          </Button>
-          <Button className={`border-4 p-2`} color="blue" variant="outlined" onClick={handleReport}>
-            <div className={`bg-blue-50 ${btn_twstyles}`}>
-              <Typography variant="h3" className={`${font_twstyles}`}>
-                Tạo <br /> báo cáo
-              </Typography>
-              <img src={excel_svg} className={`w-[128px]`} />
-            </div>
-          </Button>
-          <Button
-            className={`border-4 p-2`}
-            color="indigo"
-            variant="outlined"
-            onClick={handleCategory}>
-            <div className={`bg-indigo-50 ${btn_twstyles}`}>
-              <Typography variant="h3" className={`${font_twstyles}`}>
-                quản lí <br /> danh mục
-              </Typography>
-              <img src={category_svg} className={`w-[128px]`} />
-            </div>
-          </Button>
+          {CreateButton(
+            <>
+              Nhập
+              <br />
+              hàng
+            </>,
+            import_svg,
+            "amber",
+            handleImportClick
+          )}
+          {CreateButton(
+            <>
+              Xuất
+              <br />
+              hàng
+            </>,
+            exort_svg,
+            "light-green",
+            handleExportClick
+          )}
+          {CreateButton(
+            <>
+              Tạo
+              <br />
+              báo cáo
+            </>,
+            excel_svg,
+            "blue",
+            handleReport
+          )}
+          {CreateButton(
+            <>
+              quản lí
+              <br />
+              danh mục
+            </>,
+            category_svg,
+            "indigo",
+            handleCategory
+          )}
         </div>
       </div>
     </>

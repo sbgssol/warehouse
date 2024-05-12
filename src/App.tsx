@@ -1,4 +1,4 @@
-import ImportWarehouse from "./components/ImportWarehouse";
+import Import from "./components/Import";
 import ProcessingRelease from "./components/ProcessingRelease";
 import CreateReport from "./components/CreateReport";
 import ProductionRelease from "./components/ProductionRelease";
@@ -15,7 +15,7 @@ export default function App() {
         <Popup />
         <Routes>
           <Route path="/" element={<DashBoard />} />
-          <Route path="import" element={<ImportWarehouse />} />
+          <Route path="import" element={<Import />} />
           <Route path="export" element={<Export />} />
           <Route path="processing-release" element={<ProcessingRelease />} />
           <Route path="production-release" element={<ProductionRelease />} />
