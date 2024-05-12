@@ -13,7 +13,7 @@ import { AddStock, Modify, Remove } from "../types/RecordModifier";
 import { dialog } from "@tauri-apps/api";
 import import_stock from "../assets/import-stock.svg";
 import InputStock from "./single/InputStock";
-import { CreateExcel } from "../types/CreateExcel";
+import { FileOperation } from "../types/FileOperation";
 
 export default function CreateReport() {
   const [restoredData, setRestoredData] = useState<WarehouseData.Record[]>([]);
@@ -420,6 +420,19 @@ export default function CreateReport() {
     return () => {};
   }, [productByCode]);
 
+  const handleCreateExcel = () => {
+    let data: FileOperation.Report.TheKhoType[] = [];
+    productSortedByDate.forEach((value, key) => {
+      data.push({
+        ma_hang: key,
+        ten_hang: product.getInfo(key, "name"),
+        dvt: product.getInfo(key, "unit"),
+        data_by_date: value
+      });
+    });
+    FileOperation.Report.CreateTheKho(data, congCuoiKi);
+  };
+
   return (
     <>
       <NavbarDefault></NavbarDefault>
@@ -452,12 +465,7 @@ export default function CreateReport() {
         type="delete"></UpdateModal>
       <div className="max-w-full w-full">
         <Button onClick={handleCheck}>Kiểm tra</Button>
-        <Button
-          onClick={() => {
-            CreateExcel.BaoCaoQuyetToan(contractName, productSortedByDate, productMap);
-          }}>
-          Create Excel
-        </Button>
+        <Button onClick={handleCreateExcel}>Create Excel</Button>
         {summaryTable()}
       </div>
     </>
