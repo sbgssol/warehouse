@@ -45,6 +45,11 @@ interface GlobalStateContextType {
     show: () => void;
   };
 
+  // resources: {
+  //   pathHopDong: string;
+  //   setPathHopDong: (path: string) => void;
+  // };
+
   // showPopup: (msg: string | ReactNode | ReactNode[], type: PopupType) => void;
 }
 
@@ -69,6 +74,9 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   const ShowInputCode = () => {
     setInputOpen(true);
   };
+
+  // Resources
+  // const [pathHopDong, setPathHopDong] = useState("");
 
   const getRecordFilename = () => {
     return contractName + "_" + GlobalStrings.RecordFileName;
@@ -96,7 +104,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   const FetchProductMap = async () => {
     console.log(`[GlobalContext] -> Fetching product map`);
 
-    const data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.ProductCodeFileName);
+    const data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.NameProductCodeFile);
     let tmp = new Map<string, { name: string; unit: string }>();
     data.forEach((line) => {
       const s = line.split(",");
@@ -143,6 +151,10 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
           setOpen: setInputOpen,
           show: ShowInputCode
         }
+        // resources: {
+        //   pathHopDong: pathHopDong,
+        //   setPathHopDong: setPathHopDong
+        // }
       }}>
       {children}
     </GlobalStateContext.Provider>

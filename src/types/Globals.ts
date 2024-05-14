@@ -5,9 +5,9 @@ const GlobalStrings = {
   SelectContract: "Chọn hợp đồng",
   RecordFileName: "record.dat",
   SaveDirectory: BaseDirectory.Resource,
-  ProductCodeFileName: "ma_hang.csv",
-  ReleaseLocationFileName: "noi_xuat.csv",
-  ContractFileName: "hop_dong.csv",
+  NameProductCodeFile: "ma_hang.csv",
+  NameExportLocation: "noi_xuat.csv",
+  NameContractFile: "hop_dong.csv",
   TableColumn: {
     STT: "STT",
     NoiXuat: "nơi xuất",
@@ -32,7 +32,8 @@ const GlobalStrings = {
     }
   },
   InputStock: "_NhapTonDauKi_",
-  NameBaoCaoQuyetToan: "BaoCaoQuyetToan.csv"
+  NameBaoCaoQuyetToan: "BaoCaoQuyetToan.csv",
+  NamePathJson: "path.json"
 };
 
 export default GlobalStrings;

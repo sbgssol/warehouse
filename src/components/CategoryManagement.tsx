@@ -14,11 +14,18 @@ import { useGlobalState } from "../types/GlobalContext";
 import { Popup } from "../types/Dialog";
 import { FileOperation } from "../types/FileOperation";
 import PopUp from "./single/PopUp";
+import { dialog } from "@tauri-apps/api";
+import { Common } from "../types/GlobalFnc";
+import { BaseDirectory } from "@tauri-apps/api/fs";
 
 export default function CategoryManagement() {
   const [open, setOpen] = useState(0);
   const [rawData, setRawData] = useState<string[]>([]);
   const [actualData, setActualData] = useState<string[][]>([]);
+  const [pathHopDong, setPathHopDong] = useState<string>("");
+  const [hopDongRaw, setHopDongRaw] = useState<string[]>([]);
+  // const [fileExist, setFileExist] = useState<boolean>();
+  // const [pathJsonData, setPathJsonData] = useState<string>();
 
   // const [prodMap, setProdMap] = useState<Map<string, { name: string; unit: string }>>(
   //   new Map<string, { name: string; unit: string }>()
@@ -29,6 +36,22 @@ export default function CategoryManagement() {
     name: string;
     unit: string;
   }
+
+  const CategoryInfo = {
+    hop_dong: {
+      name: "hợp đồng",
+      id: 1
+    },
+    ma_hang: {
+      name: "mã hàng",
+      id: 2
+    },
+    noi_xuat: {
+      name: "nơi xuất",
+      id: 3
+    }
+  };
+
   const [product, setProduct] = useState<Product>({ code: "", name: "", unit: "" });
   const [originalProduct, setOriginalProduct] = useState<Product>({ code: "", name: "", unit: "" });
 
@@ -56,13 +79,95 @@ export default function CategoryManagement() {
     setRawData(data);
   };
 
+  const [jsonExist, setJsonExist] = useState<boolean>();
+
   useEffect(() => {
-    if (open == 1) {
-      LoadCsv(GlobalStrings.ProductCodeFileName);
-    } else if (open == 2) {
-      LoadCsv(GlobalStrings.ProductCodeFileName);
-    } else if (open == 3) {
-      LoadCsv(GlobalStrings.ProductCodeFileName);
+    FileOperation.CheckExist(GlobalStrings.NamePathJson, (exist: boolean) => setJsonExist(exist));
+    // console.log(`Component mounted`);
+    // // 1. Check existing path.json file
+    // FileOperation.CheckExist(GlobalStrings.NamePathJson, (exist: boolean) => setFileExist(exist));
+    // // 2. Check
+
+    return () => {};
+  }, []);
+
+  interface ResourcePath {
+    hop_dong: string;
+    ma_hang: string;
+    noi_xuat: string;
+  }
+
+  const RestoreHopDong = async () => {
+    const raw = await FileOperation.ReadRawFile(GlobalStrings.NamePathJson);
+    const data = JSON.parse(raw) as ResourcePath;
+    const full_path = await Common.BaseDiToStr(GlobalStrings.SaveDirectory);
+    setPathHopDong(`${full_path}\\${data.hop_dong}`);
+  };
+  const processJsonExist = async () => {
+    console.log(`${GlobalStrings.NamePathJson} exists!`);
+    RestoreHopDong();
+  };
+  const processJsonNotExist = () => {
+    console.log(`${GlobalStrings.NamePathJson} does not exist!`);
+  };
+
+  useEffect(() => {
+    if (jsonExist !== undefined) {
+      if (jsonExist) {
+        processJsonExist();
+      } else {
+        processJsonNotExist();
+      }
+    }
+
+    return () => {};
+  }, [jsonExist]);
+
+  // interface ResourcePath {
+  //   hop_dong: string;
+  //   ma_hang: string;
+  //   noi_xuat: string;
+  // }
+
+  // useEffect(() => {
+  //   if (fileExist !== undefined) {
+  //     if (fileExist) {
+  //       console.log(`path.json exists!`);
+  //       handleReadPathJson();
+  //     } else {
+  //       console.log(`path.json does NOT exist`);
+  //       // 1. Create the json file with default path
+  //       const default_data = {
+  //         hop_dong: GlobalStrings.NameContractFile,
+  //         ma_hang: GlobalStrings.NameProductCodeFile,
+  //         noi_xuat: GlobalStrings.NameExportLocation
+  //       } as ResourcePath;
+  //       // 2. store the json
+  //       FileOperation.WriteRawFile(GlobalStrings.NamePathJson, JSON.stringify(default_data), true);
+  //     }
+  //   }
+
+  //   return () => {};
+  // }, [fileExist]);
+
+  // useEffect(() => {
+  //   if (pathJsonData !== undefined) {
+  //     // restore the data
+  //     const data = JSON.parse(pathJsonData) as ResourcePath;
+  //     setPathHopDong(data.hop_dong);
+  //     console.log(`hopdong: ${data.hop_dong}, mahang: ${data.ma_hang}, noixuat: ${data.noi_xuat}`);
+  //   }
+
+  //   return () => {};
+  // }, [pathJsonData]);
+
+  useEffect(() => {
+    if (open == CategoryInfo.hop_dong.id) {
+      // LoadCsv(GlobalStrings.ProductCodeFileName);
+    } else if (open == CategoryInfo.ma_hang.id) {
+      LoadCsv(GlobalStrings.NameProductCodeFile);
+    } else if (open == CategoryInfo.noi_xuat.id) {
+      // LoadCsv(GlobalStrings.ProductCodeFileName);
     }
     return () => {};
   }, [open]);
@@ -90,10 +195,67 @@ export default function CategoryManagement() {
     return "";
   };
 
+  const handleSelectContractFile = async (pathHandler: (path: string) => void) => {
+    const selected = await dialog.open({
+      defaultPath: await Common.BaseDiToStr(BaseDirectory.Resource),
+      filters: [{ name: "CSV", extensions: ["csv"] }],
+      multiple: false
+    });
+    if (selected != null) {
+      const path = selected as string;
+      pathHandler(path);
+      const arr = await FileOperation.ReadCsvToArr(path.slice(path.lastIndexOf("\\") + 1));
+      console.log(`[handleContractPathChanged] -> ${arr}`);
+    }
+  };
+
+  const LoadHopDong = async () => {
+    if (pathHopDong !== undefined && pathHopDong.length) {
+      const arr = await FileOperation.ReadCsvToArr(
+        pathHopDong.slice(pathHopDong.lastIndexOf("\\") + 1)
+      );
+      console.log(`[LoadHopDong] -> ${arr}`);
+      setHopDongRaw(arr);
+    }
+  };
+
+  useEffect(() => {
+    LoadHopDong();
+
+    return () => {};
+  }, [pathHopDong]);
+
+  const CreatePathSelector = (
+    label: string,
+    pathState: string,
+    pathHandler: (path: string) => void
+  ) => {
+    return (
+      <div className={`flex items-center w-[90%] mb-1 pb-2`}>
+        <span className={``}>{label}</span>
+        <input
+          type="text"
+          disabled={true}
+          value={pathState}
+          onChange={() => {}}
+          className={`w-[73%] focus:outline-none border-2 border-gray-700 bg-gray-200 rounded-md mx-2 px-1 pr-[44px] font-myThin font-bold`}
+        />
+        <Button
+          className={`px-1 py-1 rounded-sm relative -left-[53px]`}
+          onClick={() => {
+            handleSelectContractFile(pathHandler);
+          }}>
+          chọn
+        </Button>
+      </div>
+    );
+  };
+
   const CreateAccordionBody = (cat: number) => {
-    if (cat == 2) {
+    if (cat == CategoryInfo.ma_hang.id) {
       return (
-        <AccordionBody className="pt-0 text-base font-normal">
+        <AccordionBody className="pt-0 text-base font-normal flex flex-col items-center">
+          {CreatePathSelector("File mã hàng hiện tại:", pathHopDong, setPathHopDong)}
           <table className={`w-full`}>
             <thead className={`uppercase font-myRegular`}>
               <tr>
@@ -132,6 +294,36 @@ export default function CategoryManagement() {
               ))}
             </tbody>
           </table>
+        </AccordionBody>
+      );
+    } else if (cat == CategoryInfo.hop_dong.id) {
+      return (
+        <AccordionBody className="pt-0 text-base font-normal">
+          <div className={`flex flex-col items-center`}>
+            {CreatePathSelector("File hợp đồng hiện tại:", pathHopDong, setPathHopDong)}
+            <table className={`w-[60%] text-center`}>
+              <thead>
+                <tr className={`capitalize`}>
+                  <th className={`border`}>mã hợp đồng</th>
+                  <th className={`border`}>sửa</th>
+                </tr>
+              </thead>
+              <tbody>
+                {hopDongRaw.map((value, idx) => {
+                  return (
+                    <tr key={idx}>
+                      <td className={`border w-[90%]`}>{value}</td>
+                      <td className={`border w-[10%]`}>
+                        <Button variant="text" className={`p-0`}>
+                          <img src={edit_icon} />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </AccordionBody>
       );
     }
@@ -265,11 +457,11 @@ export default function CategoryManagement() {
         tmp[idx] = `${product.code},${product.name},${product.unit}`;
       }
     });
-    FileOperation.WriteCsv(GlobalStrings.ProductCodeFileName, GlobalStrings.SaveDirectory, tmp);
+    FileOperation.WriteCsv(GlobalStrings.NameProductCodeFile, GlobalStrings.SaveDirectory, tmp);
     setTimeout(() => {
       modify.setOpen(false);
     }, 100);
-    LoadCsv(GlobalStrings.ProductCodeFileName);
+    LoadCsv(GlobalStrings.NameProductCodeFile);
   };
 
   return (
@@ -285,9 +477,9 @@ export default function CategoryManagement() {
       <Typography variant="h2" className={`font-myThin font-bold uppercase`}>
         quản lí danh mục
       </Typography>
-      {createCategory("hợp đồng", 1)}
-      {createCategory("mã hàng", 2)}
-      {createCategory("nơi xuất", 3)}
+      {createCategory(CategoryInfo.hop_dong.name, CategoryInfo.hop_dong.id)}
+      {createCategory(CategoryInfo.ma_hang.name, CategoryInfo.ma_hang.id)}
+      {createCategory(CategoryInfo.noi_xuat.name, CategoryInfo.noi_xuat.id)}
     </>
   );
 }

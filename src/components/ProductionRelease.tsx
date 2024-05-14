@@ -41,9 +41,9 @@ export default function ProcessingRelease() {
   );
 
   const fetchCsvFile = async () => {
-    let data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.ProductCodeFileName);
+    let data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.NameProductCodeFile);
     setCsvContent(data);
-    data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.ReleaseLocationFileName);
+    data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.NameExportLocation);
     setCsvLocation(data);
   };
   // Load CSV file once this page is mounted

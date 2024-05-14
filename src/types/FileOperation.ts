@@ -1,9 +1,10 @@
 import { dialog } from "@tauri-apps/api";
-import { BaseDirectory, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
+import { BaseDirectory, exists, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import { resolveResource } from "@tauri-apps/api/path";
 import { Common } from "./GlobalFnc";
 import { utils, writeFileXLSX } from "xlsx";
 import { ShortenData } from "./ShortenData";
+import GlobalStrings from "./Globals";
 
 export namespace FileOperation {
   export const WriteCsv = async (
@@ -28,6 +29,14 @@ export namespace FileOperation {
     }, 200);
   };
 
+  export const WriteRawFile = async (name: string, data: string, override?: boolean) => {
+    await writeTextFile(name, data, {
+      dir: GlobalStrings.SaveDirectory,
+      append: override
+    });
+  };
+
+  // Only used for embedded resource files
   export const ReadResourceCsvToArr = async (file_name: string) => {
     const resourcePath = await resolveResource(file_name);
 
@@ -48,8 +57,9 @@ export namespace FileOperation {
     return res;
   };
 
-  export const ReadCsvToArr = async (file_name: string) => {
-    const data = await readTextFile(file_name);
+  // Use for any file in the allow scopes
+  export const ReadCsvToArr = async (file_name: string, dir?: BaseDirectory) => {
+    const data = await readTextFile(file_name, { dir: dir ?? GlobalStrings.SaveDirectory });
     let res = [];
 
     if (data.indexOf("\r\n") >= 0) {
@@ -70,6 +80,7 @@ export namespace FileOperation {
     return res;
   };
 
+  // Use for any file in the allow scopes
   export const OpenAndReadCsvFile = async () => {
     const selected = await dialog.open({
       defaultPath: await Common.BaseDiToStr(BaseDirectory.Resource),
@@ -85,6 +96,32 @@ export namespace FileOperation {
       })}`
     );
     return data;
+  };
+
+  // Use for any file in the allow scopes
+  export const OpenAndReadFile = async (extension: string) => {
+    const selected = await dialog.open({
+      defaultPath: await Common.BaseDiToStr(BaseDirectory.Resource),
+      filters: [{ name: extension.toUpperCase(), extensions: [extension] }],
+      multiple: false
+    });
+    console.log(`Selected file: ${selected}`);
+    const data = await FileOperation.ReadCsvToArr(selected as string);
+    console.log(
+      `read data: ${data}\nValid -> ${data.every((value) => {
+        const s = value.split(",");
+        return s.every((v) => v.trim().length);
+      })}`
+    );
+    return data;
+  };
+
+  export const CheckExist = async (name: string, setter: (exist: boolean) => void) => {
+    setter(await exists(name, { dir: GlobalStrings.SaveDirectory }));
+  };
+
+  export const ReadRawFile = async (name: string) => {
+    return await readTextFile(name, { dir: GlobalStrings.SaveDirectory });
   };
 
   export namespace Report {

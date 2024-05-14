@@ -202,7 +202,7 @@ export default function UpdateModal(props: {
                 <div className="w-2/3 mb-2">
                   <CsvToSelect
                     disabled={props.type == "delete"}
-                    file_name={GlobalStrings.ReleaseLocationFileName}
+                    file_name={GlobalStrings.NameExportLocation}
                     target_column={0}
                     default={location}
                     onChange={(value) => {

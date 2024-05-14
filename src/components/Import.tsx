@@ -40,7 +40,7 @@ export default function Import() {
   const [csvContent, setCsvContent] = useState<string[]>([]);
 
   const fetchCsvFile = async () => {
-    const data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.ProductCodeFileName);
+    const data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.NameProductCodeFile);
     setCsvContent(data);
   };
   // Load CSV file once this page is mounted

@@ -35,11 +35,7 @@ export default function DashBoard() {
     handler: () => void
   ) => {
     return (
-      <Button
-        className={`border-4 p-2 hover:scale-105`}
-        color={color}
-        variant="outlined"
-        onClick={handler}>
+      <Button className={`border-4 p-2`} color={color} variant="outlined" onClick={handler}>
         <div className={`${btn_twstyles}`}>
           <Typography variant="h2" className={`${font_twstyles}`}>
             {label}

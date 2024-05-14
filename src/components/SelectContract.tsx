@@ -15,8 +15,7 @@ export default function SelectContract(props: {
       open={props.open}
       handler={props.handler}
       dismiss={{ outsidePress: false, escapeKey: true }}
-      size={props.size}
-    >
+      size={props.size}>
       <DialogBody>
         <div className="w-full flex flex-col items-center">
           <div className="w-max flex flex-col items-center">
@@ -24,12 +23,11 @@ export default function SelectContract(props: {
               Chọn hợp đồng
             </Typography>
             <CsvToSelect
-              file_name={GlobalStrings.ContractFileName}
+              file_name={GlobalStrings.NameContractFile}
               onChange={props.onChange}
               label="Chọn mã hợp đồng"
               select_class="w-full p-2 text-pink-300"
-              option_class="text-pink-200"
-            ></CsvToSelect>
+              option_class="text-pink-200"></CsvToSelect>
             <Button className="mt-1" fullWidth onClick={props.onOkay} color="pink">
               OK
             </Button>

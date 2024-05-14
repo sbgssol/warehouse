@@ -1,10 +1,11 @@
 import { Navbar, Button } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 import home_svg from "../assets/home.svg";
-import import_svg from "../assets/nhap-hang.svg";
-import export_svg from "../assets/xuat-hang.svg";
-import category_svg from "../assets/barcode.svg";
-import excel_svg from "../assets/list.svg";
+import import_svg from "../assets/download.svg";
+import export_svg from "../assets/up.svg";
+import category_svg from "../assets/settings.svg";
+import excel_svg from "../assets/doc.svg";
+import reload_svg from "../assets/refresh.svg";
 import { useGlobalState } from "../types/GlobalContext";
 import GlobalStrings from "../types/Globals";
 import CsvToSelect from "./CsvToSelect";
@@ -34,16 +35,23 @@ export function NavbarDefault() {
     setContractName(hd);
   };
 
+  const handleReloadClick = () => {
+    window.location.reload();
+  };
+
   const button_outline = `teal`;
   return (
     <Navbar className="max-w-full mb-1 shadow-none sticky top-0 border-b-2 border-b-gray-600 p-1 rounded-none z-50">
       <div className="flex items-center justify-between text-blue-gray-900">
-        <div className="flex justify-center items-center space-x-2">
-          <Button variant="gradient" color="green" className={`p-1`} onClick={handleHomeClick}>
-            <img src={home_svg} alt="" />
+        <div className="flex justify-center items-center space-x-1">
+          <Button variant="text" color="green" className={`p-1`} onClick={handleHomeClick}>
+            <img src={home_svg} className={`w-[32px]`} alt="" />
+          </Button>
+          <Button variant="text" color="green" className={`p-1`} onClick={handleReloadClick}>
+            <img src={reload_svg} className={`w-[32px]`} alt="" />
           </Button>
           <CsvToSelect
-            file_name={GlobalStrings.ContractFileName}
+            file_name={GlobalStrings.NameContractFile}
             label="Chọn một hợp đồng"
             onChange={handleHdChanged}
             default={contractName}
@@ -52,35 +60,35 @@ export function NavbarDefault() {
         </div>
         <div className={`space-x-2`}>
           <Button
-            variant="outlined"
+            variant="text"
             color={`${button_outline}`}
             className={`p-1`}
             onClick={handleInpClick}>
-            <img src={import_svg} className={`w-[24px]`} />
+            <img src={import_svg} className={`w-[32px]`} />
           </Button>
 
           <Button
-            variant="outlined"
+            variant="text"
             color={`${button_outline}`}
             className={`p-1`}
             onClick={handleExportClick}>
-            <img src={export_svg} className={`w-[24px]`} />
+            <img src={export_svg} className={`w-[32px]`} />
           </Button>
 
           <Button
-            variant="outlined"
+            variant="text"
             color={`${button_outline}`}
             className={`p-1`}
             onClick={handleReportClick}>
-            <img src={excel_svg} className={`w-[24px]`} />
+            <img src={excel_svg} className={`w-[32px]`} />
           </Button>
 
           <Button
-            variant="outlined"
+            variant="text"
             color={`${button_outline}`}
             className={`p-1`}
             onClick={handleCategoryClick}>
-            <img src={category_svg} className={`w-[24px]`} />
+            <img src={category_svg} className={`w-[32px]`} />
           </Button>
         </div>
       </div>
