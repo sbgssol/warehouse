@@ -19,7 +19,7 @@ export default function Import() {
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
   const [importedAmount, setImportedAmount] = useState<number[]>([]);
   const { getRecordFilename } = useGlobalState();
-  const { popup, product, input_code } = useGlobalState();
+  const { popup, product, input_code, json } = useGlobalState();
 
   // References
   const contractRef = useRef<HTMLInputElement>(null); // To focus when the program starts
@@ -40,8 +40,9 @@ export default function Import() {
   const [csvContent, setCsvContent] = useState<string[]>([]);
 
   const fetchCsvFile = async () => {
-    const data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.NameProductCodeFile);
-    setCsvContent(data);
+    if (json.rawMaHang !== undefined) {
+      setCsvContent(json.rawMaHang);
+    }
   };
   // Load CSV file once this page is mounted
   useEffect(() => {

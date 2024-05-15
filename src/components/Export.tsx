@@ -25,7 +25,7 @@ export default function Export() {
   const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>(
     new WarehouseData.Record("", "", "", "")
   );
-  const { getRecordFilename, popup, product, input_code } = useGlobalState();
+  const { getRecordFilename, popup, product, input_code, json } = useGlobalState();
   const [exportGC, setExportTypeRadio] = useState(true);
 
   // References
@@ -62,10 +62,17 @@ export default function Export() {
   };
 
   const fetchCsvFile = async () => {
-    let data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.NameProductCodeFile);
-    setCsvContent(data);
-    data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.NameExportLocation);
-    setCsvLocation(data);
+    console.log(
+      `Check json data: son.rawNoiXuat !== undefined -> ${json.rawNoiXuat !== undefined}\
+      json.rawMaHang !== undefined -> ${json.rawMaHang !== undefined}`
+    );
+
+    if (json.rawNoiXuat !== undefined) {
+      setCsvLocation(json.rawNoiXuat);
+    }
+    if (json.rawMaHang !== undefined) {
+      setCsvContent(json.rawMaHang);
+    }
   };
 
   useEffect(() => {
@@ -272,49 +279,47 @@ export default function Export() {
   };
   const updatingPart = () => {
     return (
-      <>
-        <div className={`w-full max-h-[400px] h-min mt-1`}>
-          <div>
-            <MultipleProdCodeSelector
-              open={open}
-              closeHandler={setOpen}
-              selectedCode={selectedCodes}
-              productMap={productMap}
-              handleCodeChange={setSelectedCodes}></MultipleProdCodeSelector>
-          </div>
-          <div className={`flex space-x-2`}>
-            <Button
-              fullWidth
-              onClick={handleSelectCodeClick}
-              disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
-              className={`p-1 ${ButtonBackgroundColor()}`}>
-              <Typography color="white" variant="h6">
-                Chọn mã hàng
-              </Typography>
-            </Button>
-            <Button
-              fullWidth
-              onClick={() => {
-                input_code.show();
-              }}
-              disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
-              className={`p-1 ${ButtonBackgroundColor()}`}>
-              <Typography color="white" variant="h6">
-                Tự nhập mã hàng
-              </Typography>
-            </Button>
-            <Button
-              fullWidth
-              onClick={handleImportFromCsv}
-              disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
-              className={`p-1 ${ButtonBackgroundColor()}`}>
-              <Typography color="white" variant="h6">
-                nhập từ file csv
-              </Typography>
-            </Button>
-          </div>
+      <div className={`w-full max-h-[400px] h-min mt-1`}>
+        <div>
+          <MultipleProdCodeSelector
+            open={open}
+            closeHandler={setOpen}
+            selectedCode={selectedCodes}
+            productMap={productMap}
+            handleCodeChange={setSelectedCodes}></MultipleProdCodeSelector>
         </div>
-      </>
+        <div className={`flex space-x-2`}>
+          <Button
+            fullWidth
+            onClick={handleSelectCodeClick}
+            disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
+            className={`p-1 ${ButtonBackgroundColor()}`}>
+            <Typography color="white" variant="h6">
+              Chọn mã hàng
+            </Typography>
+          </Button>
+          <Button
+            fullWidth
+            onClick={() => {
+              input_code.show();
+            }}
+            disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
+            className={`p-1 ${ButtonBackgroundColor()}`}>
+            <Typography color="white" variant="h6">
+              Tự nhập mã hàng
+            </Typography>
+          </Button>
+          <Button
+            fullWidth
+            onClick={handleImportFromCsv}
+            disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
+            className={`p-1 ${ButtonBackgroundColor()}`}>
+            <Typography color="white" variant="h6">
+              nhập từ file csv
+            </Typography>
+          </Button>
+        </div>
+      </div>
     );
   };
 

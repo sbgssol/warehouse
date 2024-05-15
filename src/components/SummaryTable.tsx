@@ -45,7 +45,7 @@ export default function SummaryTable(props: {
                       props.amount !== undefined
                         ? props.amount.length > index
                           ? props.amount[index]
-                          : "-"
+                          : ""
                         : 0
                     }
                     onChange={(event: ChangeEvent<HTMLInputElement>) => {

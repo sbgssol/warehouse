@@ -2,7 +2,8 @@ import { Button, Dialog, DialogBody, DialogFooter, DialogHeader } from "@materia
 import { ShortenData, UpdateRecord } from "../../types/ShortenData";
 import { ChangeEvent, useEffect, useState } from "react";
 import GlobalStrings from "../../types/Globals";
-import CsvToSelect from "../CsvToSelect";
+import ArrayToSelect from "../ArrayToSelect";
+import { useGlobalState } from "../../types/GlobalContext";
 
 export default function UpdateModal(props: {
   open: boolean;
@@ -25,6 +26,7 @@ export default function UpdateModal(props: {
   const [maHang, setMaHang] = useState("");
   const [tenHang, setTenHang] = useState("");
   const [isImport, setIsImport] = useState(false);
+  const { json } = useGlobalState();
 
   // Ref
   //
@@ -200,15 +202,15 @@ export default function UpdateModal(props: {
                   <p>{GlobalStrings.TableColumn.NoiXuat}</p>
                 </div>
                 <div className="w-2/3 mb-2">
-                  <CsvToSelect
+                  <ArrayToSelect
                     disabled={props.type == "delete"}
-                    file_name={GlobalStrings.NameExportLocation}
-                    target_column={0}
+                    arr={json.rawNoiXuat ?? [""]}
+                    target_column={1}
                     default={location}
                     onChange={(value) => {
                       setLocation(value);
                     }}
-                    select_class={`p-1.5 pl-2 border-2 border-teal-700 rounded-md w-full focus:outline-none ${disabled_delete}`}></CsvToSelect>
+                    select_class={`p-1.5 pl-2 border-2 border-teal-700 rounded-md w-full focus:outline-none ${disabled_delete}`}></ArrayToSelect>
                 </div>
               </div>
             </td>

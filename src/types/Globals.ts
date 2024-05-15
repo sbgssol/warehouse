@@ -33,7 +33,8 @@ const GlobalStrings = {
   },
   InputStock: "_NhapTonDauKi_",
   NameBaoCaoQuyetToan: "BaoCaoQuyetToan.csv",
-  NamePathJson: "path.json"
+  NamePathJson: "path.json",
+  NameResourcePath: "./resources/"
 };
 
 export default GlobalStrings;

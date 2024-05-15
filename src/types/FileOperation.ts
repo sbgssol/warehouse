@@ -1,5 +1,13 @@
 import { dialog } from "@tauri-apps/api";
-import { BaseDirectory, exists, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
+import {
+  BaseDirectory,
+  copyFile,
+  createDir,
+  exists,
+  readTextFile,
+  removeDir,
+  writeTextFile
+} from "@tauri-apps/api/fs";
 import { resolveResource } from "@tauri-apps/api/path";
 import { Common } from "./GlobalFnc";
 import { utils, writeFileXLSX } from "xlsx";
@@ -211,4 +219,72 @@ export namespace FileOperation {
       writeFileXLSX(wb, "TheKho_" + GetTimestamp() + ".xlsx");
     };
   }
+
+  export namespace Check {
+    export const Exist = async (path: string) => {
+      const res = await exists(path, { dir: GlobalStrings.SaveDirectory });
+      // if (res) {
+      //   const data = await readDir(path, { dir: GlobalStrings.SaveDirectory });
+      //   console.log(`${path} -> Exists\n${JSON.stringify(data)}`);
+      // }
+      return res;
+    };
+  }
+
+  export type DirType = "resources" | "data";
+  export namespace Dir {
+    export const Create = async (name: string, type: DirType) => {
+      console.log(`[FileOperation] -> Creating ${type}\\${name}`);
+      await createDir(type + "\\" + name, { dir: GlobalStrings.SaveDirectory, recursive: true });
+    };
+    export const Remove = async (name: string, location: DirType) => {
+      console.log(`[FileOperation] -> Removing ${location}\\${name}`);
+      await removeDir(`${location}\\${name}`, {
+        dir: GlobalStrings.SaveDirectory,
+        recursive: true
+      });
+    };
+  }
+
+  export namespace Read {
+    export const RawData = async (file_name: string, location: DirType) => {
+      return await readTextFile(`${location}\\${file_name}`, { dir: GlobalStrings.SaveDirectory });
+    };
+
+    export const RawDataWithDelimiter = async (
+      file_name: string,
+      location: DirType,
+      delimiter: string[]
+    ) => {
+      const data = await readTextFile(`${location}\\${file_name}`, {
+        dir: GlobalStrings.SaveDirectory
+      });
+      let res: string[] = [];
+      for (let i = 0; i < delimiter.length; ++i) {
+        if (data.lastIndexOf(delimiter[i]) >= 0) {
+          res = data.split(delimiter[i]);
+          break;
+        }
+      }
+      return res;
+    };
+  }
+
+  export namespace Write {
+    export const RawData = async (
+      file_name: string,
+      location: DirType,
+      data: string,
+      override?: boolean
+    ) => {
+      await writeTextFile(`${location}\\${file_name}`, data, {
+        dir: GlobalStrings.SaveDirectory,
+        append: override
+      });
+    };
+  }
+
+  export const Copy = async (source: string, destination: string) => {
+    await copyFile(source, destination, { dir: GlobalStrings.SaveDirectory });
+  };
 }

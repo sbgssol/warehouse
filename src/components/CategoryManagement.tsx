@@ -55,7 +55,7 @@ export default function CategoryManagement() {
   const [product, setProduct] = useState<Product>({ code: "", name: "", unit: "" });
   const [originalProduct, setOriginalProduct] = useState<Product>({ code: "", name: "", unit: "" });
 
-  const { modify, popup } = useGlobalState();
+  const { modify, popup, json } = useGlobalState();
 
   const handleOpen = (value: SetStateAction<number>) => setOpen(open === value ? 0 : value);
 
@@ -79,49 +79,47 @@ export default function CategoryManagement() {
     setRawData(data);
   };
 
-  const [jsonExist, setJsonExist] = useState<boolean>();
+  // const [jsonExist, setJsonExist] = useState<boolean>();
 
   useEffect(() => {
-    FileOperation.CheckExist(GlobalStrings.NamePathJson, (exist: boolean) => setJsonExist(exist));
-    // console.log(`Component mounted`);
-    // // 1. Check existing path.json file
-    // FileOperation.CheckExist(GlobalStrings.NamePathJson, (exist: boolean) => setFileExist(exist));
-    // // 2. Check
+    if (json.pathHopDong !== undefined) {
+      setPathHopDong(json.pathHopDong);
+    }
 
     return () => {};
   }, []);
 
-  interface ResourcePath {
-    hop_dong: string;
-    ma_hang: string;
-    noi_xuat: string;
-  }
+  // interface ResourcePath {
+  //   hop_dong: string;
+  //   ma_hang: string;
+  //   noi_xuat: string;
+  // }
 
-  const RestoreHopDong = async () => {
-    const raw = await FileOperation.ReadRawFile(GlobalStrings.NamePathJson);
-    const data = JSON.parse(raw) as ResourcePath;
-    const full_path = await Common.BaseDiToStr(GlobalStrings.SaveDirectory);
-    setPathHopDong(`${full_path}\\${data.hop_dong}`);
-  };
-  const processJsonExist = async () => {
-    console.log(`${GlobalStrings.NamePathJson} exists!`);
-    RestoreHopDong();
-  };
-  const processJsonNotExist = () => {
-    console.log(`${GlobalStrings.NamePathJson} does not exist!`);
-  };
+  // const RestoreHopDong = async () => {
+  //   const raw = await FileOperation.ReadRawFile(GlobalStrings.NamePathJson);
+  //   const data = JSON.parse(raw) as ResourcePath;
+  //   const full_path = await Common.BaseDiToStr(GlobalStrings.SaveDirectory);
+  //   setPathHopDong(`${full_path}\\${data.hop_dong}`);
+  // };
+  // const processJsonExist = async () => {
+  //   console.log(`${GlobalStrings.NamePathJson} exists!`);
+  //   RestoreHopDong();
+  // };
+  // const processJsonNotExist = () => {
+  //   console.log(`${GlobalStrings.NamePathJson} does not exist!`);
+  // };
 
-  useEffect(() => {
-    if (jsonExist !== undefined) {
-      if (jsonExist) {
-        processJsonExist();
-      } else {
-        processJsonNotExist();
-      }
-    }
+  // useEffect(() => {
+  //   if (jsonExist !== undefined) {
+  //     if (jsonExist) {
+  //       processJsonExist();
+  //     } else {
+  //       processJsonNotExist();
+  //     }
+  //   }
 
-    return () => {};
-  }, [jsonExist]);
+  //   return () => {};
+  // }, [jsonExist]);
 
   // interface ResourcePath {
   //   hop_dong: string;
@@ -161,6 +159,8 @@ export default function CategoryManagement() {
   //   return () => {};
   // }, [pathJsonData]);
 
+  // const Load = (second) => { third }
+
   useEffect(() => {
     if (open == CategoryInfo.hop_dong.id) {
       // LoadCsv(GlobalStrings.ProductCodeFileName);
@@ -197,30 +197,39 @@ export default function CategoryManagement() {
 
   const handleSelectContractFile = async (pathHandler: (path: string) => void) => {
     const selected = await dialog.open({
-      defaultPath: await Common.BaseDiToStr(BaseDirectory.Resource),
-      filters: [{ name: "CSV", extensions: ["csv"] }],
+      defaultPath: (await Common.BaseDiToStr(BaseDirectory.Resource)) + "resources",
+      filters: [{ name: "Text file", extensions: ["txt"] }],
       multiple: false
     });
     if (selected != null) {
-      const path = selected as string;
-      pathHandler(path);
-      const arr = await FileOperation.ReadCsvToArr(path.slice(path.lastIndexOf("\\") + 1));
-      console.log(`[handleContractPathChanged] -> ${arr}`);
+      pathHandler(selected as string);
+      // const path = selected as string;
+      // pathHandler(path);
+      // const arr = await FileOperation.Read.RawDataWithDelimiter(
+      //   path.slice(path.lastIndexOf("\\") + 1),
+      //   "resources",
+      //   ["\r\n", "\n"]
+      // );
+      // // const arr = await FileOperation.ReadCsvToArr(path.slice(path.lastIndexOf("\\") + 1));
+      // console.log(`[handleContractPathChanged] -> ${arr}`);
+      // setHopDongRaw(arr);
     }
   };
 
-  const LoadHopDong = async () => {
-    if (pathHopDong !== undefined && pathHopDong.length) {
-      const arr = await FileOperation.ReadCsvToArr(
-        pathHopDong.slice(pathHopDong.lastIndexOf("\\") + 1)
-      );
-      console.log(`[LoadHopDong] -> ${arr}`);
-      setHopDongRaw(arr);
-    }
+  const LoadHopDong = async (selected: string) => {
+    const path = selected;
+    const arr = await FileOperation.Read.RawDataWithDelimiter(
+      path.slice(path.lastIndexOf("\\") + 1),
+      "resources",
+      ["\r\n", "\n"]
+    );
+    // const arr = await FileOperation.ReadCsvToArr(path.slice(path.lastIndexOf("\\") + 1));
+    console.log(`[handleContractPathChanged] -> ${arr}`);
+    setHopDongRaw(arr);
   };
 
   useEffect(() => {
-    LoadHopDong();
+    LoadHopDong(pathHopDong);
 
     return () => {};
   }, [pathHopDong]);

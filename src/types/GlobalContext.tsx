@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import GlobalStrings from "./Globals";
 import { PopupType } from "../components/single/PopUp";
-import { FileOperation } from "./FileOperation";
 
 // Define a context for the global state
 export type ModifyType = "default" | "edit" | "delete";
@@ -45,6 +44,26 @@ interface GlobalStateContextType {
     show: () => void;
   };
 
+  wait: {
+    waiting: boolean;
+    setWaiting: (waiting: boolean) => void;
+  };
+
+  json: {
+    pathHopDong: string | undefined;
+    pathMaHang: string | undefined;
+    pathNoiXuat: string | undefined;
+    setPathHopDong: (path: string) => void;
+    setPathMaHang: (path: string) => void;
+    setPathNoiXuat: (path: string) => void;
+    rawHopDong: string[] | undefined;
+    rawMaHang: string[] | undefined;
+    rawNoiXuat: string[] | undefined;
+    setRawHopDong: (data: string[]) => void;
+    setRawMaHang: (data: string[]) => void;
+    setRawNoiXuat: (data: string[]) => void;
+  };
+
   // resources: {
   //   pathHopDong: string;
   //   setPathHopDong: (path: string) => void;
@@ -75,8 +94,16 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
     setInputOpen(true);
   };
 
+  // Waiting
+  const [waiting, setWaiting] = useState(false);
+
   // Resources
-  // const [pathHopDong, setPathHopDong] = useState("");
+  const [rawHopDong, setRawHopDong] = useState<string[]>();
+  const [rawMaHang, setRawMaHang] = useState<string[]>();
+  const [rawNoiXuat, setRawNoiXuat] = useState<string[]>();
+  const [pathHopDong, setPathHopDong] = useState<string>();
+  const [pathMaHang, setPathMaHang] = useState<string>();
+  const [pathNoiXuat, setPathNoiXuat] = useState<string>();
 
   const getRecordFilename = () => {
     return contractName + "_" + GlobalStrings.RecordFileName;
@@ -104,7 +131,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   const FetchProductMap = async () => {
     console.log(`[GlobalContext] -> Fetching product map`);
 
-    const data = await FileOperation.ReadResourceCsvToArr(GlobalStrings.NameProductCodeFile);
+    const data = rawMaHang ?? [""];
     let tmp = new Map<string, { name: string; unit: string }>();
     data.forEach((line) => {
       const s = line.split(",");
@@ -150,11 +177,30 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
           open: inputOpen,
           setOpen: setInputOpen,
           show: ShowInputCode
-        }
+        },
         // resources: {
         //   pathHopDong: pathHopDong,
         //   setPathHopDong: setPathHopDong
         // }
+        wait: {
+          waiting: waiting,
+          setWaiting: setWaiting
+        },
+
+        json: {
+          rawHopDong: rawHopDong,
+          rawMaHang: rawMaHang,
+          rawNoiXuat: rawNoiXuat,
+          setRawHopDong: setRawHopDong,
+          setRawMaHang: setRawMaHang,
+          setRawNoiXuat: setRawNoiXuat,
+          pathHopDong: pathHopDong,
+          pathMaHang: pathMaHang,
+          pathNoiXuat: pathNoiXuat,
+          setPathHopDong: setPathHopDong,
+          setPathMaHang: setPathMaHang,
+          setPathNoiXuat: setPathNoiXuat
+        }
       }}>
       {children}
     </GlobalStateContext.Provider>

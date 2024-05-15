@@ -20,7 +20,7 @@
       },
       "fs": {
         "all": true,
-        "scope": ["$DESKTOP/*", "$APPDATA", "$RESOURCE/*"]
+        "scope": ["$DESKTOP/*", "$APPDATA", "$RESOURCE/resources/*", "$RESOURCE/data/*","$RESOURCE/**"]
       },
       "window": {
         "all": true
@@ -50,7 +50,7 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": ["ma_hang.csv", "noi_xuat.csv", "hop_dong.csv"],
+      "resources": ["ma_hang.init", "noi_xuat.init", "hop_dong.init"],
       "shortDescription": "",
       "targets": "nsis",
       "windows": {

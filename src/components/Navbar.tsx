@@ -5,10 +5,9 @@ import import_svg from "../assets/download.svg";
 import export_svg from "../assets/up.svg";
 import category_svg from "../assets/settings.svg";
 import excel_svg from "../assets/doc.svg";
-import reload_svg from "../assets/refresh.svg";
+// import reload_svg from "../assets/refresh.svg";
 import { useGlobalState } from "../types/GlobalContext";
-import GlobalStrings from "../types/Globals";
-import CsvToSelect from "./CsvToSelect";
+import ArrayToSelect from "./ArrayToSelect";
 
 export function NavbarDefault() {
   const navigate = useNavigate();
@@ -29,15 +28,15 @@ export function NavbarDefault() {
     navigate("/category");
   };
 
-  const { contractName, setContractName } = useGlobalState();
+  const { contractName, setContractName, json } = useGlobalState();
 
   const handleHdChanged = (hd: string) => {
     setContractName(hd);
   };
 
-  const handleReloadClick = () => {
-    window.location.reload();
-  };
+  // const handleReloadClick = () => {
+  //   window.location.reload();
+  // };
 
   const button_outline = `teal`;
   return (
@@ -47,16 +46,16 @@ export function NavbarDefault() {
           <Button variant="text" color="green" className={`p-1`} onClick={handleHomeClick}>
             <img src={home_svg} className={`w-[32px]`} alt="" />
           </Button>
-          <Button variant="text" color="green" className={`p-1`} onClick={handleReloadClick}>
+          {/* <Button variant="text" color="green" className={`p-1`} onClick={handleReloadClick}>
             <img src={reload_svg} className={`w-[32px]`} alt="" />
-          </Button>
-          <CsvToSelect
-            file_name={GlobalStrings.NameContractFile}
+          </Button> */}
+          <ArrayToSelect
+            arr={json.rawHopDong ?? [""]}
             label="Chọn một hợp đồng"
             onChange={handleHdChanged}
             default={contractName}
             select_class="border-2 border-teal-700 rounded-md p-1 text-green-700 font-bold bg-green-50"
-            option_class="font-bold bg-white"></CsvToSelect>
+            option_class="font-bold bg-white"></ArrayToSelect>
         </div>
         <div className={`space-x-2`}>
           <Button

@@ -14,9 +14,12 @@ export default function CsvToSelect(props: {
   disabled?: boolean;
 }) {
   const [data, setData] = useState<string[]>([]);
+
   const onLoad = async () => {
-    let tmp = await FileOperation.ReadResourceCsvToArr(props.file_name);
-    // console.log(props.how_many_columns, props.target_column);
+    let tmp = await FileOperation.Read.RawDataWithDelimiter(props.file_name, "resources", [
+      "\r\n",
+      "\n"
+    ]);
 
     if (props.how_many_columns !== undefined && props.how_many_columns !== undefined) {
     } else if (props.target_column !== undefined) {
