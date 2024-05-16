@@ -7,7 +7,6 @@ import {
 } from "@material-tailwind/react";
 import { SetStateAction, useEffect, useState } from "react";
 import { NavbarDefault } from "./Navbar";
-import GlobalStrings from "../types/Globals";
 import edit_icon from "../assets/edit-report-tiny.svg";
 import ModifyPopup from "./single/ModifyPopup";
 import { useGlobalState } from "../types/GlobalContext";
@@ -19,17 +18,15 @@ import { Common } from "../types/GlobalFnc";
 import { BaseDirectory } from "@tauri-apps/api/fs";
 
 export default function CategoryManagement() {
-  const [open, setOpen] = useState(0);
-  const [rawData, setRawData] = useState<string[]>([]);
-  const [actualData, setActualData] = useState<string[][]>([]);
-  const [pathHopDong, setPathHopDong] = useState<string>("");
-  const [hopDongRaw, setHopDongRaw] = useState<string[]>([]);
-  // const [fileExist, setFileExist] = useState<boolean>();
-  // const [pathJsonData, setPathJsonData] = useState<string>();
+  const { modify, json } = useGlobalState();
 
-  // const [prodMap, setProdMap] = useState<Map<string, { name: string; unit: string }>>(
-  //   new Map<string, { name: string; unit: string }>()
-  // );
+  const [open, setOpen] = useState(0);
+  const [pathHopDong, setPathHopDong] = useState<string>(json.pathHopDong ?? "");
+  const [hopDongRaw, setHopDongRaw] = useState<string[]>([]);
+  const [pathMaHang, setPathmaHang] = useState<string>(json.pathMaHang ?? "");
+  const [maHangRaw, setMaHangRaw] = useState<string[]>([]);
+  const [pathNoiXuat, setPathNoiXuat] = useState(json.pathNoiXuat ?? "");
+  const [noiXuatRaw, setNoiXuatRaw] = useState<string[]>([]);
 
   interface Product {
     code: string;
@@ -53,9 +50,7 @@ export default function CategoryManagement() {
   };
 
   const [product, setProduct] = useState<Product>({ code: "", name: "", unit: "" });
-  const [originalProduct, setOriginalProduct] = useState<Product>({ code: "", name: "", unit: "" });
-
-  const { modify, popup, json } = useGlobalState();
+  // const [originalProduct, setOriginalProduct] = useState<Product>({ code: "", name: "", unit: "" });
 
   const handleOpen = (value: SetStateAction<number>) => setOpen(open === value ? 0 : value);
 
@@ -73,120 +68,16 @@ export default function CategoryManagement() {
     );
   }
 
-  const LoadCsv = async (name: string) => {
-    const data = await FileOperation.ReadResourceCsvToArr(name);
-    data.sort();
-    setRawData(data);
-  };
-
-  // const [jsonExist, setJsonExist] = useState<boolean>();
-
   useEffect(() => {
     if (json.pathHopDong !== undefined) {
       setPathHopDong(json.pathHopDong);
     }
+    if (json.pathMaHang !== undefined) {
+      setPathmaHang(json.pathMaHang);
+    }
 
     return () => {};
   }, []);
-
-  // interface ResourcePath {
-  //   hop_dong: string;
-  //   ma_hang: string;
-  //   noi_xuat: string;
-  // }
-
-  // const RestoreHopDong = async () => {
-  //   const raw = await FileOperation.ReadRawFile(GlobalStrings.NamePathJson);
-  //   const data = JSON.parse(raw) as ResourcePath;
-  //   const full_path = await Common.BaseDiToStr(GlobalStrings.SaveDirectory);
-  //   setPathHopDong(`${full_path}\\${data.hop_dong}`);
-  // };
-  // const processJsonExist = async () => {
-  //   console.log(`${GlobalStrings.NamePathJson} exists!`);
-  //   RestoreHopDong();
-  // };
-  // const processJsonNotExist = () => {
-  //   console.log(`${GlobalStrings.NamePathJson} does not exist!`);
-  // };
-
-  // useEffect(() => {
-  //   if (jsonExist !== undefined) {
-  //     if (jsonExist) {
-  //       processJsonExist();
-  //     } else {
-  //       processJsonNotExist();
-  //     }
-  //   }
-
-  //   return () => {};
-  // }, [jsonExist]);
-
-  // interface ResourcePath {
-  //   hop_dong: string;
-  //   ma_hang: string;
-  //   noi_xuat: string;
-  // }
-
-  // useEffect(() => {
-  //   if (fileExist !== undefined) {
-  //     if (fileExist) {
-  //       console.log(`path.json exists!`);
-  //       handleReadPathJson();
-  //     } else {
-  //       console.log(`path.json does NOT exist`);
-  //       // 1. Create the json file with default path
-  //       const default_data = {
-  //         hop_dong: GlobalStrings.NameContractFile,
-  //         ma_hang: GlobalStrings.NameProductCodeFile,
-  //         noi_xuat: GlobalStrings.NameExportLocation
-  //       } as ResourcePath;
-  //       // 2. store the json
-  //       FileOperation.WriteRawFile(GlobalStrings.NamePathJson, JSON.stringify(default_data), true);
-  //     }
-  //   }
-
-  //   return () => {};
-  // }, [fileExist]);
-
-  // useEffect(() => {
-  //   if (pathJsonData !== undefined) {
-  //     // restore the data
-  //     const data = JSON.parse(pathJsonData) as ResourcePath;
-  //     setPathHopDong(data.hop_dong);
-  //     console.log(`hopdong: ${data.hop_dong}, mahang: ${data.ma_hang}, noixuat: ${data.noi_xuat}`);
-  //   }
-
-  //   return () => {};
-  // }, [pathJsonData]);
-
-  // const Load = (second) => { third }
-
-  useEffect(() => {
-    if (open == CategoryInfo.hop_dong.id) {
-      // LoadCsv(GlobalStrings.ProductCodeFileName);
-    } else if (open == CategoryInfo.ma_hang.id) {
-      LoadCsv(GlobalStrings.NameProductCodeFile);
-    } else if (open == CategoryInfo.noi_xuat.id) {
-      // LoadCsv(GlobalStrings.ProductCodeFileName);
-    }
-    return () => {};
-  }, [open]);
-
-  useEffect(() => {
-    let tmp: string[][] = [];
-    for (let i = 1; i < rawData.length; ++i) {
-      const line = rawData[i];
-      const split = line.split(",");
-
-      if (split.every((str) => str.trim().length)) {
-        tmp.push(split);
-      }
-    }
-
-    setActualData(tmp);
-
-    return () => {};
-  }, [rawData]);
 
   const StripeRow = (idx: number) => {
     if (idx % 2 == 0) {
@@ -203,36 +94,69 @@ export default function CategoryManagement() {
     });
     if (selected != null) {
       pathHandler(selected as string);
-      // const path = selected as string;
-      // pathHandler(path);
-      // const arr = await FileOperation.Read.RawDataWithDelimiter(
-      //   path.slice(path.lastIndexOf("\\") + 1),
-      //   "resources",
-      //   ["\r\n", "\n"]
-      // );
-      // // const arr = await FileOperation.ReadCsvToArr(path.slice(path.lastIndexOf("\\") + 1));
-      // console.log(`[handleContractPathChanged] -> ${arr}`);
-      // setHopDongRaw(arr);
     }
   };
 
-  const LoadHopDong = async (selected: string) => {
-    const path = selected;
+  // const LoadMaHang = async (selected: string) => {
+  //   const arr = await FileOperation.Read.RawDataWithDelimiter(
+  //     selected.slice(selected.lastIndexOf("\\") + 1),
+  //     "resources",
+  //     ["\r\n", "\n"]
+  //   );
+  //   Common.Log(`LoadHopDong -> ${JSON.stringify(arr)}`);
+  //   const tmp: string[][] = [];
+  //   arr.forEach((line) => {
+  //     const t = line.split(",");
+  //     if (t.every((str) => str.trim().length)) {
+  //       tmp.push(line.split(","));
+  //     }
+  //   });
+  //   setMaHangRaw(tmp);
+  // };
+
+  useEffect(() => {
+    if (pathHopDong !== undefined && pathHopDong.length) {
+      LoadFileToStrArr(pathHopDong, setHopDongRaw);
+    }
+
+    return () => {};
+  }, [pathHopDong]);
+
+  useEffect(() => {
+    if (pathNoiXuat !== undefined && pathNoiXuat.length) {
+      LoadFileToStrArr(pathNoiXuat, setNoiXuatRaw);
+    }
+
+    return () => {};
+  }, [pathNoiXuat]);
+
+  // const LoadHopDong = async (selected: string) => {
+  //   const arr = await FileOperation.Read.RawDataWithDelimiter(
+  //     selected.slice(selected.lastIndexOf("\\") + 1),
+  //     "resources",
+  //     ["\r\n", "\n"]
+  //   );
+  //   Common.Log(`LoadHopDong -> ${JSON.stringify(arr)}`);
+  //   setHopDongRaw(arr);
+  // };
+
+  const LoadFileToStrArr = async (path: string, setter: (value: string[]) => void) => {
     const arr = await FileOperation.Read.RawDataWithDelimiter(
       path.slice(path.lastIndexOf("\\") + 1),
       "resources",
       ["\r\n", "\n"]
     );
-    // const arr = await FileOperation.ReadCsvToArr(path.slice(path.lastIndexOf("\\") + 1));
-    console.log(`[handleContractPathChanged] -> ${arr}`);
-    setHopDongRaw(arr);
+    Common.Log(`LoadHopDong -> ${JSON.stringify(arr)}`);
+    setter(arr);
   };
 
   useEffect(() => {
-    LoadHopDong(pathHopDong);
+    if (pathMaHang !== undefined && pathMaHang.length) {
+      LoadFileToStrArr(pathMaHang, setMaHangRaw);
+    }
 
     return () => {};
-  }, [pathHopDong]);
+  }, [pathMaHang]);
 
   const CreatePathSelector = (
     label: string,
@@ -260,81 +184,131 @@ export default function CategoryManagement() {
     );
   };
 
-  const CreateAccordionBody = (cat: number) => {
-    if (cat == CategoryInfo.ma_hang.id) {
-      return (
-        <AccordionBody className="pt-0 text-base font-normal flex flex-col items-center">
-          {CreatePathSelector("File mã hàng hiện tại:", pathHopDong, setPathHopDong)}
-          <table className={`w-full`}>
-            <thead className={`uppercase font-myRegular`}>
-              <tr>
-                <th className={`border border-gray-400 px-2`}>{"stt"}</th>
-                <th className={`border border-gray-400 px-2`}>{"mã hàng"}</th>
-                <th className={`border border-gray-400 px-2`}>{"tên hàng"}</th>
-                <th className={`border border-gray-400 px-2`}>{"đơn vị tính"}</th>
-                <th className={`border border-gray-400 px-2`}>{"sửa"}</th>
+  const BodyMaHang = () => {
+    return (
+      <AccordionBody className="pt-0 text-base font-normal flex flex-col items-center">
+        {CreatePathSelector("File mã hàng:", pathMaHang, setPathmaHang)}
+        <table className={`w-full`}>
+          <thead className={`uppercase font-myRegular`}>
+            <tr>
+              <th className={`border border-gray-400 px-2`}>{"stt"}</th>
+              <th className={`border border-gray-400 px-2`}>{"mã hàng"}</th>
+              <th className={`border border-gray-400 px-2`}>{"tên hàng"}</th>
+              <th className={`border border-gray-400 px-2`}>{"đơn vị tính"}</th>
+              <th className={`border border-gray-400 px-2`}>{"sửa"}</th>
+            </tr>
+          </thead>
+          <tbody className={`font-myThin font-bold`}>
+            {maHangRaw.map((line, idx) => (
+              <tr key={idx} className={`${StripeRow(idx)}`}>
+                <td className={`border border-gray-400 px-2 max-w-[5%] text-center`}>{idx + 1}</td>
+                <td className={`border border-gray-400 px-2 max-w-[30%]`}>{line.split(",")[0]}</td>
+                <td className={`border border-gray-400 px-2 max-w-[35%]`}>{line.split(",")[1]}</td>
+                <td className={`border border-gray-400 px-2 max-w-[15%] text-center`}>
+                  {line.split(",")[2]}
+                </td>
+                <td className={`border border-gray-400 px-2 max-w-[5%] text-center`}>
+                  <Button
+                    variant="text"
+                    className={`p-0`}
+                    onClick={() => {
+                      // setOriginalProduct({
+                      //   code: line.split(",")[0],
+                      //   name: line.split(",")[1],
+                      //   unit: line.split(",")[2]
+                      // });
+                      setProduct({
+                        code: line.split(",")[0],
+                        name: line.split(",")[1],
+                        unit: line.split(",")[2]
+                      });
+                      modify.setType("default");
+                      modify.setOpen(true);
+                    }}>
+                    <img src={edit_icon} />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </AccordionBody>
+    );
+  };
+
+  const BodyHopDong = () => {
+    return (
+      <AccordionBody className="pt-0 text-base font-normal">
+        <div className={`flex flex-col items-center`}>
+          {CreatePathSelector("File hợp đồng:", pathHopDong, setPathHopDong)}
+          <table className={`w-[60%] text-center`}>
+            <thead>
+              <tr className={`capitalize`}>
+                <th className={`border`}>mã hợp đồng</th>
+                <th className={`border`}>sửa</th>
               </tr>
             </thead>
-            <tbody className={`font-myThin`}>
-              {actualData.map((line, idx) => (
-                <tr key={idx} className={`${StripeRow(idx)}`}>
-                  <td className={`border border-gray-400 px-2 max-w-[5%] text-center`}>
-                    {idx + 1}
-                  </td>
-                  <td className={`border border-gray-400 px-2 max-w-[30%]`}>{line[0]}</td>
-                  <td className={`border border-gray-400 px-2 max-w-[35%]`}>{line[1]}</td>
-                  <td className={`border border-gray-400 px-2 max-w-[15%] text-center`}>
-                    {line[2]}
-                  </td>
-                  <td className={`border border-gray-400 px-2 max-w-[5%] text-center`}>
-                    <Button
-                      variant="text"
-                      className={`p-0`}
-                      onClick={() => {
-                        setOriginalProduct({ code: line[0], name: line[1], unit: line[2] });
-                        setProduct({ code: line[0], name: line[1], unit: line[2] });
-                        modify.setType("default");
-                        modify.setOpen(true);
-                      }}>
-                      <img src={edit_icon} />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+            <tbody>
+              {hopDongRaw.map((value, idx) => {
+                return (
+                  <tr key={idx}>
+                    <td className={`border w-[90%]`}>{value}</td>
+                    <td className={`border w-[10%]`}>
+                      <Button variant="text" className={`p-0`}>
+                        <img src={edit_icon} />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
-        </AccordionBody>
-      );
+        </div>
+      </AccordionBody>
+    );
+  };
+
+  const BodyNoiXuat = () => {
+    return (
+      <AccordionBody className="pt-0 text-base font-normal">
+        <div className={`flex flex-col items-center`}>
+          {CreatePathSelector("File nơi xuất:", pathNoiXuat, setPathNoiXuat)}
+          <table className={`w-[60%] text-center`}>
+            <thead>
+              <tr className={`capitalize`}>
+                <th className={`border`}>nơi xuất</th>
+                <th className={`border`}>tên</th>
+                <th className={`border`}>sửa</th>
+              </tr>
+            </thead>
+            <tbody>
+              {noiXuatRaw.map((value, idx) => {
+                return (
+                  <tr key={idx}>
+                    <td className={`border w-[45%]`}>{value.split(",")[0]}</td>
+                    <td className={`border w-[45%]`}>{value.split(",")[1]}</td>
+                    <td className={`border w-[10%]`}>
+                      <Button variant="text" className={`p-0`}>
+                        <img src={edit_icon} />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </AccordionBody>
+    );
+  };
+
+  const CreateAccordionBody = (cat: number) => {
+    if (cat == CategoryInfo.ma_hang.id) {
+      return <>{BodyMaHang()}</>;
     } else if (cat == CategoryInfo.hop_dong.id) {
-      return (
-        <AccordionBody className="pt-0 text-base font-normal">
-          <div className={`flex flex-col items-center`}>
-            {CreatePathSelector("File hợp đồng hiện tại:", pathHopDong, setPathHopDong)}
-            <table className={`w-[60%] text-center`}>
-              <thead>
-                <tr className={`capitalize`}>
-                  <th className={`border`}>mã hợp đồng</th>
-                  <th className={`border`}>sửa</th>
-                </tr>
-              </thead>
-              <tbody>
-                {hopDongRaw.map((value, idx) => {
-                  return (
-                    <tr key={idx}>
-                      <td className={`border w-[90%]`}>{value}</td>
-                      <td className={`border w-[10%]`}>
-                        <Button variant="text" className={`p-0`}>
-                          <img src={edit_icon} />
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </AccordionBody>
-      );
+      return <>{BodyHopDong()}</>;
+    } else if (cat == CategoryInfo.noi_xuat.id) {
+      return <>{BodyNoiXuat()}</>;
     }
     return <AccordionBody className="pt-0 text-base font-normal">1</AccordionBody>;
   };
@@ -438,39 +412,37 @@ export default function CategoryManagement() {
     Popup.Error("Chức năng chưa thể sử dụng");
   };
   const handleProductSave = () => {
-    // Check changes
-    if (
-      originalProduct.code == product.code &&
-      originalProduct.name == product.name &&
-      originalProduct.unit == product.unit
-    ) {
-      modify.setOpen(false);
-      setTimeout(() => {
-        popup.show(
-          <>
-            <Typography>Thông tin không có thay đổi.</Typography>
-            <Typography className={`font-bold`}>Thao tác không được thực hiện</Typography>
-          </>,
-          "info"
-        );
-      }, 100);
-    }
-    let tmp = JSON.parse(JSON.stringify(rawData)) as string[];
-    rawData.forEach((str, idx) => {
-      const s = str.split(",");
-      if (
-        s[0] == originalProduct.code &&
-        s[1] == originalProduct.name &&
-        s[2] == originalProduct.unit
-      ) {
-        tmp[idx] = `${product.code},${product.name},${product.unit}`;
-      }
-    });
-    FileOperation.WriteCsv(GlobalStrings.NameProductCodeFile, GlobalStrings.SaveDirectory, tmp);
-    setTimeout(() => {
-      modify.setOpen(false);
-    }, 100);
-    LoadCsv(GlobalStrings.NameProductCodeFile);
+    // // Check changes
+    // if (
+    //   originalProduct.code == product.code &&
+    //   originalProduct.name == product.name &&
+    //   originalProduct.unit == product.unit
+    // ) {
+    //   modify.setOpen(false);
+    //   setTimeout(() => {
+    //     popup.show(
+    //       <>
+    //         <Typography>Thông tin không có thay đổi.</Typography>
+    //         <Typography className={`font-bold`}>Thao tác không được thực hiện</Typography>
+    //       </>,
+    //       "info"
+    //     );
+    //   }, 100);
+    // }
+    // let tmp = JSON.parse(JSON.stringify(maHangRaw)) as string[];
+    // maHangRaw.forEach((str, idx) => {
+    //   if (
+    //     str[0] == originalProduct.code &&
+    //     str[1] == originalProduct.name &&
+    //     str[2] == originalProduct.unit
+    //   ) {
+    //     tmp[idx] = `${product.code},${product.name},${product.unit}`;
+    //   }
+    // });
+    // FileOperation.WriteCsv(GlobalStrings.NameProductCodeFile, GlobalStrings.SaveDirectory, tmp);
+    // setTimeout(() => {
+    //   modify.setOpen(false);
+    // }, 100);
   };
 
   return (

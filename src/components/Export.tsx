@@ -14,7 +14,7 @@ export default function Export() {
   // States
   const [hopDongStr, setHopDongStr] = useState("");
   const [rlsDateStr, setRlsDateStr] = useState("");
-  const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
+  const [selectedCodes, setSelectedCodes] = useState<string[]>();
   const [importedAmount, setImportedAmount] = useState<number[]>([]);
   const [csvContent, setCsvContent] = useState<string[]>([]);
   const [csvLocation, setCsvLocation] = useState<string[]>([]);
@@ -22,9 +22,7 @@ export default function Export() {
   const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
     new Map()
   );
-  const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>(
-    new WarehouseData.Record("", "", "", "")
-  );
+  const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>();
   const { getRecordFilename, popup, product, input_code, json } = useGlobalState();
   const [exportGC, setExportTypeRadio] = useState(true);
 
@@ -118,20 +116,22 @@ export default function Export() {
   useEffect(() => {
     // console.log("selectedCodes changed");
     // Update session data
-    inpAmountRef.current = [];
-    const tmp = new WarehouseData.Record(hopDongStr, rlsDateStr);
-    tmp.ClearProduct();
-    selectedCodes.forEach((code) => {
-      tmp.CreateProduct(code);
-    });
-    setCurrentSessionData(tmp);
+    if (selectedCodes !== undefined) {
+      inpAmountRef.current = [];
+      const tmp = new WarehouseData.Record(hopDongStr, rlsDateStr);
+      tmp.ClearProduct();
+      selectedCodes.forEach((code) => {
+        tmp.CreateProduct(code);
+      });
+      setCurrentSessionData(tmp);
+    }
 
     return () => {};
   }, [selectedCodes]);
 
   useEffect(() => {
     if (currentSessionData) {
-      product.fetch();
+      product.constructProductMap(json.rawMaHang ?? [""]);
       console.log("Session data updated: " + WarehouseData.ToString(currentSessionData));
     }
 
@@ -183,10 +183,14 @@ export default function Export() {
 
       // dialog.message("Final data: " + ImportData.ToString(tmp));
 
-      tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
-      //Popup.Info("Xong");
-      popup.show("Xong", "info");
-      setCurrentSessionData(new WarehouseData.Record("", ""));
+      const res = await tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
+      if (res) {
+        popup.show("Xong", "info");
+        setHopDongStr("");
+        setCurrentSessionData(new WarehouseData.Record("", ""));
+      } else {
+        popup.show("Có lỗi xảy ra, hãy thử lại", "error");
+      }
       // window.location.reload();
     } else {
       popup.show("Không thể lưu, danh sách mã hàng trống", "error");
@@ -223,6 +227,7 @@ export default function Export() {
           <div className="flex items-center">
             <div className={`w-1/2 pr-2 ${RegularTextColor()}`}>Hợp đồng</div>
             <input
+              value={hopDongStr}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 if (event.target.value.length < 1) {
                   setHopDongValid(false);
@@ -284,8 +289,7 @@ export default function Export() {
           <MultipleProdCodeSelector
             open={open}
             closeHandler={setOpen}
-            selectedCode={selectedCodes}
-            productMap={productMap}
+            selectedCode={selectedCodes ?? []}
             handleCodeChange={setSelectedCodes}></MultipleProdCodeSelector>
         </div>
         <div className={`flex space-x-2`}>
@@ -421,10 +425,14 @@ export default function Export() {
         {RadioTypes()}
         {exportGC ? ExportGC() : ExportTP()}
         <SaveButton className={`${SaveButtonStyle()}`} onClick={handleNewClick}></SaveButton>
-        <SummaryTable
-          data={currentSessionData}
-          amount={importedAmount}
-          input_ref={inpAmountRef}></SummaryTable>
+        {currentSessionData !== undefined ? (
+          <SummaryTable
+            data={currentSessionData}
+            amount={importedAmount}
+            input_ref={inpAmountRef}></SummaryTable>
+        ) : (
+          ""
+        )}
       </div>
     </>
   );

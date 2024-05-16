@@ -1,6 +1,5 @@
 import { path } from "@tauri-apps/api";
-import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-import GlobalStrings from "./Globals";
+import { BaseDirectory } from "@tauri-apps/api/fs";
 
 export namespace Common {
   export const BaseDiToStr = async (dir: BaseDirectory) => {
@@ -106,18 +105,16 @@ export namespace Common {
   };
   type log_type = "info" | "warn" | "error";
   export const Log = async (msg: string, log_type: log_type = "info") => {
-    try {
-      await writeTextFile(
-        GlobalStrings.LogFileName,
-        `[${log_type.toUpperCase()}] [${new Date(Date.now()).toString().slice(4, 24)}] | ${msg}\n`,
-        {
-          dir: BaseDirectory.Resource,
-          append: true
-        }
-      );
-    } catch (error) {
-      // Dialog.Error(error as string);
-      return;
-    }
+    const log = `[${log_type.toUpperCase()}] [${new Date(Date.now()).toString().slice(4, 24)}] | ${msg}\n`;
+    console.log(log);
+    // try {
+    //   await writeTextFile(GlobalStrings.LogFileName, log, {
+    //     dir: BaseDirectory.Resource,
+    //     append: true
+    //   });
+    // } catch (error) {
+    //   // Dialog.Error(error as string);
+    //   return;
+    // }
   };
 }

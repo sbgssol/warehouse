@@ -1,4 +1,4 @@
-import { ChangeEvent, MutableRefObject } from "react";
+import { ChangeEvent, MutableRefObject, useEffect, useState } from "react";
 import { WarehouseData } from "../types/ImportWarehouseData";
 import { useGlobalState } from "../types/GlobalContext";
 
@@ -8,6 +8,15 @@ export default function SummaryTable(props: {
   input_ref: MutableRefObject<HTMLInputElement[]>;
 }) {
   const { product } = useGlobalState();
+  const [amounts, setAmounts] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (props.amount === undefined) {
+      setAmounts(Array(props.data.danh_sach_san_pham.length));
+    }
+
+    return () => {};
+  }, [props.amount]);
 
   if (props.data.danh_sach_san_pham.length) {
     return (
@@ -45,13 +54,21 @@ export default function SummaryTable(props: {
                       props.amount !== undefined
                         ? props.amount.length > index
                           ? props.amount[index]
-                          : ""
+                          : amounts[index] ?? ""
                         : 0
                     }
                     onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                      if ((event.target.value as unknown as number) <= 0) {
-                        event.target.value = "0";
+                      let val = event.target.value;
+                      if (Number(val) <= 0) {
+                        val = "0";
                       }
+                      if (Number(val) > 0 && val.startsWith("0")) {
+                        val = event.target.value.slice(1);
+                      }
+                      const newAmounts = [...amounts];
+                      newAmounts[index] = Number(val);
+                      setAmounts(newAmounts);
+                      // Common.Log(`value changed: ${val}, ${props.input_ref.current[index].value}`);
                     }}
                     ref={(ref) => {
                       if (ref) {

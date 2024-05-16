@@ -115,12 +115,13 @@ export module WarehouseData {
           append: append
         });
       } catch (error) {
-        Popup.Info(`Data could NOT be stored to ${directory.toString()}`, "Thông tin");
-        // Dialog.Error(error as string);
-        return;
+        const folder_name = await Common.BaseDiToStr(directory);
+        Popup.Error(`Không thể lưu dữ liệu vào\n${folder_name}`);
+        Common.Log(`Failed to store "${file_name}" to "${await Common.BaseDiToStr(directory)}"`);
+        return false;
       }
-      // const dir = await Common.BaseDiToStr(directory)
       Common.Log(`"${file_name}" stored to "${await Common.BaseDiToStr(directory)}"`);
+      return true;
     };
   }
 

@@ -33,7 +33,7 @@ export default function CreateReport() {
   const [dataToEdit, setDataToEdit] = useState<ShortenData>(new ShortenData("", "", "", ""));
   const [maHang, setMaHang] = useState("");
 
-  const { popup, product } = useGlobalState();
+  const { popup, product, json } = useGlobalState();
 
   type CongCuoiKi = {
     nhap: number;
@@ -308,7 +308,7 @@ export default function CreateReport() {
 
   const handleCheck = async () => {
     setRestoredData([]);
-    product.fetch();
+    product.constructProductMap(json.rawMaHang ?? [""]);
     try {
       const restored_data = await WarehouseData.RestoreData(
         getRecordFilename(),

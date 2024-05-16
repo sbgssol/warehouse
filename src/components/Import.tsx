@@ -9,6 +9,7 @@ import SaveButton from "./single/SaveButton";
 import { useGlobalState } from "../types/GlobalContext";
 import { FileOperation } from "../types/FileOperation";
 import TypeProductCodeModal from "./single/TypeProductCodeModal";
+import { Common } from "../types/GlobalFnc";
 
 export default function Import() {
   // States
@@ -16,7 +17,7 @@ export default function Import() {
   const [billStr, setBillStr] = useState("");
   const [realDateStr, setRealDateStr] = useState("");
   const [docDateStr, setDocDateStr] = useState("");
-  const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
+  const [selectedCodes, setSelectedCodes] = useState<string[]>();
   const [importedAmount, setImportedAmount] = useState<number[]>([]);
   const { getRecordFilename } = useGlobalState();
   const { popup, product, input_code, json } = useGlobalState();
@@ -32,9 +33,7 @@ export default function Import() {
   const fixed_area_border = `border-amber-200`;
   const fixed_input_outline = `focus:outline-amber-300`;
 
-  const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>(
-    new WarehouseData.Record("", "")
-  );
+  const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>();
 
   // To load the CSV
   const [csvContent, setCsvContent] = useState<string[]>([]);
@@ -89,19 +88,21 @@ export default function Import() {
   }, [csvContent]); // Run this effect only when csvContent changes
 
   useEffect(() => {
-    inpAmountRef.current = [];
-    const tmp = new WarehouseData.Record(hopDongStr, realDateStr, billStr, docDateStr);
-    tmp.ClearProduct();
-    selectedCodes.forEach((code) => {
-      tmp.CreateProduct(code);
-    });
-    setCurrentSessionData(tmp);
+    if (selectedCodes !== undefined) {
+      inpAmountRef.current = [];
+      const tmp = new WarehouseData.Record(hopDongStr, realDateStr, billStr, docDateStr);
+      tmp.ClearProduct();
+      selectedCodes.forEach((code) => {
+        tmp.CreateProduct(code);
+      });
+      setCurrentSessionData(tmp);
+    }
 
     return () => {};
   }, [selectedCodes]);
 
   useEffect(() => {
-    if (currentSessionData) {
+    if (currentSessionData !== undefined) {
       console.log("Session data updated: " + WarehouseData.ToString(currentSessionData));
     }
 
@@ -119,7 +120,7 @@ export default function Import() {
     return soBillValid ? `bg-white ${fixed_input_outline}` : `bg-red-100 focus:outline-red-500`;
   };
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     // Map amount to product
     if (inpAmountRef && currentSessionData && currentSessionData.danh_sach_san_pham.length) {
       const tmp = currentSessionData;
@@ -134,7 +135,7 @@ export default function Import() {
       }
 
       if (tmp.danh_sach_san_pham.length != inpAmountRef.current.length) {
-        console.log(
+        Common.Log(
           `tmp.danh_sach_san_pham.length = ${tmp.danh_sach_san_pham.length}, inpAmountRef.current.length = ${inpAmountRef.current.length}`
         );
 
@@ -148,10 +149,20 @@ export default function Import() {
 
       // dialog.message("Final data: " + ImportData.ToString(tmp));
 
-      tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
+      const res = await tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
       // Popup.Info("Xong", "Thông tin");
-      popup.show("Xong", "info");
-      setCurrentSessionData(new WarehouseData.Record("", ""));
+      if (res) {
+        popup.show("Xong", "info");
+        setHopDongStr("");
+        setBillStr("");
+        // setRealDateStr("");
+        // setDocDateStr("");
+        setSelectedCodes([]);
+        setImportedAmount([]);
+        setCurrentSessionData(new WarehouseData.Record("", ""));
+      } else {
+        popup.show("Có lỗi xảy ra, hãy thử lại", "error");
+      }
       // window.location.reload();
     } else {
       popup.show("Không thể lưu, danh sách trống", "error");
@@ -169,6 +180,7 @@ export default function Import() {
           <div className="flex items-center">
             <div className={`w-1/2 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
             <input
+              value={hopDongStr}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 if (event.target.value.length < 1) {
                   setHopDongValid(false);
@@ -183,6 +195,7 @@ export default function Import() {
           <div className="flex pt-2 items-center">
             <div className={`w-1/2  pr-2 ${fixed_text_color}`}>Số bill</div>
             <input
+              value={billStr}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 if (event.target.value.length < 1) {
                   setSoBillValid(false);
@@ -201,6 +214,7 @@ export default function Import() {
               className={`w-1/2 bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
               type="date"
               ref={realDateRef}
+              value={realDateStr}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 setRealDateStr(event.target.value);
               }}></input>
@@ -211,6 +225,7 @@ export default function Import() {
               className={`w-1/2 bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
               type="date"
               ref={docDateRef}
+              value={docDateStr}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 setDocDateStr(event.target.value);
               }}></input>
@@ -253,8 +268,7 @@ export default function Import() {
             <MultipleProdCodeSelector
               open={open}
               closeHandler={setOpen}
-              selectedCode={selectedCodes}
-              productMap={product.map}
+              selectedCode={selectedCodes ?? []}
               handleCodeChange={setSelectedCodes}></MultipleProdCodeSelector>
           </div>
           <div className={`flex space-x-2`}>
@@ -311,20 +325,36 @@ export default function Import() {
     }
   };
 
+  // const handleReadExcel = async () => {
+  //   Common.Log(`Reading from excel`);
+  //   const path = await dialog.open({
+  //     defaultPath: await Common.BaseDiToStr(GlobalStrings.SaveDirectory),
+  //     filters: [{ name: "Excel file", extensions: ["xlsx"] }],
+  //     multiple: false
+  //   });
+  //   const workbook = read(path as string, { type: "string" });
+  //   Common.Log(`read data ->\n${JSON.stringify(workbook)}`);
+  // };
+
   return (
     <>
       <NavbarDefault></NavbarDefault>
       <TypeProductCodeModal saveHandler={handleTypeProductCode}></TypeProductCodeModal>
+      {/* <Button onClick={handleReadExcel}>Read Excel</Button> */}
       <div className="w-full h-max overflow-hidden flex flex-col items-center">
         {fixedPart()}
         {updatingPart()}
         <SaveButton
           className={`text-amber-600 border-amber-600 hover:bg-amber-50`}
           onClick={handleSaveClick}></SaveButton>
-        <SummaryTable
-          data={currentSessionData}
-          amount={importedAmount}
-          input_ref={inpAmountRef}></SummaryTable>
+        {currentSessionData !== undefined ? (
+          <SummaryTable
+            data={currentSessionData}
+            amount={importedAmount}
+            input_ref={inpAmountRef}></SummaryTable>
+        ) : (
+          ""
+        )}
       </div>
     </>
   );

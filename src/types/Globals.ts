@@ -5,9 +5,6 @@ const GlobalStrings = {
   SelectContract: "Chọn hợp đồng",
   RecordFileName: "record.dat",
   SaveDirectory: BaseDirectory.Resource,
-  NameProductCodeFile: "ma_hang.csv",
-  NameExportLocation: "noi_xuat.csv",
-  NameContractFile: "hop_dong.csv",
   TableColumn: {
     STT: "STT",
     NoiXuat: "nơi xuất",

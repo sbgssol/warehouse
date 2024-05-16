@@ -32,7 +32,7 @@ interface GlobalStateContextType {
   };
 
   product: {
-    fetch: () => void;
+    constructProductMap: (data: string[]) => void;
     map: Map<string, { name: string; unit: string }>;
     setMap: (map: Map<string, { name: string; unit: string }>) => void;
     getInfo: (code: string, cat: ProductCat) => string;
@@ -116,7 +116,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   };
 
   const GetProductInfo = (code: string, cat: ProductCat) => {
-    let res = "LỖI";
+    let res = "KHÔNG TÌM THẤY";
     const tmp = map.get(code);
     if (tmp !== undefined) {
       if (cat == "name") {
@@ -128,10 +128,10 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
     return res;
   };
 
-  const FetchProductMap = async () => {
+  const FetchProductMap = async (data: string[]) => {
     console.log(`[GlobalContext] -> Fetching product map`);
 
-    const data = rawMaHang ?? [""];
+    // const data = rawMaHang ?? [""];
     let tmp = new Map<string, { name: string; unit: string }>();
     data.forEach((line) => {
       const s = line.split(",");
@@ -171,7 +171,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
           map: map,
           setMap: setMap,
           getInfo: GetProductInfo,
-          fetch: FetchProductMap
+          constructProductMap: FetchProductMap
         },
         input_code: {
           open: inputOpen,

@@ -11,13 +11,15 @@ import {
   Button
 } from "@material-tailwind/react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { Common } from "../types/GlobalFnc";
+import { useGlobalState } from "../types/GlobalContext";
 
 export default function MultipleProdCodeSelector(props: {
   open: boolean;
   closeHandler: (close: boolean) => void;
   // codeList: string[];
   selectedCode: string[];
-  productMap: Map<string, { name: string; unit: string }>;
+  // productMap: Map<string, { name: string; unit: string }>;
   handleCodeChange: (strings: string[]) => void;
 }) {
   const checkboxRef = useRef<HTMLInputElement[]>([]);
@@ -25,19 +27,27 @@ export default function MultipleProdCodeSelector(props: {
   const [selectionOrder, setSelectionOrder] = useState<number[]>([]);
   const [codeArray, setCodeArray] = useState<string[]>([]);
 
-  const constructCodeArrayFromProductCode = () => {
-    const tmp: string[] = [];
-    props.productMap.forEach((_value, key) => {
-      tmp.push(key);
-    });
-    setCodeArray(tmp);
-  };
+  const { product } = useGlobalState();
+
+  // const constructCodeArrayFromProductCode = () => {
+  //   const tmp: string[] = [];
+  //   product.map.forEach((_value, key) => {
+  //     tmp.push(key);
+  //   });
+  //   Common.Log(`tmp: ${JSON.stringify(tmp)}`);
+  //   setCodeArray(tmp);
+  // };
 
   useEffect(() => {
-    constructCodeArrayFromProductCode();
+    const tmp: string[] = [];
+    product.map.forEach((_value, key) => {
+      tmp.push(key);
+    });
+    Common.Log(`tmp: ${JSON.stringify(tmp)}`);
+    setCodeArray(tmp);
 
     return () => {};
-  }, [props.productMap]);
+  }, []);
 
   const handleModalReset = () => {
     props.handleCodeChange([]);
@@ -86,20 +96,56 @@ export default function MultipleProdCodeSelector(props: {
     setSelectionOrder(new Array(codeArray.length).fill(0));
   }, [codeArray]);
 
-  const getProductName = (code: string) => {
-    let name = "-";
-    const tmp = props.productMap.get(code);
-    if (tmp) {
-      name = tmp.name;
-    }
-    return name;
+  // const getProductName = (code: string) => {
+  //   let name = "-";
+  //   const tmp = props.productMap.get(code);
+  //   if (tmp) {
+  //     name = tmp.name;
+  //   }
+  //   return name;
+  // };
+
+  const Buttons = () => {
+    const btn_twstyles = "w-[20%]";
+    return (
+      <>
+        <Button
+          variant="filled"
+          color="red"
+          onClick={handleModalClose}
+          className={`${btn_twstyles}`}>
+          Đóng
+        </Button>
+        <Button
+          variant="outlined"
+          color="red"
+          onClick={handleModalReset}
+          className={`${btn_twstyles}`}>
+          Đặt lại
+        </Button>
+        <Button
+          variant="outlined"
+          color="orange"
+          onClick={handleModalClear}
+          className={`${btn_twstyles}`}>
+          Xóa
+        </Button>
+        <Button
+          variant="gradient"
+          color="green"
+          onClick={handleModalDone}
+          className={`${btn_twstyles}`}>
+          Xong
+        </Button>
+      </>
+    );
   };
 
   return (
     <Dialog
       open={props.open}
       handler={props.closeHandler}
-      dismiss={{ outsidePress: false, escapeKey: true }}
+      // dismiss={{ outsidePress: false, escapeKey: true }}
       className="select-none">
       <DialogHeader>Chọn mã hàng cần nhập</DialogHeader>
       <DialogBody className="h-[70vh] overflow-y-scroll">
@@ -160,7 +206,7 @@ export default function MultipleProdCodeSelector(props: {
                     {value}
                   </Typography>
                   <Typography color="gray" className="font-medium" variant="small">
-                    {getProductName(value)}
+                    {product.getInfo(value, "name")}
                   </Typography>
                 </div>
               </label>
@@ -168,36 +214,7 @@ export default function MultipleProdCodeSelector(props: {
           ))}
         </List>
       </DialogBody>
-      <DialogFooter className="space-x-2">
-        <Button
-          variant="filled"
-          color="red"
-          onClick={handleModalClose}
-          className={`w-[130px] h-[40px] flex items-center justify-center`}>
-          Đóng
-        </Button>
-        <Button
-          variant="outlined"
-          color="red"
-          onClick={handleModalReset}
-          className={`w-[130px] h-[40px]`}>
-          Đặt lại
-        </Button>
-        <Button
-          variant="outlined"
-          color="orange"
-          onClick={handleModalClear}
-          className={`w-[130px] h-[40px]`}>
-          Xóa
-        </Button>
-        <Button
-          variant="gradient"
-          color="green"
-          onClick={handleModalDone}
-          className="w-[150px] h-[40px]">
-          Xong
-        </Button>
-      </DialogFooter>
+      <DialogFooter className="flex justify-evenly">{Buttons()}</DialogFooter>
     </Dialog>
   );
 }
