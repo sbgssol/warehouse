@@ -7,9 +7,10 @@ import { NavbarDefault } from "./Navbar";
 import SummaryTable from "./SummaryTable";
 import SaveButton from "./single/SaveButton";
 import { useGlobalState } from "../types/GlobalContext";
-import { FileOperation } from "../types/FileOperation";
 import TypeProductCodeModal from "./single/TypeProductCodeModal";
 import { Common } from "../types/GlobalFnc";
+import { dialog, fs } from "@tauri-apps/api";
+import { WorkBook, WorkSheet, read, utils } from "xlsx";
 
 export default function Import() {
   // States
@@ -34,6 +35,8 @@ export default function Import() {
   const fixed_input_outline = `focus:outline-amber-300`;
 
   const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>();
+
+  // const [importFromExcel, setImportFromExcel] = useState<WarehouseData.Record[]>();
 
   // To load the CSV
   const [csvContent, setCsvContent] = useState<string[]>([]);
@@ -178,7 +181,7 @@ export default function Import() {
         </div>
         <div className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2 w-full`}>
           <div className="flex items-center">
-            <div className={`w-1/2 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
+            <div className={`w-1/3 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
             <input
               value={hopDongStr}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
@@ -189,11 +192,11 @@ export default function Import() {
                 }
                 setHopDongStr(event.target.value);
               }}
-              className={`w-1/2 rounded-md p-1 pl-2 ${colorInputHopDong()}`}
+              className={`w-full rounded-md p-1 pl-2 ${colorInputHopDong()}`}
               ref={contractRef}></input>
           </div>
           <div className="flex pt-2 items-center">
-            <div className={`w-1/2  pr-2 ${fixed_text_color}`}>Số bill</div>
+            <div className={`w-1/3  pr-2 ${fixed_text_color}`}>Số bill</div>
             <input
               value={billStr}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
@@ -204,14 +207,14 @@ export default function Import() {
                 }
                 setBillStr(event.target.value);
               }}
-              className={`w-1/2 rounded-md p-1 pl-2 ${colorInputSoBill()}`}
+              className={`w-full rounded-md p-1 pl-2 ${colorInputSoBill()}`}
               // ref={billRef}
             ></input>
           </div>
           <div className="flex pt-2 items-center">
-            <div className={`w-1/2  pr-2 ${fixed_text_color}`}>Ngày nhập thực tế</div>
+            <div className={`w-1/3  pr-2 ${fixed_text_color}`}>Ngày nhập thực tế</div>
             <input
-              className={`w-1/2 bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
+              className={`w-full bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
               type="date"
               ref={realDateRef}
               value={realDateStr}
@@ -220,9 +223,9 @@ export default function Import() {
               }}></input>
           </div>
           <div className="flex pt-2 items-center">
-            <div className={`w-1/2  pr-2 ${fixed_text_color}`}>Ngày chứng từ</div>
+            <div className={`w-1/3  pr-2 ${fixed_text_color}`}>Ngày chứng từ</div>
             <input
-              className={`w-1/2 bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
+              className={`w-full bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
               type="date"
               ref={docDateRef}
               value={docDateStr}
@@ -240,26 +243,26 @@ export default function Import() {
     setOpen(true);
   };
 
-  const handleSelectFromCsv = async () => {
-    const data = await FileOperation.OpenAndReadCsvFile();
-    if (
-      data.every((value) => {
-        const s = value.split(",");
-        console.log(`size: ${s.length}, value: ${s}`);
+  // const handleSelectFromCsv = async () => {
+  //   const data = await FileOperation.OpenAndReadCsvFile();
+  //   if (
+  //     data.every((value) => {
+  //       const s = value.split(",");
+  //       console.log(`size: ${s.length}, value: ${s}`);
 
-        return s.every((v) => v.trim().length);
-      })
-    ) {
-      let tmp: string[] = [];
-      let amt: number[] = [];
-      data.forEach((v) => {
-        tmp.push(v.split(",")[0]);
-        amt.push(Number(v.split(",")[1]));
-      });
-      setSelectedCodes(tmp);
-      setImportedAmount(amt);
-    }
-  };
+  //       return s.every((v) => v.trim().length);
+  //     })
+  //   ) {
+  //     let tmp: string[] = [];
+  //     let amt: number[] = [];
+  //     data.forEach((v) => {
+  //       tmp.push(v.split(",")[0]);
+  //       amt.push(Number(v.split(",")[1]));
+  //     });
+  //     setSelectedCodes(tmp);
+  //     setImportedAmount(amt);
+  //   }
+  // };
   const updatingPart = () => {
     return (
       <>
@@ -298,13 +301,13 @@ export default function Import() {
             </Button>
             <Button
               fullWidth
-              onClick={handleSelectFromCsv}
+              onClick={handleReadExcel}
               variant="gradient"
               color="amber"
-              disabled={!hopDongValid || !soBillValid}
+              disabled={true}
               className={`p-1`}>
               <Typography color="white" variant="h6">
-                nhập từ file CSV
+                nhập từ file excel
               </Typography>
             </Button>
           </div>
@@ -325,16 +328,170 @@ export default function Import() {
     }
   };
 
-  // const handleReadExcel = async () => {
-  //   Common.Log(`Reading from excel`);
-  //   const path = await dialog.open({
-  //     defaultPath: await Common.BaseDiToStr(GlobalStrings.SaveDirectory),
-  //     filters: [{ name: "Excel file", extensions: ["xlsx"] }],
-  //     multiple: false
-  //   });
-  //   const workbook = read(path as string, { type: "string" });
-  //   Common.Log(`read data ->\n${JSON.stringify(workbook)}`);
-  // };
+  const IsImport = (lines: string[], index: number) => {
+    return (
+      lines[index].split(",")[0].lastIndexOf("HD") >= 0 &&
+      lines[index + 1].split(",")[0].lastIndexOf("BILL") >= 0 &&
+      lines[index + 2].split(",")[0].lastIndexOf("Ngày tờ khai") >= 0 &&
+      lines[index + 3].split(",")[0].lastIndexOf("Ngày nhập thực tế") >= 0
+    );
+  };
+
+  const IsExport = (lines: string[], index: number) => {
+    return (
+      lines[index].split(",")[0].lastIndexOf("NƠI XUẤT") >= 0 &&
+      lines[index + 1].split(",")[0].lastIndexOf("MÃ HÀNG") >= 0 &&
+      lines[index + 2].split(",")[0].lastIndexOf("Ngày Xuất") >= 0
+    );
+  };
+
+  const ParseDate = (str: string) => {
+    // Split the string into day, month, and year components
+    const [day, month, year] = str.split("/").map(Number);
+
+    // Create a new Date object (months are zero-based in JavaScript Date)
+    const dateObject = new Date(year, month - 1, day);
+
+    // Get year, month, and day components from the date object
+    const formattedYear = dateObject.getFullYear();
+    const formattedMonth = String(dateObject.getMonth() + 1).padStart(2, "0"); // Adding 1 since months are zero-based
+    const formattedDay = String(dateObject.getDate()).padStart(2, "0");
+
+    // Construct the formatted date string in the "yyyy-MM-dd" format
+    const formattedDate = `${formattedYear}-${formattedMonth}-${formattedDay}`;
+
+    return formattedDate;
+  };
+
+  const handleReadExcel = async () => {
+    const path = await dialog.open({
+      defaultPath: await Common.BaseDiToStr(GlobalStrings.SaveDirectory),
+      filters: [{ name: "Excel file", extensions: ["xlsx", "xls"] }],
+      multiple: false
+    });
+
+    if (path) {
+      try {
+        const buffer = await fs.readBinaryFile(path as string);
+        const workbook: WorkBook = read(buffer, { type: "buffer" });
+        workbook.SheetNames.forEach((sheetName) => {
+          const worksheet: WorkSheet = workbook.Sheets[sheetName];
+          const lines = utils.sheet_to_csv(worksheet).split(/\r?\n/);
+          const lines_without_empty: string[] = [];
+          lines.forEach((line) => {
+            const t = line
+              .trim()
+              .replace(new RegExp(",", "g"), "")
+              .replace(new RegExp("\r\n", "g"), "");
+            if (t.length) {
+              lines_without_empty.push(line.trim().replace(/\r\n/g, ""));
+            }
+          });
+
+          Common.Log(`Sheet: ${sheetName}`);
+          let Imported: WarehouseData.Record[] = [];
+          for (let i = 0; i < lines_without_empty.length; ++i) {
+            const line = lines_without_empty[i].split(",");
+            if (line.length) {
+              if (IsImport(lines_without_empty, i)) {
+                let record: WarehouseData.Record;
+                // console.log(`Hop dong: ${lines_without_empty[i].split(",")[1]}`);
+                // console.log(`Bill: ${lines_without_empty[i + 1].split(",")[1]}`);
+                // console.log(`Ngay to khai: ${lines_without_empty[i + 2].split(",")[1]}`);
+                // console.log(`Ngay thuc te: ${lines_without_empty[i + 3].split(",")[1]}`);
+                record = new WarehouseData.Record(
+                  lines_without_empty[i].split(",")[1],
+                  lines_without_empty[i + 3].split(",")[1],
+                  lines_without_empty[i + 1].split(",")[1],
+                  lines_without_empty[i + 2].split(",")[1]
+                );
+                for (let j = i + 4; j < lines_without_empty.length; ++j) {
+                  if (IsImport(lines_without_empty, j) || IsExport(lines_without_empty, j)) {
+                    i = j;
+                    Imported.push(record);
+
+                    break;
+                  }
+                  if (
+                    lines_without_empty[j].split(",")[2].length == 0 ||
+                    lines_without_empty[j].split(",")[5].length == 0
+                  ) {
+                    continue;
+                  }
+                  record.AddProduct(
+                    lines_without_empty[j].split(",")[2],
+                    undefined,
+                    Number(lines_without_empty[j].split(",")[5])
+                  );
+                  console.log(
+                    `  ${lines_without_empty[j].split(",")[2]} -> ${lines_without_empty[j].split(",")[5]}`
+                  );
+                }
+              } else if (IsExport(lines_without_empty, i)) {
+                let record: WarehouseData.Record;
+                record = new WarehouseData.Record(
+                  lines_without_empty[i + 1].split(",")[1],
+                  lines_without_empty[i + 2].split(",")[1]
+                );
+                // console.log(`Noi xuat: ${lines_without_empty[i].split(",")[1]}`);
+                // console.log(`Ma HD: ${lines_without_empty[i + 1].split(",")[1]}`);
+                // console.log(`Ngay xuat: ${lines_without_empty[i + 2].split(",")[1]}`);
+                for (let j = i + 3; j < lines_without_empty.length; ++j) {
+                  if (IsImport(lines_without_empty, j) || IsExport(lines_without_empty, j)) {
+                    i = j;
+                    Imported.push(record);
+                    break;
+                  }
+                  if (
+                    lines_without_empty[j].split(",")[2].trim().length == 0 ||
+                    lines_without_empty[j].split(",")[5].trim().length == 0
+                  ) {
+                    continue;
+                  }
+                  // Common.Log(
+                  //   `Amount str: ${lines_without_empty[j].split(",")[5]}, converted: ${Number(lines_without_empty[j].split(",")[5])}`
+                  // );
+                  record.AddProduct(
+                    lines_without_empty[j].split(",")[2],
+                    lines_without_empty[i].split(",")[1],
+                    undefined,
+                    Number(lines_without_empty[j].split(",")[5])
+                  );
+                  // console.log(
+                  //   `  ${lines_without_empty[j].split(",")[2]} -> ${lines_without_empty[j].split(",")[5]}`
+                  // );
+                }
+              }
+            }
+          }
+          if (Imported.length) {
+            // Imported.forEach((record) => {
+            //   console.log(`Imported:\n${JSON.stringify(record)}`);
+            // });
+            const first = Imported[0];
+            setHopDongStr(first.hop_dong);
+            if (first.so_bill) {
+              setBillStr(first.so_bill);
+            }
+            setRealDateStr(ParseDate(first.ngay_thuc_te));
+            if (first.ngay_chung_tu) {
+              setDocDateStr(ParseDate(first.ngay_chung_tu));
+            }
+            setCurrentSessionData(Imported[0]);
+            let amt: number[] = [];
+            first.danh_sach_san_pham.forEach((re) => {
+              amt.push(Number(re.sl_nhap));
+            });
+            setImportedAmount(amt);
+          }
+        });
+      } catch (error) {
+        Common.Log(`Error reading Excel file: ${error}`);
+      }
+    } else {
+      Common.Log("File selection cancelled");
+    }
+  };
 
   return (
     <>

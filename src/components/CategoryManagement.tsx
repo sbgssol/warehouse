@@ -1,24 +1,15 @@
-import {
-  Accordion,
-  AccordionHeader,
-  AccordionBody,
-  Typography,
-  Button
-} from "@material-tailwind/react";
+import { Accordion, AccordionHeader, AccordionBody, Typography } from "@material-tailwind/react";
 import { SetStateAction, useEffect, useState } from "react";
 import { NavbarDefault } from "./Navbar";
-import edit_icon from "../assets/edit-report-tiny.svg";
 import ModifyPopup from "./single/ModifyPopup";
 import { useGlobalState } from "../types/GlobalContext";
 import { Popup } from "../types/Dialog";
 import { FileOperation } from "../types/FileOperation";
 import PopUp from "./single/PopUp";
-import { dialog } from "@tauri-apps/api";
 import { Common } from "../types/GlobalFnc";
-import { BaseDirectory } from "@tauri-apps/api/fs";
 
 export default function CategoryManagement() {
-  const { modify, json } = useGlobalState();
+  const { json } = useGlobalState();
 
   const [open, setOpen] = useState(0);
   const [pathHopDong, setPathHopDong] = useState<string>(json.pathHopDong ?? "");
@@ -75,6 +66,9 @@ export default function CategoryManagement() {
     if (json.pathMaHang !== undefined) {
       setPathmaHang(json.pathMaHang);
     }
+    if (json.pathNoiXuat !== undefined) {
+      setPathNoiXuat(json.pathNoiXuat);
+    }
 
     return () => {};
   }, []);
@@ -86,16 +80,16 @@ export default function CategoryManagement() {
     return "";
   };
 
-  const handleSelectContractFile = async (pathHandler: (path: string) => void) => {
-    const selected = await dialog.open({
-      defaultPath: (await Common.BaseDiToStr(BaseDirectory.Resource)) + "resources",
-      filters: [{ name: "Text file", extensions: ["txt"] }],
-      multiple: false
-    });
-    if (selected != null) {
-      pathHandler(selected as string);
-    }
-  };
+  // const handleSelectContractFile = async (pathHandler: (path: string) => void) => {
+  //   const selected = await dialog.open({
+  //     defaultPath: (await Common.BaseDiToStr(BaseDirectory.Resource)) + "resources",
+  //     filters: [{ name: "Text file", extensions: ["txt"] }],
+  //     multiple: false
+  //   });
+  //   if (selected != null) {
+  //     pathHandler(selected as string);
+  //   }
+  // };
 
   // const LoadMaHang = async (selected: string) => {
   //   const arr = await FileOperation.Read.RawDataWithDelimiter(
@@ -158,36 +152,36 @@ export default function CategoryManagement() {
     return () => {};
   }, [pathMaHang]);
 
-  const CreatePathSelector = (
-    label: string,
-    pathState: string,
-    pathHandler: (path: string) => void
-  ) => {
-    return (
-      <div className={`flex items-center w-[90%] mb-1 pb-2`}>
-        <span className={``}>{label}</span>
-        <input
-          type="text"
-          disabled={true}
-          value={pathState}
-          onChange={() => {}}
-          className={`w-[73%] focus:outline-none border-2 border-gray-700 bg-gray-200 rounded-md mx-2 px-1 pr-[44px] font-myThin font-bold`}
-        />
-        <Button
-          className={`px-1 py-1 rounded-sm relative -left-[53px]`}
-          onClick={() => {
-            handleSelectContractFile(pathHandler);
-          }}>
-          chọn
-        </Button>
-      </div>
-    );
-  };
+  // const CreatePathSelector = (
+  //   label: string,
+  //   pathState: string,
+  //   pathHandler: (path: string) => void
+  // ) => {
+  //   return (
+  //     <div className={`flex items-center w-[90%] mb-1 pb-2`}>
+  //       <span className={``}>{label}</span>
+  //       <input
+  //         type="text"
+  //         disabled={true}
+  //         value={pathState}
+  //         onChange={() => {}}
+  //         className={`w-[73%] focus:outline-none border-2 border-gray-700 bg-gray-200 rounded-md mx-2 px-1 pr-[44px] font-myThin font-bold`}
+  //       />
+  //       <Button
+  //         className={`px-1 py-1 rounded-sm relative -left-[53px]`}
+  //         onClick={() => {
+  //           handleSelectContractFile(pathHandler);
+  //         }}>
+  //         chọn
+  //       </Button>
+  //     </div>
+  //   );
+  // };
 
   const BodyMaHang = () => {
     return (
       <AccordionBody className="pt-0 text-base font-normal flex flex-col items-center">
-        {CreatePathSelector("File mã hàng:", pathMaHang, setPathmaHang)}
+        {/* {CreatePathSelector("File mã hàng:", pathMaHang, setPathmaHang)} */}
         <table className={`w-full`}>
           <thead className={`uppercase font-myRegular`}>
             <tr>
@@ -195,7 +189,7 @@ export default function CategoryManagement() {
               <th className={`border border-gray-400 px-2`}>{"mã hàng"}</th>
               <th className={`border border-gray-400 px-2`}>{"tên hàng"}</th>
               <th className={`border border-gray-400 px-2`}>{"đơn vị tính"}</th>
-              <th className={`border border-gray-400 px-2`}>{"sửa"}</th>
+              {/* <th className={`border border-gray-400 px-2`}>{"sửa"}</th> */}
             </tr>
           </thead>
           <tbody className={`font-myThin font-bold`}>
@@ -207,7 +201,7 @@ export default function CategoryManagement() {
                 <td className={`border border-gray-400 px-2 max-w-[15%] text-center`}>
                   {line.split(",")[2]}
                 </td>
-                <td className={`border border-gray-400 px-2 max-w-[5%] text-center`}>
+                {/* <td className={`border border-gray-400 px-2 max-w-[5%] text-center`}>
                   <Button
                     variant="text"
                     className={`p-0`}
@@ -227,7 +221,7 @@ export default function CategoryManagement() {
                     }}>
                     <img src={edit_icon} />
                   </Button>
-                </td>
+                </td> */}
               </tr>
             ))}
           </tbody>
@@ -240,24 +234,26 @@ export default function CategoryManagement() {
     return (
       <AccordionBody className="pt-0 text-base font-normal">
         <div className={`flex flex-col items-center`}>
-          {CreatePathSelector("File hợp đồng:", pathHopDong, setPathHopDong)}
+          {/* {CreatePathSelector("File hợp đồng:", pathHopDong, setPathHopDong)} */}
           <table className={`w-[60%] text-center`}>
             <thead>
               <tr className={`capitalize`}>
+                <th className={`border`}>STT</th>
                 <th className={`border`}>mã hợp đồng</th>
-                <th className={`border`}>sửa</th>
+                {/* <th className={`border`}>sửa</th> */}
               </tr>
             </thead>
             <tbody>
               {hopDongRaw.map((value, idx) => {
                 return (
                   <tr key={idx}>
+                    <td className={`border w-[10%]`}>{idx + 1}</td>
                     <td className={`border w-[90%]`}>{value}</td>
-                    <td className={`border w-[10%]`}>
+                    {/* <td className={`border w-[10%]`}>
                       <Button variant="text" className={`p-0`}>
                         <img src={edit_icon} />
                       </Button>
-                    </td>
+                    </td> */}
                   </tr>
                 );
               })}
@@ -272,26 +268,28 @@ export default function CategoryManagement() {
     return (
       <AccordionBody className="pt-0 text-base font-normal">
         <div className={`flex flex-col items-center`}>
-          {CreatePathSelector("File nơi xuất:", pathNoiXuat, setPathNoiXuat)}
+          {/* {CreatePathSelector("File nơi xuất:", pathNoiXuat, setPathNoiXuat)} */}
           <table className={`w-[60%] text-center`}>
             <thead>
               <tr className={`capitalize`}>
+                <th className={`border`}>STT</th>
                 <th className={`border`}>nơi xuất</th>
                 <th className={`border`}>tên</th>
-                <th className={`border`}>sửa</th>
+                {/* <th className={`border`}>sửa</th> */}
               </tr>
             </thead>
             <tbody>
               {noiXuatRaw.map((value, idx) => {
                 return (
                   <tr key={idx}>
+                    <td className={`border w-[10%]`}>{idx + 1}</td>
                     <td className={`border w-[45%]`}>{value.split(",")[0]}</td>
                     <td className={`border w-[45%]`}>{value.split(",")[1]}</td>
-                    <td className={`border w-[10%]`}>
+                    {/* <td className={`border w-[10%]`}>
                       <Button variant="text" className={`p-0`}>
                         <img src={edit_icon} />
                       </Button>
-                    </td>
+                    </td> */}
                   </tr>
                 );
               })}

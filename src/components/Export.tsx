@@ -201,7 +201,7 @@ export default function Export() {
     return (
       <select
         name="rlsSrc"
-        className={`w-1/2 bg-white rounded-md p-1.5 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
+        className={`w-full bg-white rounded-md p-1.5 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
         ref={rlsSrcRef}>
         <option value="" disabled>
           Chọn nơi xuất hàng
@@ -225,7 +225,7 @@ export default function Export() {
         </div>
         <div className={`border-2 ${BorderColor()} rounded-lg p-2 w-full`}>
           <div className="flex items-center">
-            <div className={`w-1/2 pr-2 ${RegularTextColor()}`}>Hợp đồng</div>
+            <div className={`w-1/3 pr-2 ${RegularTextColor()}`}>Hợp đồng</div>
             <input
               value={hopDongStr}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
@@ -236,17 +236,17 @@ export default function Export() {
                 }
                 setHopDongStr(event.target.value);
               }}
-              className={`w-1/2 rounded-md p-1 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
+              className={`w-full rounded-md p-1 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
               ref={contractRef}></input>
           </div>
           <div className="flex pt-2 items-center">
-            <div className={`w-1/2  pr-2 ${RegularTextColor()}`}>Nơi xuất</div>
+            <div className={`w-1/3  pr-2 ${RegularTextColor()}`}>Nơi xuất</div>
             {updateLocationData()}
           </div>
           <div className="flex pt-2 items-center">
-            <div className={`w-1/2  pr-2 ${RegularTextColor()}`}>Ngày xuất</div>
+            <div className={`w-1/3  pr-2 ${RegularTextColor()}`}>Ngày xuất</div>
             <input
-              className={`w-1/2 bg-white rounded-md p-1 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
+              className={`w-full bg-white rounded-md p-1 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
               type="date"
               ref={rlsDateRef}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
@@ -319,7 +319,7 @@ export default function Export() {
             disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
             className={`p-1 ${ButtonBackgroundColor()}`}>
             <Typography color="white" variant="h6">
-              nhập từ file csv
+              nhập từ file excel
             </Typography>
           </Button>
         </div>
@@ -348,15 +348,15 @@ export default function Export() {
 
   const RadioTypes = () => {
     return (
-      <div className="flex w-2/3 justify-evenly items-center shadow-md border rounded-lg mt-1 mb-1">
+      <div className="flex w-2/3 justify-evenly items-center shadow-md border rounded-lg mt-1 mb-2">
         <div>
           <Radio
             name="color"
             color="blue"
             label={
               <div className={`flex flex-col items-center w-max`}>
-                <Typography className={`font-myRegular text-xl capitalize ${BoldRadioLabel(true)}`}>
-                  xuất gia công
+                <Typography className={`text-lg uppercase ${BoldRadioLabel(true)}`}>
+                  gia công
                 </Typography>
                 {/* <img src={svg_robot} className={`w-[48px]`} /> */}
               </div>
@@ -373,9 +373,8 @@ export default function Export() {
             color="green"
             label={
               <div className={`flex flex-col items-center w-max`}>
-                <Typography
-                  className={`font-myRegular text-xl capitalize ${BoldRadioLabel(false)}`}>
-                  xuất thành phẩm
+                <Typography className={`text-lg uppercase ${BoldRadioLabel(false)}`}>
+                  thành phẩm
                 </Typography>
                 {/* <img src={svg_box} className={`w-[48px]`} /> */}
               </div>
@@ -421,7 +420,7 @@ export default function Export() {
     <>
       <NavbarDefault></NavbarDefault>
       <TypeProductCodeModal saveHandler={handleTypeProductCode}></TypeProductCodeModal>
-      <div className="w-full overflow-hidden flex flex-col items-center">
+      <div className="w-full overflow-hidden flex flex-col items-center bg-blue">
         {RadioTypes()}
         {exportGC ? ExportGC() : ExportTP()}
         <SaveButton className={`${SaveButtonStyle()}`} onClick={handleNewClick}></SaveButton>

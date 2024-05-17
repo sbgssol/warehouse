@@ -266,7 +266,14 @@ export namespace FileOperation {
           break;
         }
       }
-      return res;
+
+      let t: string[] = [];
+      res.forEach((str) => {
+        if (str.trim().length) {
+          t.push(str);
+        }
+      });
+      return t;
     };
   }
 
