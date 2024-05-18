@@ -51,6 +51,7 @@ export function NavbarDefault() {
           </Button> */}
           <ArrayToSelect
             arr={json.rawHopDong ?? [""]}
+            remain_old_choice={true}
             label="Chọn một hợp đồng"
             onChange={handleHdChanged}
             default={contractName}

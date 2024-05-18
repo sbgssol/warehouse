@@ -97,6 +97,18 @@ export type ToBeChangedRecord = {
 //   return changes;
 // };
 
+// const HopDongChanged = (
+//   full_data: WarehouseData.Record[],
+//   ma_hang: string,
+//   changed_record: ShortenData
+// ) => {
+//   full_data.forEach((original_record) => {
+//     if (original_record.so_bill === changed_record.so_bill &&
+//       original_record.ngay_thuc_te === changed_record.ngay_thuc_te
+//     ) {}
+//   })
+// };
+
 const FindMatchRecord = (
   full_data: WarehouseData.Record[],
   target_record: ShortenData,

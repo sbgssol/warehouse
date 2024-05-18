@@ -108,13 +108,32 @@ export namespace Common {
     const log = `[${log_type.toUpperCase()}] [${new Date(Date.now()).toString().slice(4, 24)}] | ${msg}\n`;
     console.log(log);
     // try {
-    //   await writeTextFile(GlobalStrings.LogFileName, log, {
-    //     dir: BaseDirectory.Resource,
-    //     append: true
-    //   });
+    //   await writeTextFile(
+    //     `E:\\Projects\\18.React\\warehouse\\src-tauri\\target\\debug\\log.txt`,
+    //     log,
+    //     { append: true }
+    //   );
     // } catch (error) {
     //   // Dialog.Error(error as string);
     //   return;
     // }
+  };
+
+  export const ParseDate = (str: string) => {
+    // Split the string into day, month, and year components
+    const [day, month, year] = str.split("/").map(Number);
+
+    // Create a new Date object (months are zero-based in JavaScript Date)
+    const dateObject = new Date(year, month - 1, day);
+
+    // Get year, month, and day components from the date object
+    const formattedYear = dateObject.getFullYear();
+    const formattedMonth = String(dateObject.getMonth() + 1).padStart(2, "0"); // Adding 1 since months are zero-based
+    const formattedDay = String(dateObject.getDate()).padStart(2, "0");
+
+    // Construct the formatted date string in the "yyyy-MM-dd" format
+    const formattedDate = `${formattedYear}-${formattedMonth}-${formattedDay}`;
+
+    return formattedDate;
   };
 }

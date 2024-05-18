@@ -66,7 +66,7 @@ export default function SummaryTable(props: {
                         val = event.target.value.slice(1);
                       }
                       const newAmounts = [...amounts];
-                      newAmounts[index] = Number(val);
+                      newAmounts[index] = Number(Number(val).toFixed(4));
                       setAmounts(newAmounts);
                       // Common.Log(`value changed: ${val}, ${props.input_ref.current[index].value}`);
                     }}

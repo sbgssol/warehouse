@@ -1,8 +1,9 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 export default function ArrayToSelect(props: {
   arr: string[];
   onChange: (value: string) => void;
+  remain_old_choice?: boolean;
   how_many_columns?: number;
   target_column?: number;
   select_class?: string;
@@ -13,6 +14,7 @@ export default function ArrayToSelect(props: {
   disabled?: boolean;
 }) {
   const [data, setData] = useState<string[]>([]);
+  const selectRef = useRef<HTMLSelectElement>(null);
 
   const onLoad = async () => {
     let tmp = props.arr;
@@ -42,6 +44,12 @@ export default function ArrayToSelect(props: {
 
   useEffect(() => {
     onLoad();
+    if (props.remain_old_choice === undefined || !props.remain_old_choice) {
+      props.onChange(props.arr[0]);
+      if (selectRef && selectRef.current) {
+        selectRef.current.value = props.arr[0];
+      }
+    }
     // console.log(`Default value: ${props.default}`);
 
     return () => {};
@@ -52,7 +60,8 @@ export default function ArrayToSelect(props: {
       disabled={props.disabled}
       className={props.select_class}
       onChange={(e: ChangeEvent<HTMLSelectElement>) => props.onChange(e.target.value)}
-      value={props.default}>
+      value={props.default}
+      ref={selectRef}>
       {props.label ? (
         <option value="" disabled className={props.option_class}>
           {props.label}

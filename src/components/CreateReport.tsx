@@ -1,4 +1,12 @@
-import { Button, IconButton } from "@material-tailwind/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  IconButton,
+  Radio,
+  Tooltip,
+  Typography
+} from "@material-tailwind/react";
 import { WarehouseData } from "../types/ImportWarehouseData";
 import { useState, useEffect } from "react";
 import GlobalStrings from "../types/Globals";
@@ -14,6 +22,8 @@ import { dialog } from "@tauri-apps/api";
 import import_stock from "../assets/import-stock.svg";
 import InputStock from "./single/InputStock";
 import { FileOperation } from "../types/FileOperation";
+import ArrayToSelect from "./ArrayToSelect";
+import PleaseWait from "./single/PleaseWait";
 
 export default function CreateReport() {
   const [restoredData, setRestoredData] = useState<WarehouseData.Record[]>([]);
@@ -23,17 +33,21 @@ export default function CreateReport() {
   const [productSortedByDate, setProductSortedByDate] = useState<Map<string, ShortenData[]>>(
     new Map<string, ShortenData[]>()
   );
+  const [loadedProductCodes, setLoadedProductCodes] = useState<string[]>();
+  const [currentSelectedData, setCurrentSelectedData] = useState<Map<string, ShortenData[]>>();
+
   const { contractName, getRecordFilename } = useGlobalState();
-  const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
-    new Map()
-  );
+  // const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
+  //   new Map()
+  // );
   const [openModalUpdate, setOpenModalUpdate] = useState(false);
   const [openModalDelete, setOpenModalDelete] = useState(false);
   const [openModalStock, setOpenModalStock] = useState(false);
   const [dataToEdit, setDataToEdit] = useState<ShortenData>(new ShortenData("", "", "", ""));
   const [maHang, setMaHang] = useState("");
-
-  const { popup, product, json } = useGlobalState();
+  const [checkClicked, setCheckClicked] = useState(false);
+  const { popup, product, json, wait } = useGlobalState();
+  const [viewAll, setViewAll] = useState(false);
 
   type CongCuoiKi = {
     nhap: number;
@@ -58,11 +72,11 @@ export default function CreateReport() {
         ton_tt: 0
       } as CongCuoiKi;
       records.forEach((value) => {
-        cuoi_ki.nhap += Number(value.sl_nhap ?? 0);
-        cuoi_ki.xuat_gc += Number(value.sl_xuat_gc ?? 0);
-        cuoi_ki.xuat_tp += Number(value.sl_xuat_tp ?? 0);
-        cuoi_ki.ton_tp += Number(value.sl_ton_tp ?? 0);
-        cuoi_ki.ton_tt = Number(value.sl_ton_tt ?? 0);
+        cuoi_ki.nhap += Number(Number(value.sl_nhap ?? 0).toFixed(4));
+        cuoi_ki.xuat_gc += Number(Number(value.sl_xuat_gc ?? 0).toFixed(4));
+        cuoi_ki.xuat_tp += Number(Number(value.sl_xuat_tp ?? 0).toFixed(4));
+        cuoi_ki.ton_tp = Number(Number(value.sl_ton_tp ?? 0).toFixed(4));
+        cuoi_ki.ton_tt = Number(Number(value.sl_ton_tt ?? 0).toFixed(4));
       });
       tmp.set(code, cuoi_ki);
     });
@@ -134,13 +148,50 @@ export default function CreateReport() {
     return true;
   };
 
-  const summaryTable = () => {
+  const SelectData = (value: string) => {
+    const data: Map<string, ShortenData[]> = new Map<string, ShortenData[]>();
+    const tmp = productSortedByDate.get(value);
+    if (tmp) {
+      if (data.get(value) === undefined) {
+        data.set(value, tmp);
+      }
+    }
+    setCurrentSelectedData(data);
+  };
+
+  const ProductSelect = () => {
+    if (viewAll) return "";
+    const select_twstyles =
+      "border-green-700 border-2 rounded-md p-1 w-[100%] text-center text-lg font-bold text-green-700 focus:outline-none";
+    const option_twstyles = "text-[16px] font-myThin font-bold";
+    // setCurrentSelectedData(new Map<string, ShortenData[]>());
+    if (loadedProductCodes !== undefined) {
+      return (
+        <div className={`w-[90%] flex items-center mt-4`}>
+          <div className={`w-[35%] text-right pr-2`}>
+            <Typography>Chọn một mã hàng để xem chi tiết</Typography>
+          </div>
+          <div className={`w-[65%]`}>
+            <ArrayToSelect
+              arr={loadedProductCodes}
+              onChange={SelectData}
+              select_class={select_twstyles}
+              option_class={option_twstyles}></ArrayToSelect>
+          </div>
+        </div>
+      );
+    }
+    return "";
+  };
+  const TableDetails = () => {
+    if (currentSelectedData === undefined) return "";
+
     const str_col = "border border-gray-500 overflow-x-auto max-w-32";
     const num_col = "border border-gray-500 overflow-x-auto max-w-14";
     const tbl_header = "border border-gray-500 p-1 capitalize";
     return (
       <>
-        {Array.from(productSortedByDate).map(([key, data], index) => {
+        {Array.from(currentSelectedData).map(([key, data], index) => {
           return (
             <table key={index} className="text-center text-sm text-wrap mt-2 mb-2 w-full">
               <thead className="text-left">
@@ -301,7 +352,24 @@ export default function CreateReport() {
               </tbody>
             </table>
           );
-        })}
+        })}{" "}
+      </>
+    );
+  };
+
+  const Wait = () => {
+    if (wait.waiting) {
+      return <PleaseWait />;
+    }
+    return <></>;
+  };
+
+  const summaryTable = () => {
+    return (
+      <>
+        {Wait()}
+        {ProductSelect()}
+        {TableDetails()}
       </>
     );
   };
@@ -320,6 +388,7 @@ export default function CreateReport() {
           tmp.push(rec);
           // dialog.message(ImportData.ToString(rec));
         });
+        setCheckClicked(true);
         setRestoredData(tmp);
       } else {
         popup.show("Không tìm thấy dữ liệu hoặc dữ liệu trống", "error");
@@ -336,14 +405,14 @@ export default function CreateReport() {
 
   useEffect(() => {
     const tmp = new Map<string, ShortenData[]>();
-    const map_tmp = new Map<string, { name: string; unit: string }>();
+    // const map_tmp = new Map<string, { name: string; unit: string }>();
     if (restoredData.length > 0) {
       restoredData.forEach((record) => {
         record.danh_sach_san_pham.forEach((innerProd) => {
-          map_tmp.set(innerProd.ma_hang, {
-            name: product.getInfo(innerProd.ma_hang, "name"),
-            unit: product.getInfo(innerProd.ma_hang, "unit")
-          });
+          // map_tmp.set(innerProd.ma_hang, {
+          //   name: product.getInfo(innerProd.ma_hang, "name"),
+          //   unit: product.getInfo(innerProd.ma_hang, "unit")
+          // });
           const prod = tmp.get(innerProd.ma_hang);
           if (prod) {
             prod.push(
@@ -378,9 +447,11 @@ export default function CreateReport() {
           }
         });
       });
+    } else {
+      setCheckClicked(false);
     }
     setProductByCode(tmp);
-    setProductMap(map_tmp);
+    // setProductMap(map_tmp);
 
     return () => {};
   }, [restoredData]);
@@ -390,10 +461,12 @@ export default function CreateReport() {
     if (productByCode.size) {
       let code = "";
       let data: ShortenData[] = [];
+      const prod_code_list: Set<string> = new Set<string>();
 
       productByCode.forEach((value, key) => {
         const tmp: Map<number, { date: number; data: ShortenData }> = new Map();
         value.forEach((data, index) => {
+          prod_code_list.add(key);
           tmp.set(index, { date: Date.parse(data.ngay_thuc_te), data: data });
         });
 
@@ -412,15 +485,17 @@ export default function CreateReport() {
         code = "";
         data = [];
       });
+      setLoadedProductCodes(Array.from(prod_code_list).sort());
     }
     const tmp = CalculateStock(sorted);
     CalculateSummary(tmp);
     setProductSortedByDate(tmp);
+    setCurrentSelectedData(tmp);
 
     return () => {};
   }, [productByCode]);
 
-  const handleCreateExcel = () => {
+  const handleCreateTheKho = () => {
     let data: FileOperation.Report.TheKhoType[] = [];
     productSortedByDate.forEach((value, key) => {
       data.push({
@@ -431,6 +506,203 @@ export default function CreateReport() {
       });
     });
     FileOperation.Report.CreateTheKho(data, congCuoiKi);
+  };
+
+  const handleCreateBcqt = () => {
+    const data = FileOperation.Report.RecordsToBCQt(
+      restoredData,
+      product.map,
+      contractName,
+      "",
+      ""
+    );
+    FileOperation.Report.CreateBaoCaoQuyetToan(data);
+  };
+  const Radios = () => {
+    return (
+      <div className="flex w-full justify-evenly items-center">
+        <Radio
+          name="color"
+          color="blue"
+          label={
+            <div className={`flex flex-col items-center w-max hover:scale-105`}>
+              <Typography className={`text-md uppercase ${BoldRadioLabel(true)}`}>
+                tất cả
+              </Typography>
+              {/* <img src={svg_robot} className={`w-[48px]`} /> */}
+            </div>
+          }
+          checked={viewAll}
+          onChange={() => {
+            setViewAll(!viewAll);
+            // wait.setWaiting(true);
+            setCurrentSelectedData(productSortedByDate);
+            // setTimeout(() => {
+            //   wait.setWaiting(false);
+            // }, 1000);
+          }}
+        />
+        <Radio
+          name="color"
+          color="green"
+          label={
+            <div className={`flex flex-col items-center w-max hover:scale-105`}>
+              <Typography className={`text-md uppercase ${BoldRadioLabel(false)}`}>
+                theo mã hàng
+              </Typography>
+              {/* <img src={svg_box} className={`w-[48px]`} /> */}
+            </div>
+          }
+          checked={!viewAll}
+          onChange={() => {
+            setViewAll(!viewAll);
+            setCurrentSelectedData(undefined);
+          }}
+          className={``}
+        />
+      </div>
+    );
+  };
+
+  // const [viewAllSwOn, setViewAllSwOn] = useState<boolean>(false);
+
+  // const ViewAllSwitch = () => {
+  //   const txt_twstyles = "w-[110px] uppercase";
+  //   return (
+  //     <div className={`w-full flex justify-center items-center space-x-2`}>
+  //       <Typography className={`text-right ${txt_twstyles}`}>{"tất cả"}</Typography>
+  //       <Switch
+  //         color="teal"
+  //         ripple={false}
+  //         checked={viewAllSwOn}
+  //         onChange={() => {
+  //           const newValue = !viewAllSwOn;
+  //           setViewAllSwOn(newValue);
+  //           Common.Log(`switch changed: ${newValue}`);
+  //         }}
+  //         className={`bg-blue-600 p-0`}
+  //       />
+  //       <Typography className={`text-left ${txt_twstyles}`}>{"theo mã hàng"}</Typography>
+  //     </div>
+  //   );
+  // };
+
+  const CreateCheckButton = () => {
+    const btn_twstyles = "w-[130px] py-1.5 hover:scale-105 hover:-translate-y-0.5";
+    if (contractName.length == 0) {
+      return (
+        <Tooltip
+          content="Hãy chọn hợp đồng"
+          animate={{
+            mount: { scale: 1, y: 0 },
+            unmount: { scale: 0, y: 25 }
+          }}
+          className={`bg-red-300 `}>
+          <span>
+            <Button
+              color="lime"
+              className={`${btn_twstyles}`}
+              // onClick={handleCheck}
+              disabled={true}>
+              <Typography>kiểm tra</Typography>
+            </Button>
+          </span>
+        </Tooltip>
+      );
+    }
+    return (
+      <Button color="lime" className={`${btn_twstyles}`} onClick={handleCheck}>
+        <Typography>kiểm tra</Typography>
+      </Button>
+    );
+  };
+
+  const CreateExcelButtons = () => {
+    const btn_twstyles = "w-[130px] py-1.5 hover:scale-105 hover:-translate-y-0.5";
+    if (checkClicked) {
+      return (
+        <>
+          <Button
+            color="light-green"
+            variant="gradient"
+            // disabled={!checkClicked}
+            className={`${btn_twstyles}`}
+            onClick={handleCreateTheKho}>
+            <Typography>thẻ kho</Typography>
+          </Button>
+          <Button
+            color="green"
+            variant="gradient"
+            // disabled={!checkClicked}
+            className={`${btn_twstyles}`}
+            onClick={handleCreateBcqt}>
+            <Typography>bcqt</Typography>
+          </Button>
+        </>
+      );
+    }
+    return (
+      <Tooltip
+        content="Hãy kiểm tra dữ liệu trước khi xuất"
+        animate={{
+          mount: { scale: 1, y: 0 },
+          unmount: { scale: 0, y: 25 }
+        }}
+        className={`bg-red-300 `}>
+        <div className={`space-x-2`}>
+          <Button
+            color="light-green"
+            variant="gradient"
+            disabled={true}
+            className={`${btn_twstyles}`}
+            // onClick={handleCreateTheKho}
+          >
+            <Typography>thẻ kho</Typography>
+          </Button>
+          <Button
+            color="green"
+            variant="gradient"
+            disabled={true}
+            className={`${btn_twstyles}`}
+            // onClick={handleCreateBcqt}
+          >
+            <Typography>bcqt</Typography>
+          </Button>
+        </div>
+      </Tooltip>
+    );
+  };
+
+  const Buttons = () => {
+    return (
+      <div className={`w-full flex justify-center items-center`}>
+        <Card className={`border`}>
+          <CardBody className={`p-2 space-y-2`}>
+            <div className={`w-full flex justify-center`}>{CreateCheckButton()}</div>
+            {Radios()}
+            <div className={`space-x-2 `}>
+              <Typography className={`w-full text-center capitalize font-bold`}>
+                {"xuất file excel"}
+              </Typography>
+              {CreateExcelButtons()}
+            </div>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  };
+
+  const BoldRadioLabel = (expected: boolean) => {
+    let str_twstyles = "";
+    if (expected == true) {
+      str_twstyles = "text-blue-500";
+    } else {
+      str_twstyles = "text-green-500";
+    }
+    if (viewAll != expected) {
+      str_twstyles = "";
+    }
+    return viewAll == expected ? str_twstyles + " font-bold" : str_twstyles + "";
   };
 
   return (
@@ -448,7 +720,7 @@ export default function CreateReport() {
           setOpenModalUpdate(false);
         }}
         ma_hang={maHang}
-        product_map={productMap}
+        product_map={product.map}
         data={dataToEdit}
         updater={handleRecordUpdate}
         type="update"></UpdateModal>
@@ -459,13 +731,12 @@ export default function CreateReport() {
           setOpenModalDelete(false);
         }}
         ma_hang={maHang}
-        product_map={productMap}
+        product_map={product.map}
         data={dataToEdit}
         updater={handleRemoveRecord}
         type="delete"></UpdateModal>
       <div className="max-w-full w-full">
-        <Button onClick={handleCheck}>Kiểm tra</Button>
-        <Button onClick={handleCreateExcel}>Create Excel</Button>
+        {Buttons()}
         {summaryTable()}
       </div>
     </>

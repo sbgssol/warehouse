@@ -1,14 +1,14 @@
-import { Typography, Button, Radio } from "@material-tailwind/react";
+import { Typography, Button, Radio, CardBody, Card } from "@material-tailwind/react";
 import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { FileOperation } from "../types/FileOperation";
 import { useGlobalState } from "../types/GlobalContext";
-import GlobalStrings from "../types/Globals";
 import { WarehouseData } from "../types/ImportWarehouseData";
 import { NavbarDefault } from "./Navbar";
 import MultipleProdCodeSelector from "./ProductSelection";
 import SummaryTable from "./SummaryTable";
 import SaveButton from "./single/SaveButton";
 import TypeProductCodeModal from "./single/TypeProductCodeModal";
+import { Common } from "../types/GlobalFnc";
 
 export default function Export() {
   // States
@@ -23,6 +23,7 @@ export default function Export() {
     new Map()
   );
   const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>();
+  const [multipleRecords, setMultipleRecords] = useState<WarehouseData.Record[]>([]);
   const { getRecordFilename, popup, product, input_code, json } = useGlobalState();
   const [exportGC, setExportTypeRadio] = useState(true);
 
@@ -138,63 +139,134 @@ export default function Export() {
     return () => {};
   }, [currentSessionData]);
 
+  useEffect(() => {
+    if (multipleRecords.length) {
+      MultipleRecordsIdxHandler(0);
+    }
+
+    return () => {};
+  }, [multipleRecords]);
+
+  const MultipleRecordsIdxHandler = (idx: number) => {
+    const record = multipleRecords[idx];
+    setHopDongStr(record.hop_dong);
+    if (rlsSrcRef && rlsSrcRef.current) {
+      rlsSrcRef.current.value = multipleRecords[idx].danh_sach_san_pham[idx].noi_xuat ?? "";
+    }
+    setRlsDateStr(Common.ParseDate(record.ngay_thuc_te));
+    // setDocDateStr(Common.ParseDate(record.ngay_chung_tu ?? ""));
+    let amt: number[] = [];
+    record.danh_sach_san_pham.forEach((re) => {
+      if (exportGC) {
+        amt.push(Number(re.sl_xuat_gc));
+      } else {
+        amt.push(Number(re.sl_xuat_tp));
+      }
+    });
+    setImportedAmount(amt);
+    setCurrentSessionData(multipleRecords[idx]);
+  };
+
   // Validation
   const [hopDongValid, setHopDongValid] = useState(false);
-  // const colorInputHopDong = () => {
-  //   return hopDongValid ? `bg-white ${fixed_input_outline}` : `bg-red-100 focus:outline-red-500`;
-  // };
 
-  const handleNewClick = async () => {
-    // Map amount to product
-    if (inpAmountRef && currentSessionData && currentSessionData.danh_sach_san_pham.length) {
-      const tmp = currentSessionData;
-      if (
-        inpAmountRef.current.some((value) => {
-          console.log(`check value: ${value.value} -> ${Number(value.value)}`);
-
-          return Number(value.value) <= 0;
-        })
-      ) {
-        popup.show("Không thể lưu, kiểm tra lại số lượng", "error");
-        return;
-      }
-
-      if (tmp.danh_sach_san_pham.length != inpAmountRef.current.length) {
-        console.log(
-          `tmp.danh_sach_san_pham.length = ${tmp.danh_sach_san_pham.length}, inpAmountRef.current.length = ${inpAmountRef.current.length}`
+  const handleSaveClick = async () => {
+    if (currentSessionData === undefined) return;
+    let res: FileOperation.SaveResult = "unknown";
+    if (multipleRecords.length) {
+      for (let i = 0; i < multipleRecords.length; ++i) {
+        // const record = multipleRecords[i];
+        res = await FileOperation.StoreRecordToDisk(
+          getRecordFilename(),
+          multipleRecords[i],
+          exportGC ? "export-processing" : "export-production"
         );
-
-        popup.show("Có lỗi xảy ra, hãy thử lại", "error");
-        return;
-      }
-
-      let rls_source;
-      if (rlsSrcRef) {
-        rls_source = rlsSrcRef.current?.value;
-      }
-      for (let i = 0; i < inpAmountRef.current.length; ++i) {
-        tmp.danh_sach_san_pham[i].noi_xuat = rls_source;
-        if (exportGC) {
-          tmp.danh_sach_san_pham[i].sl_xuat_gc = inpAmountRef.current[i].value as unknown as number;
-        } else {
-          tmp.danh_sach_san_pham[i].sl_xuat_tp = inpAmountRef.current[i].value as unknown as number;
+        if (res != "success") {
+          break;
         }
       }
-
-      // dialog.message("Final data: " + ImportData.ToString(tmp));
-
-      const res = await tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
-      if (res) {
-        popup.show("Xong", "info");
-        setHopDongStr("");
-        setCurrentSessionData(new WarehouseData.Record("", ""));
-      } else {
-        popup.show("Có lỗi xảy ra, hãy thử lại", "error");
-      }
-      // window.location.reload();
     } else {
-      popup.show("Không thể lưu, danh sách mã hàng trống", "error");
+      res = await FileOperation.StoreRecordToDisk(
+        getRecordFilename(),
+        currentSessionData,
+        exportGC ? "export-processing" : "export-production",
+        inpAmountRef
+      );
     }
+    switch (res) {
+      case "success":
+        break;
+      case "amount_error":
+        popup.show("Không thể lưu, kiểm tra lại số lượng", "error");
+        break;
+      default:
+        popup.show("Có lỗi xảy ra, hãy thử lại", "error");
+        break;
+    }
+    if (res == "success") {
+      popup.show("xong", "info");
+      setHopDongStr("");
+      // setBillStr("");
+      setRlsDateStr("");
+      // setDocDateStr("");
+      setSelectedCodes([]);
+      setImportedAmount([]);
+      setCurrentSessionData(new WarehouseData.Record("", ""));
+      setMultipleRecords([]);
+      setTimeout(() => {
+        popup.setOpen(false);
+      }, 700);
+    }
+    // // Map amount to product
+    // if (inpAmountRef && currentSessionData && currentSessionData.danh_sach_san_pham.length) {
+    //   const tmp = currentSessionData;
+    //   if (
+    //     inpAmountRef.current.some((value) => {
+    //       console.log(`check value: ${value.value} -> ${Number(value.value)}`);
+
+    //       return Number(value.value) <= 0;
+    //     })
+    //   ) {
+    //     popup.show("Không thể lưu, kiểm tra lại số lượng", "error");
+    //     return;
+    //   }
+
+    //   if (tmp.danh_sach_san_pham.length != inpAmountRef.current.length) {
+    //     console.log(
+    //       `tmp.danh_sach_san_pham.length = ${tmp.danh_sach_san_pham.length}, inpAmountRef.current.length = ${inpAmountRef.current.length}`
+    //     );
+
+    //     popup.show("Có lỗi xảy ra, hãy thử lại", "error");
+    //     return;
+    //   }
+
+    //   let rls_source;
+    //   if (rlsSrcRef) {
+    //     rls_source = rlsSrcRef.current?.value;
+    //   }
+    //   for (let i = 0; i < inpAmountRef.current.length; ++i) {
+    //     tmp.danh_sach_san_pham[i].noi_xuat = rls_source;
+    //     if (exportGC) {
+    //       tmp.danh_sach_san_pham[i].sl_xuat_gc = inpAmountRef.current[i].value as unknown as number;
+    //     } else {
+    //       tmp.danh_sach_san_pham[i].sl_xuat_tp = inpAmountRef.current[i].value as unknown as number;
+    //     }
+    //   }
+
+    //   // dialog.message("Final data: " + ImportData.ToString(tmp));
+
+    //   const res = await tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
+    //   if (res) {
+    //     popup.show("Xong", "info");
+    //     setHopDongStr("");
+    //     setCurrentSessionData(new WarehouseData.Record("", ""));
+    //   } else {
+    //     popup.show("Có lỗi xảy ra, hãy thử lại", "error");
+    //   }
+    //   // window.location.reload();
+    // } else {
+    //   popup.show("Không thể lưu, danh sách mã hàng trống", "error");
+    // }
   };
 
   const updateLocationData = () => {
@@ -208,12 +280,26 @@ export default function Export() {
         </option>
         {csvLocation.map((location, index) => (
           <option key={index} value={location.split(",")[0]}>
-            {location.split(",")[1]}
+            {location.split(",")[0]}
           </option>
         ))}
       </select>
     );
   };
+  const colorInputHopDong = () => {
+    return hopDongValid
+      ? `bg-white ${OutlineColor()}`
+      : `bg-red-100 border-red-500 focus:outline-red-500`;
+  };
+  useEffect(() => {
+    if (hopDongStr.length) {
+      setHopDongValid(true);
+    } else {
+      setHopDongValid(false);
+    }
+
+    return () => {};
+  }, [hopDongStr]);
 
   const fixedPart = (label: string) => {
     return (
@@ -236,7 +322,7 @@ export default function Export() {
                 }
                 setHopDongStr(event.target.value);
               }}
-              className={`w-full rounded-md p-1 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
+              className={`w-full rounded-md p-1 pl-2 border-2 ${colorInputHopDong()} ${BorderColor()} ${OutlineColor()}`}
               ref={contractRef}></input>
           </div>
           <div className="flex pt-2 items-center">
@@ -262,25 +348,12 @@ export default function Export() {
     // Open modal
     setOpen(true);
   };
-  const handleImportFromCsv = async () => {
-    const data = await FileOperation.OpenAndReadCsvFile();
-    if (
-      data.every((value) => {
-        const s = value.split(",");
-        console.log(`size: ${s.length}, value: ${s}`);
-
-        return s.every((v) => v.trim().length);
-      })
-    ) {
-      let tmp: string[] = [];
-      let amt: number[] = [];
-      data.forEach((v) => {
-        tmp.push(v.split(",")[0]);
-        amt.push(Number(v.split(",")[1]));
-      });
-      setSelectedCodes(tmp);
-      setImportedAmount(amt);
-    }
+  const handleReadExcel = async () => {
+    const data = await FileOperation.InputProductUsingExcel(
+      "export",
+      exportGC ? "processing" : "production"
+    );
+    setMultipleRecords(data);
   };
   const updatingPart = () => {
     return (
@@ -315,8 +388,8 @@ export default function Export() {
           </Button>
           <Button
             fullWidth
-            onClick={handleImportFromCsv}
-            disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
+            onClick={handleReadExcel}
+            // disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
             className={`p-1 ${ButtonBackgroundColor()}`}>
             <Typography color="white" variant="h6">
               nhập từ file excel
@@ -354,7 +427,7 @@ export default function Export() {
             name="color"
             color="blue"
             label={
-              <div className={`flex flex-col items-center w-max`}>
+              <div className={`flex flex-col items-center w-max hover:scale-105`}>
                 <Typography className={`text-lg uppercase ${BoldRadioLabel(true)}`}>
                   gia công
                 </Typography>
@@ -372,7 +445,7 @@ export default function Export() {
             name="color"
             color="green"
             label={
-              <div className={`flex flex-col items-center w-max`}>
+              <div className={`flex flex-col items-center w-max hover:scale-105`}>
                 <Typography className={`text-lg uppercase ${BoldRadioLabel(false)}`}>
                   thành phẩm
                 </Typography>
@@ -420,7 +493,7 @@ export default function Export() {
     <>
       <NavbarDefault></NavbarDefault>
       <TypeProductCodeModal saveHandler={handleTypeProductCode}></TypeProductCodeModal>
-      <div className="w-full overflow-hidden flex flex-col items-center bg-blue">
+      {/* <div className="w-full overflow-hidden flex flex-col items-center bg-blue">
         {RadioTypes()}
         {exportGC ? ExportGC() : ExportTP()}
         <SaveButton className={`${SaveButtonStyle()}`} onClick={handleNewClick}></SaveButton>
@@ -432,7 +505,30 @@ export default function Export() {
         ) : (
           ""
         )}
-      </div>
+      </div> */}
+      <Card className="w-[99%] h-max">
+        <CardBody className="w-full h-max overflow-hidden flex flex-col items-center p-1 border-2 border-t-0 rounded-md">
+          {RadioTypes()}
+          {exportGC ? ExportGC() : ExportTP()}
+          <SaveButton
+            multiple_record={{
+              records: multipleRecords,
+              // next_handler: MultipleRecordNext,
+              // prev_handler: MultipleRecordPrev,
+              idx_handler: MultipleRecordsIdxHandler
+            }}
+            className={`${SaveButtonStyle()}`}
+            onClick={handleSaveClick}></SaveButton>
+          {currentSessionData !== undefined ? (
+            <SummaryTable
+              data={currentSessionData}
+              amount={importedAmount}
+              input_ref={inpAmountRef}></SummaryTable>
+          ) : (
+            ""
+          )}
+        </CardBody>
+      </Card>
     </>
   );
 }

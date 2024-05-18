@@ -50,7 +50,7 @@ export namespace CreateExcel {
     const TonDauKi = (data: ShortenData[]) => {
       let num = 0;
       data.forEach((value) => {
-        num += Number(value.sl_nhap ?? 0);
+        num += Number(Number(value.sl_nhap ?? 0).toFixed(4));
       });
       return num;
     };

@@ -17,7 +17,7 @@ export default function App() {
 
   return (
     <>
-      <div className="p-1 h-full flex flex-col items-center">
+      <div className="p-1 h-full flex flex-col items-center scroll-smooth">
         <ResourceLoader>
           <Popup />
           <Routes>

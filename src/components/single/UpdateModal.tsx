@@ -4,6 +4,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import GlobalStrings from "../../types/Globals";
 import ArrayToSelect from "../ArrayToSelect";
 import { useGlobalState } from "../../types/GlobalContext";
+import { Common } from "../../types/GlobalFnc";
 
 export default function UpdateModal(props: {
   open: boolean;
@@ -41,8 +42,8 @@ export default function UpdateModal(props: {
       setHopdong(props.data.hop_dong);
       setBill(props.data.so_bill);
       setLocation(props.data.noi_xuat);
-      setDocDate(props.data.ngay_chung_tu ?? "");
-      setRealDate(props.data.ngay_thuc_te);
+      setDocDate(Common.ParseDate(props.data.ngay_chung_tu ?? ""));
+      setRealDate(Common.ParseDate(props.data.ngay_thuc_te));
       setImportAmount(props.data.sl_nhap ? String(props.data.sl_nhap) : "");
       setExportProcessing(props.data.sl_xuat_gc ? String(props.data.sl_xuat_gc) : "");
       setExportProduction(props.data.sl_xuat_tp ? String(props.data.sl_xuat_tp) : "");
