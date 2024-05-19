@@ -9,27 +9,30 @@ import SummaryTable from "./SummaryTable";
 import SaveButton from "./single/SaveButton";
 import TypeProductCodeModal from "./single/TypeProductCodeModal";
 import { Common } from "../types/GlobalFnc";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function Export() {
   // States
   const [hopDongStr, setHopDongStr] = useState("");
-  const [rlsDateStr, setRlsDateStr] = useState("");
+  const [dateRelease, setDateRelease] = useState(new Date());
   const [selectedCodes, setSelectedCodes] = useState<string[]>();
   const [importedAmount, setImportedAmount] = useState<number[]>([]);
   const [csvContent, setCsvContent] = useState<string[]>([]);
   const [csvLocation, setCsvLocation] = useState<string[]>([]);
+  const [locationSet, setLocationSet] = useState<Set<string>>(new Set<string>());
   // const [productCodes, setCodeList] = useState<string[]>([]);
   const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
     new Map()
   );
   const [currentSessionData, setCurrentSessionData] = useState<WarehouseData.Record>();
   const [multipleRecords, setMultipleRecords] = useState<WarehouseData.Record[]>([]);
-  const { getRecordFilename, popup, product, input_code, json } = useGlobalState();
+  const { getRecordFilename, popup, input_code, json } = useGlobalState();
   const [exportGC, setExportTypeRadio] = useState(true);
 
   // References
   const contractRef = useRef<HTMLInputElement>(null);
-  const rlsDateRef = useRef<HTMLInputElement>(null);
+  // const rlsDateRef = useRef<HTMLInputElement>(null);
   const inpAmountRef = useRef<HTMLInputElement[]>([]);
   const rlsSrcRef = useRef<HTMLSelectElement>(null);
 
@@ -68,6 +71,11 @@ export default function Export() {
 
     if (json.rawNoiXuat !== undefined) {
       setCsvLocation(json.rawNoiXuat);
+      const tmp: Set<string> = new Set<string>();
+      json.rawNoiXuat.forEach((value) => {
+        tmp.add(value.split(",")[0]);
+      });
+      setLocationSet(tmp);
     }
     if (json.rawMaHang !== undefined) {
       setCsvContent(json.rawMaHang);
@@ -78,14 +86,6 @@ export default function Export() {
     fetchCsvFile();
     if (contractRef.current) {
       contractRef.current.focus();
-    }
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    if (rlsDateRef.current) {
-      rlsDateRef.current.value = `${year}-${month}-${day}`;
-      setRlsDateStr(rlsDateRef.current.value);
     }
 
     return () => {};
@@ -119,7 +119,7 @@ export default function Export() {
     // Update session data
     if (selectedCodes !== undefined) {
       inpAmountRef.current = [];
-      const tmp = new WarehouseData.Record(hopDongStr, rlsDateStr);
+      const tmp = new WarehouseData.Record(hopDongStr, Common.DateToString(dateRelease));
       tmp.ClearProduct();
       selectedCodes.forEach((code) => {
         tmp.CreateProduct(code);
@@ -130,14 +130,14 @@ export default function Export() {
     return () => {};
   }, [selectedCodes]);
 
-  useEffect(() => {
-    if (currentSessionData) {
-      product.constructProductMap(json.rawMaHang ?? [""]);
-      console.log("Session data updated: " + WarehouseData.ToString(currentSessionData));
-    }
+  // useEffect(() => {
+  //   if (currentSessionData) {
+  //     product.constructProductMap(json.rawMaHang ?? [""]);
+  //     console.log("Session data updated: " + WarehouseData.ToString(currentSessionData));
+  //   }
 
-    return () => {};
-  }, [currentSessionData]);
+  //   return () => {};
+  // }, [currentSessionData]);
 
   useEffect(() => {
     if (multipleRecords.length) {
@@ -149,12 +149,20 @@ export default function Export() {
 
   const MultipleRecordsIdxHandler = (idx: number) => {
     const record = multipleRecords[idx];
+    Common.Log(`Record at idx = ${idx}\n${WarehouseData.ToString(record)}`);
     setHopDongStr(record.hop_dong);
     if (rlsSrcRef && rlsSrcRef.current) {
-      rlsSrcRef.current.value = multipleRecords[idx].danh_sach_san_pham[idx].noi_xuat ?? "";
+      const location = multipleRecords[idx].danh_sach_san_pham[idx].noi_xuat ?? "";
+      if (locationSet.has(location)) {
+        rlsSrcRef.current.value = location;
+      } else {
+        popup.show(
+          `Không tìm thấy nơi xuất hàng "${location}"\nHãy kiểm tra lại dữ liệu!`,
+          "warning"
+        );
+      }
     }
-    setRlsDateStr(Common.ParseDate(record.ngay_thuc_te));
-    // setDocDateStr(Common.ParseDate(record.ngay_chung_tu ?? ""));
+    setDateRelease(Common.DateFromString(record.ngay_thuc_te, "-"));
     let amt: number[] = [];
     record.danh_sach_san_pham.forEach((re) => {
       if (exportGC) {
@@ -207,7 +215,7 @@ export default function Export() {
       popup.show("xong", "info");
       setHopDongStr("");
       // setBillStr("");
-      setRlsDateStr("");
+      // setRlsDateStr("");
       // setDocDateStr("");
       setSelectedCodes([]);
       setImportedAmount([]);
@@ -215,58 +223,8 @@ export default function Export() {
       setMultipleRecords([]);
       setTimeout(() => {
         popup.setOpen(false);
-      }, 700);
+      }, 1000);
     }
-    // // Map amount to product
-    // if (inpAmountRef && currentSessionData && currentSessionData.danh_sach_san_pham.length) {
-    //   const tmp = currentSessionData;
-    //   if (
-    //     inpAmountRef.current.some((value) => {
-    //       console.log(`check value: ${value.value} -> ${Number(value.value)}`);
-
-    //       return Number(value.value) <= 0;
-    //     })
-    //   ) {
-    //     popup.show("Không thể lưu, kiểm tra lại số lượng", "error");
-    //     return;
-    //   }
-
-    //   if (tmp.danh_sach_san_pham.length != inpAmountRef.current.length) {
-    //     console.log(
-    //       `tmp.danh_sach_san_pham.length = ${tmp.danh_sach_san_pham.length}, inpAmountRef.current.length = ${inpAmountRef.current.length}`
-    //     );
-
-    //     popup.show("Có lỗi xảy ra, hãy thử lại", "error");
-    //     return;
-    //   }
-
-    //   let rls_source;
-    //   if (rlsSrcRef) {
-    //     rls_source = rlsSrcRef.current?.value;
-    //   }
-    //   for (let i = 0; i < inpAmountRef.current.length; ++i) {
-    //     tmp.danh_sach_san_pham[i].noi_xuat = rls_source;
-    //     if (exportGC) {
-    //       tmp.danh_sach_san_pham[i].sl_xuat_gc = inpAmountRef.current[i].value as unknown as number;
-    //     } else {
-    //       tmp.danh_sach_san_pham[i].sl_xuat_tp = inpAmountRef.current[i].value as unknown as number;
-    //     }
-    //   }
-
-    //   // dialog.message("Final data: " + ImportData.ToString(tmp));
-
-    //   const res = await tmp.StoreData(getRecordFilename(), GlobalStrings.SaveDirectory, true);
-    //   if (res) {
-    //     popup.show("Xong", "info");
-    //     setHopDongStr("");
-    //     setCurrentSessionData(new WarehouseData.Record("", ""));
-    //   } else {
-    //     popup.show("Có lỗi xảy ra, hãy thử lại", "error");
-    //   }
-    //   // window.location.reload();
-    // } else {
-    //   popup.show("Không thể lưu, danh sách mã hàng trống", "error");
-    // }
   };
 
   const updateLocationData = () => {
@@ -331,13 +289,18 @@ export default function Export() {
           </div>
           <div className="flex pt-2 items-center">
             <div className={`w-1/3  pr-2 ${RegularTextColor()}`}>Ngày xuất</div>
-            <input
-              className={`w-full bg-white rounded-md p-1 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
-              type="date"
-              ref={rlsDateRef}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                setRlsDateStr(event.target.value);
-              }}></input>
+            <div className={`w-full`}>
+              <DatePicker
+                className={`rounded-md p-1 pl-2 ${OutlineColor()}`}
+                selected={dateRelease}
+                onChange={(date) => {
+                  if (date) {
+                    setDateRelease(date);
+                  }
+                }}
+                dateFormat={"dd-MMM-yyyy"}
+              />
+            </div>
           </div>
         </div>
       </>

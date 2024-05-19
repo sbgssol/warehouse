@@ -126,9 +126,9 @@ export module WarehouseData {
   }
 
   export const ToString = (data: Record) => {
-    let str = `HỢP ĐỒNG: ${data.hop_dong}\nSỐ BILL: ${data.so_bill}\nNGÀY NHẬP THỰC TẾ: ${data.ngay_thuc_te}\nNGÀY CHỨNG TỪ: ${data.ngay_chung_tu}\n`;
+    let str = `HỢP ĐỒNG: ${data.hop_dong}\n\SỐ BILL: ${data.so_bill}\nNGÀY NHẬP THỰC TẾ: ${data.ngay_thuc_te}\nNGÀY CHỨNG TỪ: ${data.ngay_chung_tu}\n`;
     for (let i = 0; i < data.danh_sach_san_pham.length; ++i) {
-      str += `  Mã hàng: ${data.danh_sach_san_pham[i].ma_hang}, Số lượng: ${data.danh_sach_san_pham[i].sl_nhap}.\n`;
+      str += `  ${data.danh_sach_san_pham[i].ma_hang} -> nhập: ${data.danh_sach_san_pham[i].sl_nhap}, nơi xuất: ${data.danh_sach_san_pham[i].noi_xuat}, xuất gc: ${data.danh_sach_san_pham[i].sl_xuat_gc}, xuất tp: ${data.danh_sach_san_pham[i].sl_xuat_tp}.\n`;
     }
     return str;
   };

@@ -329,9 +329,11 @@ export namespace FileOperation {
             String(idx + 1),
             value.noi_xuat ?? "-",
             value.so_bill ?? "-",
-            value.ngay_chung_tu ?? "-",
+            value.ngay_chung_tu !== undefined
+              ? Common.ParseDateReport(value.ngay_chung_tu, "-")
+              : "-",
             value.hop_dong,
-            value.ngay_thuc_te,
+            Common.ParseDateReport(value.ngay_thuc_te, "-"),
             String(value.sl_nhap ?? "-"),
             String(value.sl_xuat_gc ?? "-"),
             String(value.sl_xuat_tp ?? "-"),
@@ -555,12 +557,13 @@ export namespace FileOperation {
               if (line.length) {
                 if (IsImport(lines_without_empty, i)) {
                   let record: WarehouseData.Record;
-                  record = new WarehouseData.Record(
-                    splitString(lines_without_empty[i])[1],
-                    splitString(lines_without_empty[i + 3])[1],
-                    splitString(lines_without_empty[i + 1])[1],
+                  const hop_dong = splitString(lines_without_empty[i])[1];
+                  const so_bill = splitString(lines_without_empty[i + 1])[1];
+                  const ngay_chung_tu = Common.ParseDate(
                     splitString(lines_without_empty[i + 2])[1]
                   );
+                  const ngay_thuc_te = Common.ParseDate(splitString(lines_without_empty[i + 3])[1]);
+                  record = new WarehouseData.Record(hop_dong, ngay_thuc_te, so_bill, ngay_chung_tu);
 
                   for (let j = i + 4; j < lines_without_empty.length; ++j) {
                     if (IsImport(lines_without_empty, j) || IsExport(lines_without_empty, j)) {
@@ -585,10 +588,10 @@ export namespace FileOperation {
                   Imported.push(record);
                 } else if (IsExport(lines_without_empty, i)) {
                   let record: WarehouseData.Record;
-                  record = new WarehouseData.Record(
-                    splitString(lines_without_empty[i + 1])[1],
-                    splitString(lines_without_empty[i + 2])[1]
-                  );
+                  const hop_dong = splitString(lines_without_empty[i + 1])[1];
+                  const ngay_thuc_te = Common.ParseDate(splitString(lines_without_empty[i + 2])[1]);
+                  Common.Log(`Initializing ${hop_dong}, ${ngay_thuc_te}`);
+                  record = new WarehouseData.Record(hop_dong, ngay_thuc_te);
 
                   for (let j = i + 3; j < lines_without_empty.length; ++j) {
                     if (IsImport(lines_without_empty, j) || IsExport(lines_without_empty, j)) {
@@ -606,27 +609,34 @@ export namespace FileOperation {
                     // );
                     if (export_type !== undefined) {
                       if (export_type == "processing") {
-                        record.AddProduct(
-                          splitString(lines_without_empty[j])[2],
-                          splitString(lines_without_empty[i])[1],
-                          undefined,
-                          Number(splitString(lines_without_empty[j])[5])
+                        const ma_hang = splitString(lines_without_empty[j])[2];
+                        const noi_xuat = splitString(lines_without_empty[i])[1];
+                        const sl_nhap = undefined;
+                        const sl_xuat_gc = Number(splitString(lines_without_empty[j])[5]);
+                        const sl_xuat_tp = undefined;
+                        Common.Log(
+                          `Adding processing: ${ma_hang}, ${noi_xuat}, ${sl_nhap}, ${sl_xuat_gc}, ${sl_xuat_tp}`
                         );
+                        record.AddProduct(ma_hang, noi_xuat, sl_nhap, sl_xuat_gc, sl_xuat_tp);
                       } else if (export_type == "production") {
-                        record.AddProduct(
-                          splitString(lines_without_empty[j])[2],
-                          splitString(lines_without_empty[i])[1],
-                          undefined,
-                          undefined,
-                          Number(splitString(lines_without_empty[j])[5])
+                        const ma_hang = splitString(lines_without_empty[j])[2];
+                        const noi_xuat = splitString(lines_without_empty[i])[1];
+                        const sl_nhap = undefined;
+                        const sl_xuat_gc = undefined;
+                        const sl_xuat_tp = Number(splitString(lines_without_empty[j])[5]);
+                        Common.Log(
+                          `Adding processing: ${ma_hang}, ${noi_xuat}, ${sl_nhap}, ${sl_xuat_gc}, ${sl_xuat_tp}`
                         );
+                        record.AddProduct(ma_hang, noi_xuat, sl_nhap, sl_xuat_gc, sl_xuat_tp);
                       }
                     }
                     // console.log(
                     //   `  ${lines_without_empty[j].split(",")[2]} -> ${lines_without_empty[j].split(",")[5]}`
                     // );
                   }
-                  Imported.push(record);
+                  if (record.danh_sach_san_pham.length != 0) {
+                    Imported.push(record);
+                  }
                 }
               }
             }

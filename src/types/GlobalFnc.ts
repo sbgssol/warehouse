@@ -119,10 +119,13 @@ export namespace Common {
     // }
   };
 
-  export const ParseDate = (str: string) => {
+  export const ParseDate = (str: string, delim?: string) => {
+    const d = delim !== undefined ? delim : "/";
     // Split the string into day, month, and year components
-    const [day, month, year] = str.split("/").map(Number);
-
+    let [day, month, year] = str.split(d).map(Number);
+    if (String(year).length == 2) {
+      year = 2024;
+    }
     // Create a new Date object (months are zero-based in JavaScript Date)
     const dateObject = new Date(year, month - 1, day);
 
@@ -132,8 +135,89 @@ export namespace Common {
     const formattedDay = String(dateObject.getDate()).padStart(2, "0");
 
     // Construct the formatted date string in the "yyyy-MM-dd" format
-    const formattedDate = `${formattedYear}-${formattedMonth}-${formattedDay}`;
+    const formattedDate = `${formattedDay}-${formattedMonth}-${formattedYear}`;
 
     return formattedDate;
+  };
+
+  export const ParseDateReport = (str: string, delim?: string) => {
+    const d = delim !== undefined ? delim : "/";
+    // Split the string into day, month, and year components
+    let [day, month, year] = str.split(d).map(Number);
+    if (String(year).length == 2) {
+      year = 2024;
+    }
+
+    const month_map = new Map<string, string>();
+    month_map.set("Jan", "Th01");
+    month_map.set("Feb", "Th02");
+    month_map.set("Mar", "Th03");
+    month_map.set("Apr", "Th04");
+    month_map.set("May", "Th05");
+    month_map.set("Jun", "Th06");
+    month_map.set("Jul", "Th07");
+    month_map.set("Aug", "Th08");
+    month_map.set("Sep", "Th09");
+    month_map.set("Oct", "Th10");
+    month_map.set("Nov", "Th11");
+    month_map.set("Dec", "Th12");
+
+    // Create a new Date object (months are zero-based in JavaScript Date)
+    const dateObject = new Date(year, month - 1, day);
+
+    // Get year, month, and day components from the date object
+    const formattedYear = dateObject.getFullYear().toString().slice(2);
+    const formattedMonth = month_map.get(
+      dateObject.toLocaleString("default", { month: "long" }).slice(0, 3)
+    );
+    const formattedDay = String(dateObject.getDate()).padStart(2, "0");
+
+    // Construct the formatted date string in the "yyyy-MM-dd" format
+    const formattedDate = `${formattedDay}-${formattedMonth}-${formattedYear}`;
+
+    return formattedDate;
+  };
+
+  export const DateToString = (date: Date) => {
+    const y = date.getFullYear();
+    const M = date.getMonth();
+    const d = date.getDate();
+
+    const month_map = new Map<number, string>();
+    month_map.set(1, "Th01");
+    month_map.set(2, "Th02");
+    month_map.set(3, "Th03");
+    month_map.set(4, "Th04");
+    month_map.set(5, "Th05");
+    month_map.set(6, "Th06");
+    month_map.set(7, "Th07");
+    month_map.set(8, "Th08");
+    month_map.set(9, "Th09");
+    month_map.set(10, "Th10");
+    month_map.set(11, "Th11");
+    month_map.set(12, "Th12");
+
+    const y_str = String(y);
+    const M_str = String(M + 1).padStart(2, "0");
+    const d_str = String(d).padStart(2, "0");
+    return `${d_str}-${M_str}-${y_str}`;
+  };
+
+  // Expected format: d/M/yy
+  export const DateFromString = (str: string, delim?: string): Date => {
+    const d = delim != undefined ? delim : "/";
+    let [day, month, year] = str.split(d).map(Number);
+    if (String(year).length == 2) {
+      year = 2024;
+    }
+
+    Log(`day = ${day} month = ${month} year = ${year}`);
+
+    const date = new Date();
+    date.setFullYear(year);
+    date.setMonth(month - 1);
+    date.setDate(day);
+
+    return date;
   };
 }

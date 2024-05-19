@@ -24,6 +24,8 @@ import InputStock from "./single/InputStock";
 import { FileOperation } from "../types/FileOperation";
 import ArrayToSelect from "./ArrayToSelect";
 import PleaseWait from "./single/PleaseWait";
+import AutoCompleteInput from "./single/AutoCompleteInput";
+import { Common } from "../types/GlobalFnc";
 
 export default function CreateReport() {
   const [restoredData, setRestoredData] = useState<WarehouseData.Record[]>([]);
@@ -159,6 +161,17 @@ export default function CreateReport() {
     setCurrentSelectedData(data);
   };
 
+  useEffect(() => {
+    if (productSortedByDate.size) {
+      Common.Log(`Product sorted by date changed:`);
+      productSortedByDate.forEach((records, code) => {
+        Common.Log(`${code}\n  ${JSON.stringify(records)}`);
+      });
+    }
+
+    return () => {};
+  }, [productSortedByDate]);
+
   const ProductSelect = () => {
     if (viewAll) return "";
     const select_twstyles =
@@ -167,16 +180,30 @@ export default function CreateReport() {
     // setCurrentSelectedData(new Map<string, ShortenData[]>());
     if (loadedProductCodes !== undefined) {
       return (
-        <div className={`w-[90%] flex items-center mt-4`}>
-          <div className={`w-[35%] text-right pr-2`}>
-            <Typography>Chọn một mã hàng để xem chi tiết</Typography>
+        <div className={`w-full flex flex-col items-center mt-4`}>
+          <div className={`w-full flex justify-end items-center`}>
+            <AutoCompleteInput
+              label={<Typography className={`mr-2`}>{"Tìm mã sản phẩm"}</Typography>}
+              data_source={loadedProductCodes}
+              input_class_twstyles={
+                "w-full px-2 py-1 rounded-md font-myThin font-bold border-2 border-green-700 focus:outline-none"
+              }
+              list_class_twstyles={`bg-light-green-50 border-2 rounded-md border-green-600`}
+              list_item_class_twstyles={`px-1 py-2 rounded-md font-myThin font-bold text-black`}
+              div_wrapper_class_twstyes={`w-[80%]`}
+              item_selected_handler={SelectData}></AutoCompleteInput>
           </div>
-          <div className={`w-[65%]`}>
-            <ArrayToSelect
-              arr={loadedProductCodes}
-              onChange={SelectData}
-              select_class={select_twstyles}
-              option_class={option_twstyles}></ArrayToSelect>
+          <div className={`w-full flex items-center justify-center`}>
+            <div className={`w-[20%] text-right pr-2`}>
+              <Typography>Chọn một mã hàng để xem chi tiết</Typography>
+            </div>
+            <div className={`w-[80%]`}>
+              <ArrayToSelect
+                arr={loadedProductCodes}
+                onChange={SelectData}
+                select_class={select_twstyles}
+                option_class={option_twstyles}></ArrayToSelect>
+            </div>
           </div>
         </div>
       );
@@ -290,9 +317,15 @@ export default function CreateReport() {
                       <td className={`${num_col}`}>{innerIndex + 1}</td>
                       <td className={`${str_col}`}>{value.noi_xuat ?? "-"}</td>
                       <td className={`${str_col}`}>{value.so_bill ?? "-"}</td>
-                      <td className={`${str_col} w-20`}>{value.ngay_chung_tu ?? "-"}</td>
+                      <td className={`${str_col} w-20`}>
+                        {value.ngay_chung_tu !== undefined
+                          ? Common.ParseDateReport(value.ngay_chung_tu, "-")
+                          : "-"}
+                      </td>
                       <td className={`${str_col}`}>{value.hop_dong}</td>
-                      <td className={`${str_col} w-20`}>{value.ngay_thuc_te}</td>
+                      <td className={`${str_col} w-20`}>
+                        {Common.ParseDateReport(value.ngay_thuc_te, "-")}
+                      </td>
                       <td className={`${num_col}`} width={50}>
                         {value.sl_nhap ?? "-"}
                       </td>
@@ -467,7 +500,9 @@ export default function CreateReport() {
         const tmp: Map<number, { date: number; data: ShortenData }> = new Map();
         value.forEach((data, index) => {
           prod_code_list.add(key);
-          tmp.set(index, { date: Date.parse(data.ngay_thuc_te), data: data });
+          Common.Log(`data.ngay_thuc_te -> ${data.ngay_thuc_te}`);
+          const date = Common.DateFromString(data.ngay_thuc_te, "-");
+          tmp.set(index, { date: date.getTime(), data: data });
         });
 
         const sortedArr = Array.from(tmp.entries()).sort((a, b) => {

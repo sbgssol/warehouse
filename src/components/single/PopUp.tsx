@@ -49,9 +49,9 @@ export default function Popup() {
               popup.setAnswer(false);
               popup.setOpen(false);
             }}>
-            không
+            đóng
           </Button>
-          <Button
+          {/* <Button
             color="orange"
             variant="outlined"
             className={`${className}`}
@@ -60,7 +60,7 @@ export default function Popup() {
               popup.setOpen(false);
             }}>
             có
-          </Button>
+          </Button> */}
         </>
       );
     }
@@ -92,13 +92,20 @@ export default function Popup() {
     return <div className="pl-2">{popup.message}</div>;
   };
 
+  const DismissForError = () => {
+    if (popup.type == "error" || popup.type == "warning") {
+      return { escapeKey: false, outsidePress: false };
+    }
+    return {};
+  };
+
   return (
     <>
       <Dialog
         open={popup.open}
         handler={handleOpen}
         size="xs"
-        // dismiss={{ escapeKey: false, outsidePress: false }}
+        dismiss={DismissForError()}
         className={`${SelectDialogBorder()} select-none p-4 pb-2`}>
         <div className="flex items-center border-b-2 pb-2 mb-2">
           {SelectIcon()}

@@ -9,26 +9,30 @@ import { useGlobalState } from "../types/GlobalContext";
 import TypeProductCodeModal from "./single/TypeProductCodeModal";
 import { Common } from "../types/GlobalFnc";
 import { FileOperation } from "../types/FileOperation";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function Import() {
   // States
   const [hopDongStr, setHopDongStr] = useState("");
   const [billStr, setBillStr] = useState("");
-  const [realDateStr, setRealDateStr] = useState("");
-  const [docDateStr, setDocDateStr] = useState("");
+  // const [realDateStr, setRealDateStr] = useState("");
+  // const [docDateStr, setDocDateStr] = useState("");
   const [selectedCodes, setSelectedCodes] = useState<string[]>();
   const [importedAmount, setImportedAmount] = useState<number[]>([]);
   const { getRecordFilename } = useGlobalState();
   const { popup, product, input_code, json } = useGlobalState();
 
+  const [dateReal, setDateReal] = useState<Date>(new Date());
+  const [dateDoc, setDateDoc] = useState<Date>(new Date());
+
   // References
   const contractRef = useRef<HTMLInputElement>(null); // To focus when the program starts
-  const realDateRef = useRef<HTMLInputElement>(null); // To initialize to current date
-  const docDateRef = useRef<HTMLInputElement>(null); // To initialize to current date
+  // const realDateRef = useRef<HTMLInputElement>(null); // To initialize to current date
+  // const docDateRef = useRef<HTMLInputElement>(null); // To initialize to current date
   const inpAmountRef = useRef<HTMLInputElement[]>([]);
 
   const fixed_text_color = `text-amber-700`;
-  const fixed_area_bg = "bg-amber-100";
   const fixed_area_border = `border-amber-200`;
   const fixed_input_outline = `focus:outline-amber-300`;
 
@@ -51,18 +55,18 @@ export default function Import() {
     if (contractRef.current) {
       contractRef.current.focus();
     }
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    if (realDateRef.current) {
-      realDateRef.current.value = `${year}-${month}-${day}`;
-      setRealDateStr(realDateRef.current.value);
-    }
-    if (docDateRef.current) {
-      docDateRef.current.value = `${year}-${month}-${day}`;
-      setDocDateStr(docDateRef.current.value);
-    }
+    // const date = new Date();
+    // const year = date.getFullYear();
+    // const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    // const day = date.getDate().toString().padStart(2, "0");
+    // if (realDateRef.current) {
+    //   realDateRef.current.value = `${year}-${month}-${day}`;
+    //   setRealDateStr(realDateRef.current.value);
+    // }
+    // if (docDateRef.current) {
+    //   docDateRef.current.value = `${year}-${month}-${day}`;
+    //   setDocDateStr(docDateRef.current.value);
+    // }
     return () => {};
   }, []);
 
@@ -92,7 +96,12 @@ export default function Import() {
   useEffect(() => {
     if (selectedCodes !== undefined) {
       inpAmountRef.current = [];
-      const tmp = new WarehouseData.Record(hopDongStr, realDateStr, billStr, docDateStr);
+      const tmp = new WarehouseData.Record(
+        hopDongStr,
+        Common.DateToString(dateReal),
+        billStr,
+        Common.DateToString(dateDoc)
+      );
       tmp.ClearProduct();
       selectedCodes.forEach((code) => {
         tmp.CreateProduct(code);
@@ -159,15 +168,15 @@ export default function Import() {
       popup.show("xong", "info");
       setHopDongStr("");
       setBillStr("");
-      setRealDateStr("");
-      setDocDateStr("");
+      // setRealDateStr("");
+      // setDocDateStr("");
       setSelectedCodes([]);
       setImportedAmount([]);
       setCurrentSessionData(new WarehouseData.Record("", ""));
       setMultipleRecords([]);
       setTimeout(() => {
         popup.setOpen(false);
-      }, 700);
+      }, 1000);
     }
   };
 
@@ -195,7 +204,7 @@ export default function Import() {
             Nhập kho
           </Typography>
         </div>
-        <div className={`border-2 ${fixed_area_border} ${fixed_area_bg} rounded-lg p-2 w-full`}>
+        <div className={`border-2 ${fixed_area_border} rounded-lg p-2 w-full`}>
           <div className="flex items-center">
             <div className={`w-1/3 pr-2 ${fixed_text_color}`}>Hợp đồng</div>
             <input
@@ -229,25 +238,33 @@ export default function Import() {
           </div>
           <div className="flex pt-2 items-center">
             <div className={`w-1/3  pr-2 ${fixed_text_color}`}>Ngày nhập thực tế</div>
-            <input
-              className={`w-full bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
-              type="date"
-              ref={realDateRef}
-              value={realDateStr}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                setRealDateStr(event.target.value);
-              }}></input>
+            <div className={`w-full`}>
+              <DatePicker
+                className={`rounded-md p-1 pl-2 ${fixed_input_outline}`}
+                selected={dateReal}
+                onChange={(date) => {
+                  if (date) {
+                    setDateReal(date);
+                  }
+                }}
+                dateFormat={"dd-MMM-yyyy"}
+              />
+            </div>
           </div>
           <div className="flex pt-2 items-center">
             <div className={`w-1/3  pr-2 ${fixed_text_color}`}>Ngày chứng từ</div>
-            <input
-              className={`w-full bg-white rounded-md p-1 pl-2 ${fixed_input_outline}`}
-              type="date"
-              ref={docDateRef}
-              value={docDateStr}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                setDocDateStr(event.target.value);
-              }}></input>
+            <div className={`w-full`}>
+              <DatePicker
+                className={`rounded-md p-1 pl-2 ${fixed_input_outline}`}
+                selected={dateDoc}
+                onChange={(date) => {
+                  if (date) {
+                    setDateDoc(date);
+                  }
+                }}
+                dateFormat={"dd-MMM-yyyy"}
+              />
+            </div>
           </div>
         </div>
       </>
@@ -399,8 +416,11 @@ export default function Import() {
     const record = multipleRecords[idx];
     setHopDongStr(record.hop_dong);
     setBillStr(record.so_bill ?? "");
-    setRealDateStr(Common.ParseDate(record.ngay_thuc_te));
-    setDocDateStr(Common.ParseDate(record.ngay_chung_tu ?? ""));
+    Common.Log(`record.ngay_thuc_te -> ${record.ngay_thuc_te}`);
+    setDateReal(Common.DateFromString(record.ngay_thuc_te, "-"));
+    if (record.ngay_chung_tu !== undefined) {
+      setDateDoc(Common.DateFromString(record.ngay_chung_tu, "-"));
+    }
     let amt: number[] = [];
     record.danh_sach_san_pham.forEach((re) => {
       amt.push(Number(re.sl_nhap));
@@ -411,18 +431,7 @@ export default function Import() {
 
   useEffect(() => {
     if (multipleRecords.length) {
-      Common.Log(`multiple records length: ${multipleRecords.length}`);
-      const record = multipleRecords[0];
-      setHopDongStr(record.hop_dong);
-      setBillStr(record.so_bill ?? "");
-      setRealDateStr(Common.ParseDate(record.ngay_thuc_te));
-      setDocDateStr(Common.ParseDate(record.ngay_chung_tu ?? ""));
-      let amt: number[] = [];
-      record.danh_sach_san_pham.forEach((re) => {
-        amt.push(Number(re.sl_nhap));
-      });
-      setImportedAmount(amt);
-      setCurrentSessionData(multipleRecords[0]);
+      MultipleRecordsIdxHandler(0);
     }
 
     return () => {};
