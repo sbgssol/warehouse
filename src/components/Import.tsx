@@ -112,13 +112,13 @@ export default function Import() {
     return () => {};
   }, [selectedCodes]);
 
-  useEffect(() => {
-    if (currentSessionData !== undefined) {
-      console.log("Session data updated: " + WarehouseData.ToString(currentSessionData));
-    }
+  // useEffect(() => {
+  //   if (currentSessionData !== undefined) {
+  //     console.log("Session data updated: " + WarehouseData.ToString(currentSessionData));
+  //   }
 
-    return () => {};
-  }, [currentSessionData]);
+  //   return () => {};
+  // }, [currentSessionData]);
 
   // Validation
   const [hopDongValid, setHopDongValid] = useState(false);
@@ -137,6 +137,7 @@ export default function Import() {
     if (multipleRecords.length) {
       for (let i = 0; i < multipleRecords.length; ++i) {
         // const record = multipleRecords[i];
+        // record.Foo();
         res = await FileOperation.StoreRecordToDisk(
           getRecordFilename(),
           multipleRecords[i],

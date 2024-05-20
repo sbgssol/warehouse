@@ -17,7 +17,7 @@ export module WarehouseData {
     thanh_pham?: number;
   };
   type ChiTietPhanLoai = PhanLoaiNhap | PhanLoaiXuat;
-  class Products {
+  export class Products {
     ma_hang: string;
     phan_loai?: RecordType;
     chi_tiet?: ChiTietPhanLoai;
@@ -194,7 +194,7 @@ export module WarehouseData {
     }
     // const dir = await Common.BaseDiToStr(directory)
     Common.Log(
-      `"${GlobalStrings.RecordFileName}" stored to "${await Common.BaseDiToStr(GlobalStrings.SaveDirectory)}"`
+      `"${file_name}" stored to "${await Common.BaseDiToStr(GlobalStrings.SaveDirectory)}"`
     );
     return 0;
   };

@@ -5,6 +5,8 @@ import GlobalStrings from "../../types/Globals";
 import ArrayToSelect from "../ArrayToSelect";
 import { useGlobalState } from "../../types/GlobalContext";
 import { Common } from "../../types/GlobalFnc";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function UpdateModal(props: {
   open: boolean;
@@ -19,8 +21,8 @@ export default function UpdateModal(props: {
   const [hopdong, setHopdong] = useState("");
   const [bill, setBill] = useState<string | undefined>();
   const [location, setLocation] = useState<string | undefined>();
-  const [docDate, setDocDate] = useState("");
-  const [realDate, setRealDate] = useState("");
+  // const [docDate, setDocDate] = useState("");
+  // const [realDate, setRealDate] = useState("");
   const [importAmount, setImportAmount] = useState("");
   const [exportProcessing, setExportProcessing] = useState("");
   const [exportProduction, setExportProduction] = useState("");
@@ -28,6 +30,8 @@ export default function UpdateModal(props: {
   const [tenHang, setTenHang] = useState("");
   const [isImport, setIsImport] = useState(false);
   const { json } = useGlobalState();
+  const [dateReal, setDateReal] = useState(new Date());
+  const [dateDoc, setDateDoc] = useState(new Date());
 
   // Ref
   //
@@ -42,8 +46,8 @@ export default function UpdateModal(props: {
       setHopdong(props.data.hop_dong);
       setBill(props.data.so_bill);
       setLocation(props.data.noi_xuat);
-      setDocDate(Common.ParseDate(props.data.ngay_chung_tu ?? ""));
-      setRealDate(Common.ParseDate(props.data.ngay_thuc_te));
+      setDateReal(Common.DateFromString(props.data.ngay_chung_tu ?? "", "-"));
+      setDateDoc(Common.DateFromString(props.data.ngay_thuc_te, "-"));
       setImportAmount(props.data.sl_nhap ? String(props.data.sl_nhap) : "");
       setExportProcessing(props.data.sl_xuat_gc ? String(props.data.sl_xuat_gc) : "");
       setExportProduction(props.data.sl_xuat_tp ? String(props.data.sl_xuat_tp) : "");
@@ -57,8 +61,8 @@ export default function UpdateModal(props: {
   const ModifyImport = () => {
     const phan_loai = "import";
     const chi_tiet = {
-      ngay_chung_tu: docDate,
-      ngay_thuc_te: realDate,
+      ngay_chung_tu: Common.DateToString(dateDoc),
+      ngay_thuc_te: Common.DateToString(dateReal),
       so_bill: bill,
       so_luong: Number(importAmount)
     } as UpdateRecord.Import;
@@ -79,7 +83,7 @@ export default function UpdateModal(props: {
     }
 
     const chi_tiet = {
-      ngay_thuc_te: realDate,
+      ngay_thuc_te: Common.DateToString(dateReal),
       noi_xuat: location,
       chi_tiet: xuat
     } as UpdateRecord.Export;
@@ -131,14 +135,26 @@ export default function UpdateModal(props: {
                   <p>{GlobalStrings.TableColumn.NgThTe}</p>
                 </div>
                 <div className="w-2/3 mb-2">
-                  <input
+                  <div className={`w-full`}>
+                    <DatePicker
+                      className={`rounded-md p-1 pl-2 `}
+                      selected={dateReal}
+                      onChange={(date) => {
+                        if (date) {
+                          setDateReal(date);
+                        }
+                      }}
+                      dateFormat={"dd-MM-yyyy"}
+                    />
+                  </div>
+                  {/* <input
                     disabled={props.type == "delete"}
                     type="date"
                     value={realDate}
                     className={`p-1 pl-2 border-2 border-teal-700 rounded-md w-full focus:outline-none ${disabled_delete}`}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => {
                       setRealDate(e.target.value);
-                    }}></input>
+                    }}></input> */}
                 </div>
               </div>
             </td>
@@ -150,14 +166,18 @@ export default function UpdateModal(props: {
                   <p>{GlobalStrings.TableColumn.NgChTu}</p>
                 </div>
                 <div className="w-2/3 mb-2">
-                  <input
-                    disabled={props.type == "delete"}
-                    type="date"
-                    value={docDate}
-                    className={`p-1 pl-2 border-2 border-teal-700 rounded-md w-full focus:outline-none ${disabled_delete}`}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                      setDocDate(e.target.value);
-                    }}></input>
+                  <div className={`w-full`}>
+                    <DatePicker
+                      className={`rounded-md p-1 pl-2`}
+                      selected={dateDoc}
+                      onChange={(date) => {
+                        if (date) {
+                          setDateDoc(date);
+                        }
+                      }}
+                      dateFormat={"dd-MM-yyyy"}
+                    />
+                  </div>
                 </div>
               </div>
             </td>
@@ -224,14 +244,18 @@ export default function UpdateModal(props: {
                   <p>{GlobalStrings.TableColumn.NgThTe}</p>
                 </div>
                 <div className="w-2/3 mb-2">
-                  <input
-                    disabled={props.type == "delete"}
-                    type="date"
-                    value={realDate}
-                    className={`p-1 pl-2 border-2 border-teal-700 rounded-md w-full focus:outline-none ${disabled_delete}`}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                      setRealDate(e.target.value);
-                    }}></input>
+                  <div className={`w-full`}>
+                    <DatePicker
+                      className={`rounded-md p-1 pl-2 `}
+                      selected={dateReal}
+                      onChange={(date) => {
+                        if (date) {
+                          setDateReal(date);
+                        }
+                      }}
+                      dateFormat={"dd-MM-yyyy"}
+                    />
+                  </div>
                 </div>
               </div>
             </td>

@@ -2,6 +2,7 @@ import {
   Button,
   Card,
   CardBody,
+  Checkbox,
   IconButton,
   Radio,
   Tooltip,
@@ -29,27 +30,19 @@ import { Common } from "../types/GlobalFnc";
 
 export default function CreateReport() {
   const [restoredData, setRestoredData] = useState<WarehouseData.Record[]>([]);
-  const [productByCode, setProductByCode] = useState<Map<string, ShortenData[]>>(
-    new Map<string, ShortenData[]>()
-  );
-  const [productSortedByDate, setProductSortedByDate] = useState<Map<string, ShortenData[]>>(
-    new Map<string, ShortenData[]>()
-  );
+  const [shortDataMap, setShortDataMap] = useState(new Map<string, ShortenData[]>());
   const [loadedProductCodes, setLoadedProductCodes] = useState<string[]>();
   const [currentSelectedData, setCurrentSelectedData] = useState<Map<string, ShortenData[]>>();
 
   const { contractName, getRecordFilename } = useGlobalState();
-  // const [productMap, setProductMap] = useState<Map<string, { name: string; unit: string }>>(
-  //   new Map()
-  // );
   const [openModalUpdate, setOpenModalUpdate] = useState(false);
-  const [openModalDelete, setOpenModalDelete] = useState(false);
   const [openModalStock, setOpenModalStock] = useState(false);
-  const [dataToEdit, setDataToEdit] = useState<ShortenData>(new ShortenData("", "", "", ""));
+  const [dataToEdit, setDataToEdit] = useState<ShortenData>(new ShortenData("", ""));
   const [maHang, setMaHang] = useState("");
   const [checkClicked, setCheckClicked] = useState(false);
   const { popup, product, json, wait } = useGlobalState();
   const [viewAll, setViewAll] = useState(false);
+  const [toBeRemoved, setToBeRemoved] = useState<Map<string, number>>(new Map<string, number>());
 
   type CongCuoiKi = {
     nhap: number;
@@ -109,26 +102,26 @@ export default function CreateReport() {
     setMaHang(code);
   };
 
-  const handleRemoveClick = (old_record: ShortenData, product_code: string) => {
-    setOpenModalDelete(true);
-    setDataToEdit(old_record);
-    setMaHang(product_code);
-  };
+  // const handleRemoveClick = (old_record: ShortenData, product_code: string) => {
+  //   setOpenModalDelete(true);
+  //   setDataToEdit(old_record);
+  //   setMaHang(product_code);
+  // };
 
-  const handleRemoveRecord = async () => {
-    const yes = await dialog.ask(`Bạn có chắc chắn muốn xóa?`, {
-      cancelLabel: "KHÔNG",
-      okLabel: "CÓ",
-      type: "warning"
-    });
-    if (yes) {
-      Remove(restoredData, dataToEdit, maHang, getRecordFilename());
-      setOpenModalDelete(false);
-      setTimeout(() => {
-        handleCheck();
-      }, 100);
-    }
-  };
+  // const handleRemoveRecord = async () => {
+  //   const yes = await dialog.ask(`Bạn có chắc chắn muốn xóa?`, {
+  //     cancelLabel: "KHÔNG",
+  //     okLabel: "CÓ",
+  //     type: "warning"
+  //   });
+  //   if (yes) {
+  //     Remove(restoredData, dataToEdit, maHang, getRecordFilename());
+  //     setOpenModalDelete(false);
+  //     setTimeout(() => {
+  //       handleCheck();
+  //     }, 100);
+  //   }
+  // };
 
   const handleInputStockOk = async (amount: number) => {
     await AddStock(getRecordFilename(), restoredData, maHang, amount);
@@ -152,7 +145,7 @@ export default function CreateReport() {
 
   const SelectData = (value: string) => {
     const data: Map<string, ShortenData[]> = new Map<string, ShortenData[]>();
-    const tmp = productSortedByDate.get(value);
+    const tmp = shortDataMap.get(value);
     if (tmp) {
       if (data.get(value) === undefined) {
         data.set(value, tmp);
@@ -161,16 +154,16 @@ export default function CreateReport() {
     setCurrentSelectedData(data);
   };
 
-  useEffect(() => {
-    if (productSortedByDate.size) {
-      Common.Log(`Product sorted by date changed:`);
-      productSortedByDate.forEach((records, code) => {
-        Common.Log(`${code}\n  ${JSON.stringify(records)}`);
-      });
-    }
+  // useEffect(() => {
+  //   if (productSortedByDate.size) {
+  //     Common.Log(`Product sorted by date changed:`);
+  //     productSortedByDate.forEach((records, code) => {
+  //       Common.Log(`${code}\n  ${JSON.stringify(records)}`);
+  //     });
+  //   }
 
-    return () => {};
-  }, [productSortedByDate]);
+  //   return () => {};
+  // }, [productSortedByDate]);
 
   const ProductSelect = () => {
     if (viewAll) return "";
@@ -210,6 +203,25 @@ export default function CreateReport() {
     }
     return "";
   };
+
+  const MultipleDelete = async (data_array: ShortenData[], to_be_removed: [string, number][]) => {
+    const yes = await dialog.confirm("Confirm", {
+      cancelLabel: "Huy",
+      okLabel: "OK",
+      title: "titile",
+      type: "warning"
+    });
+    if (yes) {
+      to_be_removed.forEach((value) => {
+        Remove(restoredData, data_array[value[1]], value[0], getRecordFilename());
+      });
+      setToBeRemoved(new Map<string, number>());
+      setTimeout(() => {
+        handleCheck();
+      }, 100);
+    }
+  };
+
   const TableDetails = () => {
     if (currentSelectedData === undefined) return "";
 
@@ -289,7 +301,16 @@ export default function CreateReport() {
                     {GlobalStrings.TableColumn.Update}
                   </th>
                   <th className={`${tbl_header}`} rowSpan={3}>
-                    {GlobalStrings.TableColumn.Delete}
+                    {/* {GlobalStrings.TableColumn.Delete} */}
+                    <IconButton
+                      ripple={false}
+                      variant="text"
+                      className={`p-0 m-0 rounded-none hover:scale-110 active:scale-90 hover:bg-transparent active:bg-transparent`}
+                      onClick={() => {
+                        MultipleDelete(data, Array.from(toBeRemoved.entries()));
+                      }}>
+                      <img src={delete_svg}></img>
+                    </IconButton>
                   </th>
                 </tr>
                 <tr>
@@ -319,12 +340,12 @@ export default function CreateReport() {
                       <td className={`${str_col}`}>{value.so_bill ?? "-"}</td>
                       <td className={`${str_col} w-20`}>
                         {value.ngay_chung_tu !== undefined
-                          ? Common.ParseDateReport(value.ngay_chung_tu, "-")
+                          ? Common.ParseDate(value.ngay_chung_tu, "-")
                           : "-"}
                       </td>
                       <td className={`${str_col}`}>{value.hop_dong}</td>
                       <td className={`${str_col} w-20`}>
-                        {Common.ParseDateReport(value.ngay_thuc_te, "-")}
+                        {Common.ParseDate(value.ngay_thuc_te, "-")}
                       </td>
                       <td className={`${num_col}`} width={50}>
                         {value.sl_nhap ?? "-"}
@@ -355,8 +376,22 @@ export default function CreateReport() {
                         </div>
                       </td>
                       <td className={`${num_col} `} width={10}>
-                        <div className="flex justify-center">
-                          <IconButton
+                        <div className="flex justify-center overflow-hidden">
+                          <Checkbox
+                            ripple={false}
+                            color="red"
+                            onChange={(e) => {
+                              const tmp = toBeRemoved;
+                              if (e.target.checked) {
+                                tmp.set(key, innerIndex);
+                              } else {
+                                tmp.delete(key);
+                              }
+                              setToBeRemoved(tmp);
+                            }}
+                            className={`p-0 hover:bg-red-100 active:scale-90`}
+                          />
+                          {/* <IconButton
                             ripple={false}
                             variant="text"
                             className="p-0 m-0 rounded-none"
@@ -364,7 +399,7 @@ export default function CreateReport() {
                               handleRemoveClick(data[innerIndex], key);
                             }}>
                             <img src={delete_svg}></img>
-                          </IconButton>
+                          </IconButton> */}
                         </div>
                       </td>
                     </tr>
@@ -440,99 +475,54 @@ export default function CreateReport() {
     const tmp = new Map<string, ShortenData[]>();
     // const map_tmp = new Map<string, { name: string; unit: string }>();
     if (restoredData.length > 0) {
-      restoredData.forEach((record) => {
-        record.danh_sach_san_pham.forEach((innerProd) => {
-          // map_tmp.set(innerProd.ma_hang, {
-          //   name: product.getInfo(innerProd.ma_hang, "name"),
-          //   unit: product.getInfo(innerProd.ma_hang, "unit")
-          // });
-          const prod = tmp.get(innerProd.ma_hang);
-          if (prod) {
-            prod.push(
-              new ShortenData(
-                record.hop_dong,
-                record.ngay_thuc_te,
-                record.so_bill,
-                record.ngay_chung_tu,
-                innerProd.noi_xuat,
-                innerProd.sl_nhap,
-                innerProd.sl_xuat_gc,
-                innerProd.sl_xuat_tp,
-                innerProd.sl_ton_tp,
-                innerProd.sl_ton_tt
-              )
-            );
+      const sorted = Common.SortRecords(restoredData);
+      sorted.forEach((record) => {
+        record.danh_sach_san_pham.forEach((product) => {
+          let old_data: ShortenData[] = [];
+          const saved_record = tmp.get(product.ma_hang);
+          if (saved_record === undefined) {
+            tmp.set(product.ma_hang, []);
           } else {
-            tmp.set(innerProd.ma_hang, [
-              new ShortenData(
-                record.hop_dong,
-                record.ngay_thuc_te,
-                record.so_bill,
-                record.ngay_chung_tu,
-                innerProd.noi_xuat,
-                innerProd.sl_nhap,
-                innerProd.sl_xuat_gc,
-                innerProd.sl_xuat_tp,
-                innerProd.sl_ton_tp,
-                innerProd.sl_ton_tt
-              )
-            ]);
+            old_data = saved_record;
           }
+          const short_data = {
+            hop_dong: record.hop_dong,
+            ngay_thuc_te: record.ngay_thuc_te,
+            ngay_chung_tu: record.ngay_chung_tu,
+            noi_xuat: product.noi_xuat,
+            sl_nhap: product.sl_nhap,
+            sl_xuat_gc: product.sl_xuat_gc,
+            sl_xuat_tp: product.sl_xuat_tp,
+            so_bill: record.so_bill
+          } as ShortenData;
+          old_data.push(short_data);
+          tmp.set(product.ma_hang, old_data);
         });
       });
     } else {
       setCheckClicked(false);
     }
-    setProductByCode(tmp);
+    setShortDataMap(tmp);
     // setProductMap(map_tmp);
 
     return () => {};
   }, [restoredData]);
 
   useEffect(() => {
-    const sorted: Map<string, ShortenData[]> = new Map();
-    if (productByCode.size) {
-      let code = "";
-      let data: ShortenData[] = [];
-      const prod_code_list: Set<string> = new Set<string>();
-
-      productByCode.forEach((value, key) => {
-        const tmp: Map<number, { date: number; data: ShortenData }> = new Map();
-        value.forEach((data, index) => {
-          prod_code_list.add(key);
-          Common.Log(`data.ngay_thuc_te -> ${data.ngay_thuc_te}`);
-          const date = Common.DateFromString(data.ngay_thuc_te, "-");
-          tmp.set(index, { date: date.getTime(), data: data });
-        });
-
-        const sortedArr = Array.from(tmp.entries()).sort((a, b) => {
-          return a[1].date - b[1].date;
-        });
-
-        const arr = new Map(sortedArr);
-
-        arr.forEach((value) => {
-          code = key;
-          data.push(value.data);
-        });
-
-        sorted.set(code, data);
-        code = "";
-        data = [];
-      });
-      setLoadedProductCodes(Array.from(prod_code_list).sort());
+    if (shortDataMap.size) {
+      setLoadedProductCodes(Array.from(shortDataMap.keys()));
     }
-    const tmp = CalculateStock(sorted);
+    const tmp = CalculateStock(shortDataMap);
     CalculateSummary(tmp);
-    setProductSortedByDate(tmp);
+    // setProductSortedByDate(tmp);
     setCurrentSelectedData(tmp);
 
     return () => {};
-  }, [productByCode]);
+  }, [shortDataMap]);
 
   const handleCreateTheKho = () => {
     let data: FileOperation.Report.TheKhoType[] = [];
-    productSortedByDate.forEach((value, key) => {
+    shortDataMap.forEach((value, key) => {
       data.push({
         ma_hang: key,
         ten_hang: product.getInfo(key, "name"),
@@ -571,7 +561,7 @@ export default function CreateReport() {
           onChange={() => {
             setViewAll(!viewAll);
             // wait.setWaiting(true);
-            setCurrentSelectedData(productSortedByDate);
+            setCurrentSelectedData(shortDataMap);
             // setTimeout(() => {
             //   wait.setWaiting(false);
             // }, 1000);
@@ -759,7 +749,7 @@ export default function CreateReport() {
         data={dataToEdit}
         updater={handleRecordUpdate}
         type="update"></UpdateModal>
-
+      {/* 
       <UpdateModal
         open={openModalDelete}
         handler={() => {
@@ -769,7 +759,7 @@ export default function CreateReport() {
         product_map={product.map}
         data={dataToEdit}
         updater={handleRemoveRecord}
-        type="delete"></UpdateModal>
+        type="delete"></UpdateModal> */}
       <div className="max-w-full w-full">
         {Buttons()}
         {summaryTable()}

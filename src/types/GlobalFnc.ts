@@ -1,5 +1,6 @@
 import { path } from "@tauri-apps/api";
 import { BaseDirectory } from "@tauri-apps/api/fs";
+import { WarehouseData } from "./ImportWarehouseData";
 
 export namespace Common {
   export const BaseDiToStr = async (dir: BaseDirectory) => {
@@ -119,7 +120,9 @@ export namespace Common {
     // }
   };
 
+  // Convert dd/MM/yy or dd-MM-yy to dd-MM-yyy
   export const ParseDate = (str: string, delim?: string) => {
+    if (str.length == 0) return str;
     const d = delim !== undefined ? delim : "/";
     // Split the string into day, month, and year components
     let [day, month, year] = str.split(d).map(Number);
@@ -219,5 +222,26 @@ export namespace Common {
     date.setDate(day);
 
     return date;
+  };
+
+  export const SortRecords = (records: WarehouseData.Record[]) => {
+    const tmp: Map<number, { date: number; data: WarehouseData.Record }> = new Map();
+
+    records.forEach((record, idx) => {
+      const date = Common.DateFromString(record.ngay_thuc_te, "-");
+      tmp.set(idx, { date: date.getTime(), data: record });
+    });
+    const sortedArr = Array.from(tmp.entries()).sort((a, b) => {
+      return a[1].date - b[1].date;
+    });
+
+    const arr = new Map(sortedArr);
+
+    const res: WarehouseData.Record[] = [];
+    arr.forEach((value) => {
+      res.push(value.data);
+    });
+
+    return res;
   };
 }

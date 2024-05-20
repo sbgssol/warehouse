@@ -709,5 +709,25 @@ export namespace FileOperation {
     } else {
       return "unknown";
     }
+
+    // const old = await WarehouseData.RestoreData(file_name, GlobalStrings.SaveDirectory);
+    // old.push(tmp);
+
+    // const sorted = Common.SortRecords(old);
+    // let res = false;
+    // for (let i = 0; i < sorted.length; ++i) {
+    //   res = await sorted[i].StoreData(file_name, GlobalStrings.SaveDirectory, true);
+    //   if (res == false) {
+    //     return "unknown";
+    //   }
+    // }
+    return "success";
+
+    // const res = await tmp.StoreData(file_name, GlobalStrings.SaveDirectory, true);
+    // if (res) {
+    //   return "success";
+    // } else {
+    //   return "unknown";
+    // }
   };
 }
