@@ -1,7 +1,6 @@
 import { BaseDirectory, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import { Popup } from "./Dialog";
 import { Common } from "./GlobalFnc";
-import { ShortenData } from "./ShortenData";
 import GlobalStrings from "./Globals";
 
 export module WarehouseData {
@@ -19,6 +18,7 @@ export module WarehouseData {
   type ChiTietPhanLoai = PhanLoaiNhap | PhanLoaiXuat;
   export class Products {
     ma_hang: string;
+    uid?: string;
     phan_loai?: RecordType;
     chi_tiet?: ChiTietPhanLoai;
     noi_xuat?: string;
@@ -79,30 +79,13 @@ export module WarehouseData {
       });
     }
 
-    ConvertToShorten = (index: number) => {
-      return new ShortenData(
-        this.hop_dong,
-        this.ngay_thuc_te,
-        this.so_bill,
-        this.ngay_chung_tu,
-        this.danh_sach_san_pham[index].noi_xuat,
-        this.danh_sach_san_pham[index].sl_nhap,
-        this.danh_sach_san_pham[index].sl_xuat_gc,
-        this.danh_sach_san_pham[index].sl_xuat_tp
-      );
+    CreateUID = () => {
+      this.danh_sach_san_pham.forEach((product) => {
+        if (product.uid === undefined) {
+          product.uid = Common.GetUID();
+        }
+      });
     };
-    // ConvertToShorten(index: number) {
-    //   return new ShortenData(
-    //     this.hop_dong,
-    //     this.so_bill,
-    //     this.ngay_thuc_te,
-    //     this.ngay_chung_tu,
-    //     this.danh_sach_san_pham[index].noi_xuat,
-    //     this.danh_sach_san_pham[index].sl_nhap,
-    //     this.danh_sach_san_pham[index].sl_xuat_gc,
-    //     this.danh_sach_san_pham[index].sl_xuat_tp
-    //   );
-    // }
 
     ClearProduct() {
       this.danh_sach_san_pham = [];
@@ -110,6 +93,7 @@ export module WarehouseData {
 
     StoreData = async (file_name: string, directory: BaseDirectory, append?: boolean) => {
       try {
+        this.CreateUID();
         await writeTextFile(file_name, JSON.stringify(this) + "\n", {
           dir: directory,
           append: append
@@ -149,21 +133,6 @@ export module WarehouseData {
     // console.log("Result: " + JSON.stringify(records));
 
     return records;
-  };
-
-  export const ConvertToShorten = (data: Record, index: number) => {
-    // console.log(`data ${JSON.stringify(data)}, index: ${index}`);
-
-    return new ShortenData(
-      data.hop_dong,
-      data.ngay_thuc_te,
-      data.so_bill,
-      data.ngay_chung_tu,
-      data.danh_sach_san_pham[index].noi_xuat,
-      data.danh_sach_san_pham[index].sl_nhap,
-      data.danh_sach_san_pham[index].sl_xuat_gc,
-      data.danh_sach_san_pham[index].sl_xuat_tp
-    );
   };
 
   export const StoreDataPersistently = async (

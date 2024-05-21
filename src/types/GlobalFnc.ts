@@ -214,7 +214,7 @@ export namespace Common {
       year = 2024;
     }
 
-    Log(`day = ${day} month = ${month} year = ${year}`);
+    // Log(`day = ${day} month = ${month} year = ${year}`);
 
     const date = new Date();
     date.setFullYear(year);
@@ -243,5 +243,17 @@ export namespace Common {
     });
 
     return res;
+  };
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  export const GetUID = () => {
+    let result = "";
+
+    for (let i = 0; i < 8; i++) {
+      const randomIndex = Math.floor(Math.random() * charactersLength);
+      result += characters[randomIndex];
+    }
+
+    return `${String(Date.now())}.${result}`;
   };
 }

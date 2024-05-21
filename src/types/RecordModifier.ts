@@ -1,4 +1,5 @@
 import { Popup } from "./Dialog";
+import { Common } from "./GlobalFnc";
 import GlobalStrings from "./Globals";
 import { WarehouseData } from "./ImportWarehouseData";
 import { ShortenData, UpdateRecord } from "./ShortenData";
@@ -136,6 +137,38 @@ const FindMatchRecord = (
   return indices;
 };
 
+// return {record_idx, product_idx}[]
+const FindMatchRecordByUid = (full_data: WarehouseData.Record[], uid: string[]) => {
+  let idx = new Map<number, number[]>();
+  const set_uid = new Set(uid);
+
+  for (let record_idx = 0; record_idx < full_data.length; record_idx++) {
+    const record = full_data[record_idx];
+    for (let product_idx = 0; product_idx < record.danh_sach_san_pham.length; product_idx++) {
+      const product = record.danh_sach_san_pham[product_idx];
+      if (product.uid !== undefined && set_uid.has(product.uid)) {
+        Common.Log(`Found uid ${product.uid}`);
+        if (idx.get(record_idx) === undefined) {
+          idx.set(record_idx, []);
+        }
+        idx.get(record_idx)?.push(product_idx);
+      }
+    }
+  }
+
+  idx = new Map([...idx.entries()].sort((a, b) => b[0] - a[0]));
+  const arr = Array.from(idx.entries());
+  Common.Log(`arr: ${JSON.stringify(arr)}`);
+  const res = JSON.parse(JSON.stringify(arr)) as [number, number[]][];
+  Common.Log(`res: ${JSON.stringify(res)}`);
+  arr.forEach((value, idx) => {
+    res[idx][1] = JSON.parse(JSON.stringify(value[1].sort((a, b) => b - a))) as number[];
+  });
+  return res;
+  // console.log(`FindMatchRecord -> ${JSON.stringify(indices)}`);
+  // return indices;
+};
+
 export const Modify = (
   full_data: WarehouseData.Record[],
   the_old_data: ShortenData,
@@ -194,6 +227,23 @@ export const Remove = (
 
   // console.log(`Data after:\n${JSON.stringify(full_data[idx.contract_idx].danh_sach_san_pham)}\n`);
 
+  WarehouseData.StoreDataPersistently(file_name, full_data);
+};
+
+export const RemoveByUid = (
+  full_data: WarehouseData.Record[],
+  uid: string[],
+  file_name: string
+) => {
+  const idx = FindMatchRecordByUid(full_data, uid);
+  Common.Log(`Remove by uid -> idx\n${JSON.stringify(idx)}`);
+  // return;
+  idx.forEach((value) => {
+    const rec_idx = value[0];
+    value[1].forEach((prod_idx) => {
+      full_data[rec_idx].danh_sach_san_pham.splice(prod_idx, 1);
+    });
+  });
   WarehouseData.StoreDataPersistently(file_name, full_data);
 };
 

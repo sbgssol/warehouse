@@ -18,7 +18,7 @@ import { CalculateStock } from "../types/CalculateStock";
 import edit_svg from "../assets/edit-report-tiny.svg";
 import delete_svg from "../assets/delete-report-tiny.svg";
 import UpdateModal from "./single/UpdateModal";
-import { AddStock, Modify, Remove } from "../types/RecordModifier";
+import { AddStock, Modify, RemoveByUid } from "../types/RecordModifier";
 import { dialog } from "@tauri-apps/api";
 import import_stock from "../assets/import-stock.svg";
 import InputStock from "./single/InputStock";
@@ -42,7 +42,7 @@ export default function CreateReport() {
   const [checkClicked, setCheckClicked] = useState(false);
   const { popup, product, json, wait } = useGlobalState();
   const [viewAll, setViewAll] = useState(false);
-  const [toBeRemoved, setToBeRemoved] = useState<Map<string, number>>(new Map<string, number>());
+  const [toBeRemoved, setToBeRemoved] = useState<string[]>([]);
 
   type CongCuoiKi = {
     nhap: number;
@@ -132,14 +132,14 @@ export default function CreateReport() {
     setOpenModalStock(false);
   };
 
-  const NeedInputStock = (records: ShortenData[], code?: string) => {
-    console.log(`Checking for code ${code}, data:\n${JSON.stringify(records)}`);
+  const NeedInputStock = (records: ShortenData[], _code?: string) => {
+    // console.log(`Checking for code ${code}, data:\n${JSON.stringify(records)}`);
 
     if (records.some((value) => value.so_bill === GlobalStrings.InputStock)) {
-      console.log(`-> true`);
+      // console.log(`-> true`);
       return false;
     }
-    console.log(`-> true`);
+    // console.log(`-> true`);
     return true;
   };
 
@@ -204,21 +204,30 @@ export default function CreateReport() {
     return "";
   };
 
-  const MultipleDelete = async (data_array: ShortenData[], to_be_removed: [string, number][]) => {
-    const yes = await dialog.confirm("Confirm", {
-      cancelLabel: "Huy",
-      okLabel: "OK",
-      title: "titile",
-      type: "warning"
-    });
-    if (yes) {
-      to_be_removed.forEach((value) => {
-        Remove(restoredData, data_array[value[1]], value[0], getRecordFilename());
-      });
-      setToBeRemoved(new Map<string, number>());
-      setTimeout(() => {
-        handleCheck();
-      }, 100);
+  const MultipleDelete = async (UIDs: string[]) => {
+    if (UIDs.length) {
+      // popup.show(
+      //   "Tất cả các dữ liệu đã chọn sẽ bị xóa và không thể phục hồi, bạn có chắc chắn muốn xóa?",
+      //   "warning"
+      // );
+      const yes = await dialog.confirm(
+        "Tất cả dữ liệu đã chọn sẽ bị xóa và không thể phục hồi, bạn có chắc chắn muốn xóa?",
+        {
+          cancelLabel: "KHÔNG",
+          okLabel: "CÓ",
+          title: "Xác nhận",
+          type: "warning"
+        }
+      );
+      // const yes = popup.answer;
+      if (yes) {
+        Common.Log(`Removing multiple record with UIDs: ${UIDs}`);
+        RemoveByUid(restoredData, UIDs, getRecordFilename());
+        setToBeRemoved([]);
+        setTimeout(() => {
+          handleCheck();
+        }, 100);
+      }
     }
   };
 
@@ -305,9 +314,10 @@ export default function CreateReport() {
                     <IconButton
                       ripple={false}
                       variant="text"
+                      disabled={toBeRemoved.length == 0}
                       className={`p-0 m-0 rounded-none hover:scale-110 active:scale-90 hover:bg-transparent active:bg-transparent`}
                       onClick={() => {
-                        MultipleDelete(data, Array.from(toBeRemoved.entries()));
+                        MultipleDelete(toBeRemoved);
                       }}>
                       <img src={delete_svg}></img>
                     </IconButton>
@@ -335,6 +345,7 @@ export default function CreateReport() {
                 {data.map((value, innerIndex) => {
                   return (
                     <tr key={innerIndex} className={`${stripeColumn(innerIndex)}`}>
+                      {/* <td className={`${num_col}`}>{value.uid ?? innerIndex + 1}</td> */}
                       <td className={`${num_col}`}>{innerIndex + 1}</td>
                       <td className={`${str_col}`}>{value.noi_xuat ?? "-"}</td>
                       <td className={`${str_col}`}>{value.so_bill ?? "-"}</td>
@@ -381,13 +392,16 @@ export default function CreateReport() {
                             ripple={false}
                             color="red"
                             onChange={(e) => {
-                              const tmp = toBeRemoved;
+                              const tmp = new Set(toBeRemoved);
                               if (e.target.checked) {
-                                tmp.set(key, innerIndex);
+                                // Common.Log(`Checked`);
+                                tmp.add(data[innerIndex].uid ?? "");
                               } else {
-                                tmp.delete(key);
+                                // Common.Log(`Unchecked`);
+                                tmp.delete(data[innerIndex].uid ?? "");
                               }
-                              setToBeRemoved(tmp);
+                              // Common.Log(`to be removed: ${Array.from(tmp)}`);
+                              setToBeRemoved(Array.from(tmp));
                             }}
                             className={`p-0 hover:bg-red-100 active:scale-90`}
                           />
@@ -493,7 +507,8 @@ export default function CreateReport() {
             sl_nhap: product.sl_nhap,
             sl_xuat_gc: product.sl_xuat_gc,
             sl_xuat_tp: product.sl_xuat_tp,
-            so_bill: record.so_bill
+            so_bill: record.so_bill,
+            uid: product.uid
           } as ShortenData;
           old_data.push(short_data);
           tmp.set(product.ma_hang, old_data);

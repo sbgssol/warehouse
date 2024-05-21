@@ -49,9 +49,9 @@ export default function Popup() {
               popup.setAnswer(false);
               popup.setOpen(false);
             }}>
-            đóng
+            không
           </Button>
-          {/* <Button
+          <Button
             color="orange"
             variant="outlined"
             className={`${className}`}
@@ -60,7 +60,7 @@ export default function Popup() {
               popup.setOpen(false);
             }}>
             có
-          </Button> */}
+          </Button>
         </>
       );
     }

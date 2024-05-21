@@ -11,10 +11,12 @@ export class ShortenData {
   sl_xuat_tp?: number;
   sl_ton_tp?: number;
   sl_ton_tt?: number;
+  readonly uid?: string;
 
   constructor(
     hop_dong: string,
     ngay_thuc_te: string,
+    uid?: string,
     bill?: string,
     ngay_chung_tu?: string,
     noi_xuat?: string,
@@ -34,6 +36,7 @@ export class ShortenData {
     this.sl_xuat_tp = sl_xuat_tp;
     this.sl_ton_tp = sl_ton_tp;
     this.sl_ton_tt = sl_ton_tt;
+    this.uid = uid;
   }
 }
 
