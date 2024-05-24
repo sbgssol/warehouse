@@ -516,6 +516,7 @@ export namespace FileOperation {
     }
     return false;
   };
+
   export const InputProductUsingExcel = async (
     type: InputType,
     export_type?: ExportType
@@ -654,6 +655,165 @@ export namespace FileOperation {
     return result;
   };
 
+  export const ReadWorkbook = async (
+    workbook: WorkBook,
+    sheets: string[],
+    type: InputType,
+    export_type?: ExportType
+  ): Promise<WarehouseData.Record[]> => {
+    let result: WarehouseData.Record[] = [];
+    try {
+      let Imported: WarehouseData.Record[] = [];
+      const sheetnames = new Set(sheets);
+      // Common.Log(`sheetnames.size: ${sheetnames.size}`);
+      workbook.SheetNames.forEach((sheetName) => {
+        // Common.Log(`sheetnames.has(${sheetName}) -> ${sheetnames.has(sheetName)}`);
+        if (IsTargetSheet(sheetName, type) && sheetnames.has(sheetName)) {
+          const worksheet: WorkSheet = workbook.Sheets[sheetName];
+          const lines = utils.sheet_to_csv(worksheet).split(/\r?\n/);
+          const lines_without_empty: string[] = [];
+          lines.forEach((line) => {
+            const t = line
+              .trim()
+              .replace(new RegExp(",", "g"), "")
+              .replace(new RegExp("\r\n", "g"), "");
+            if (t.length) {
+              lines_without_empty.push(line.trim().replace(/\r\n/g, ""));
+            }
+          });
+
+          // lines_without_empty.forEach((line) => {
+          //   Common.Log(`line: ${line}`);
+          // });
+
+          // Common.Log(`Sheet: ${sheetName}`);
+
+          for (let i = 0; i < lines_without_empty.length; ++i) {
+            const line = splitString(lines_without_empty[i]);
+            if (line.length) {
+              if (IsImport(lines_without_empty, i)) {
+                let record: WarehouseData.Record;
+                const hop_dong = splitString(lines_without_empty[i])[1];
+                const so_bill = splitString(lines_without_empty[i + 1])[1];
+                const ngay_chung_tu = Common.ParseDate(splitString(lines_without_empty[i + 2])[1]);
+                const ngay_thuc_te = Common.ParseDate(splitString(lines_without_empty[i + 3])[1]);
+                record = new WarehouseData.Record(hop_dong, ngay_thuc_te, so_bill, ngay_chung_tu);
+
+                for (let j = i + 4; j < lines_without_empty.length; ++j) {
+                  if (IsImport(lines_without_empty, j) || IsExport(lines_without_empty, j)) {
+                    i = j - 1;
+                    break;
+                  }
+                  if (
+                    splitString(lines_without_empty[j])[2].length == 0 ||
+                    splitString(lines_without_empty[j])[5].length == 0
+                  ) {
+                    continue;
+                  }
+                  record.AddProduct(
+                    splitString(lines_without_empty[j])[2],
+                    undefined,
+                    Number(splitString(lines_without_empty[j])[5])
+                  );
+                  // console.log(
+                  //   `  ${lines_without_empty[j].split(",")[2]} -> ${lines_without_empty[j].split(",")[5]}`
+                  // );
+                }
+                Imported.push(record);
+              } else if (IsExport(lines_without_empty, i)) {
+                let record: WarehouseData.Record;
+                const hop_dong = splitString(lines_without_empty[i + 1])[1];
+                const ngay_thuc_te = Common.ParseDate(splitString(lines_without_empty[i + 2])[1]);
+                Common.Log(`Initializing ${hop_dong}, ${ngay_thuc_te}`);
+                record = new WarehouseData.Record(hop_dong, ngay_thuc_te);
+
+                for (let j = i + 3; j < lines_without_empty.length; ++j) {
+                  if (IsImport(lines_without_empty, j) || IsExport(lines_without_empty, j)) {
+                    i = j - 1;
+                    break;
+                  }
+                  if (
+                    splitString(lines_without_empty[j])[2].trim().length == 0 ||
+                    splitString(lines_without_empty[j])[5].trim().length == 0
+                  ) {
+                    continue;
+                  }
+                  // Common.Log(
+                  //   `Amount str: ${lines_without_empty[j].split(",")[5]}, converted: ${Number(lines_without_empty[j].split(",")[5])}`
+                  // );
+                  if (export_type !== undefined) {
+                    if (export_type == "processing") {
+                      const ma_hang = splitString(lines_without_empty[j])[2];
+                      const noi_xuat = splitString(lines_without_empty[i])[1];
+                      const sl_nhap = undefined;
+                      const sl_xuat_gc = Number(splitString(lines_without_empty[j])[5]);
+                      const sl_xuat_tp = undefined;
+                      Common.Log(
+                        `Adding processing: ${ma_hang}, ${noi_xuat}, ${sl_nhap}, ${sl_xuat_gc}, ${sl_xuat_tp}`
+                      );
+                      record.AddProduct(ma_hang, noi_xuat, sl_nhap, sl_xuat_gc, sl_xuat_tp);
+                    } else if (export_type == "production") {
+                      const ma_hang = splitString(lines_without_empty[j])[2];
+                      const noi_xuat = splitString(lines_without_empty[i])[1];
+                      const sl_nhap = undefined;
+                      const sl_xuat_gc = undefined;
+                      const sl_xuat_tp = Number(splitString(lines_without_empty[j])[5]);
+                      Common.Log(
+                        `Adding processing: ${ma_hang}, ${noi_xuat}, ${sl_nhap}, ${sl_xuat_gc}, ${sl_xuat_tp}`
+                      );
+                      record.AddProduct(ma_hang, noi_xuat, sl_nhap, sl_xuat_gc, sl_xuat_tp);
+                    }
+                  }
+                  // console.log(
+                  //   `  ${lines_without_empty[j].split(",")[2]} -> ${lines_without_empty[j].split(",")[5]}`
+                  // );
+                }
+                if (record.danh_sach_san_pham.length != 0) {
+                  Imported.push(record);
+                }
+              }
+            }
+          }
+          Common.Log(`In sheet ${sheetName} there are ${Imported.length} records`);
+        }
+      });
+
+      result = Imported;
+    } catch (error) {
+      Common.Log(`Error reading Excel file: ${error}`);
+    }
+    return result;
+  };
+
+  export const OpenExcelAndGetSheetName = async () => {
+    const path = await dialog.open({
+      defaultPath: await Common.BaseDiToStr(GlobalStrings.SaveDirectory),
+      filters: [{ name: "Excel file", extensions: ["xlsx", "xls"] }],
+      multiple: false
+    });
+    type Result = {
+      sheets: string[];
+      workbook?: WorkBook;
+    };
+    let result = { sheets: [] } as Result;
+    if (path) {
+      try {
+        const buffer = await fs.readBinaryFile(path as string);
+        const workbook: WorkBook = read(buffer, { type: "buffer" });
+        workbook.SheetNames.forEach((sheetName) => {
+          result.sheets.push(sheetName);
+        });
+
+        result.workbook = workbook;
+      } catch (error) {
+        Common.Log(`Error reading Excel file: ${error}`);
+      }
+    } else {
+      Common.Log("File selection cancelled");
+    }
+    return result;
+  };
+
   export type SaveResult = "success" | "amount_error" | "unknown";
   export type StoreType = "import" | "export-processing" | "export-production";
 
@@ -683,7 +843,7 @@ export namespace FileOperation {
         return "amount_error";
       }
       inputRef.current.forEach((value) => {
-        amount.push(Number(value));
+        amount.push(Number(value.value));
       });
     }
 

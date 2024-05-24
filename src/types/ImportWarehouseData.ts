@@ -121,16 +121,21 @@ export module WarehouseData {
     const contents = await readTextFile(file_name, {
       dir: directory
     });
-
     const objects = contents.split("\n");
+
+    // Common.Log(`Start RestoreData -> length: ${objects.length}`);
 
     const records: Record[] = [];
     for (let i = 0; i < objects.length; ++i) {
       if (objects[i].length == 0) continue;
       const obj = JSON.parse(objects[i]) as Record;
+      // obj.CreateUID();
       records.push(obj);
     }
-    // console.log("Result: " + JSON.stringify(records));
+
+    records.forEach((r) => {
+      r.CreateUID;
+    });
 
     return records;
   };

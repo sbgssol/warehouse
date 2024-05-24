@@ -46,8 +46,12 @@ export default function UpdateModal(props: {
       setHopdong(props.data.hop_dong);
       setBill(props.data.so_bill);
       setLocation(props.data.noi_xuat);
-      setDateReal(Common.DateFromString(props.data.ngay_chung_tu ?? "", "-"));
-      setDateDoc(Common.DateFromString(props.data.ngay_thuc_te, "-"));
+      setDateDoc(
+        props.data.ngay_chung_tu !== undefined
+          ? Common.DateFromString(props.data.ngay_chung_tu, "-")
+          : new Date()
+      );
+      setDateReal(Common.DateFromString(props.data.ngay_thuc_te, "-"));
       setImportAmount(props.data.sl_nhap ? String(props.data.sl_nhap) : "");
       setExportProcessing(props.data.sl_xuat_gc ? String(props.data.sl_xuat_gc) : "");
       setExportProduction(props.data.sl_xuat_tp ? String(props.data.sl_xuat_tp) : "");
@@ -226,7 +230,6 @@ export default function UpdateModal(props: {
                   <ArrayToSelect
                     disabled={props.type == "delete"}
                     arr={json.rawNoiXuat ?? [""]}
-                    target_column={1}
                     default={location}
                     onChange={(value) => {
                       setLocation(value);

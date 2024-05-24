@@ -43,6 +43,7 @@ export default function CreateReport() {
   const { popup, product, json, wait } = useGlobalState();
   const [viewAll, setViewAll] = useState(false);
   const [toBeRemoved, setToBeRemoved] = useState<string[]>([]);
+  const [currentSelectedProductCode, setCurrentSelectedProductCode] = useState<string>("");
 
   type CongCuoiKi = {
     nhap: number;
@@ -151,6 +152,7 @@ export default function CreateReport() {
         data.set(value, tmp);
       }
     }
+    setCurrentSelectedProductCode(value);
     setCurrentSelectedData(data);
   };
 
@@ -169,11 +171,11 @@ export default function CreateReport() {
     if (viewAll) return "";
     const select_twstyles =
       "border-green-700 border-2 rounded-md p-1 w-[100%] text-center text-lg font-bold text-green-700 focus:outline-none";
-    const option_twstyles = "text-[16px] font-myThin font-bold";
+    const option_twstyles = "text-[16px] font-myThin font-bold ";
     // setCurrentSelectedData(new Map<string, ShortenData[]>());
     if (loadedProductCodes !== undefined) {
       return (
-        <div className={`w-full flex flex-col items-center mt-4`}>
+        <div className={`w-full flex flex-col items-center mt-4 space-y-2`}>
           <div className={`w-full flex justify-end items-center`}>
             <AutoCompleteInput
               label={<Typography className={`mr-2`}>{"Tìm mã sản phẩm"}</Typography>}
@@ -192,6 +194,10 @@ export default function CreateReport() {
             </div>
             <div className={`w-[80%]`}>
               <ArrayToSelect
+                state={{
+                  value: currentSelectedProductCode,
+                  setValue: setCurrentSelectedProductCode
+                }}
                 arr={loadedProductCodes}
                 onChange={SelectData}
                 select_class={select_twstyles}
@@ -479,7 +485,7 @@ export default function CreateReport() {
       const msg = contractName.length
         ? `${GlobalStrings.ErrorMsg.Report.ReportFileNotFound} "${contractName}"`
         : `${GlobalStrings.ErrorMsg.Report.ContractNotSelected}`;
-      console.log(msg);
+      console.log(msg, error);
 
       popup.show(msg, "error");
     }
@@ -517,7 +523,8 @@ export default function CreateReport() {
     } else {
       setCheckClicked(false);
     }
-    setShortDataMap(tmp);
+
+    setShortDataMap(new Map([...tmp.entries()].sort()));
     // setProductMap(map_tmp);
 
     return () => {};

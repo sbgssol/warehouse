@@ -11,6 +11,8 @@ import { Common } from "../types/GlobalFnc";
 import { FileOperation } from "../types/FileOperation";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import ListSelect from "./single/ListSelect";
+import { WorkBook } from "xlsx";
 
 export default function Import() {
   // States
@@ -25,6 +27,7 @@ export default function Import() {
 
   const [dateReal, setDateReal] = useState<Date>(new Date());
   const [dateDoc, setDateDoc] = useState<Date>(new Date());
+  const [sheetSelectOpen, setSheetSelectOpen] = useState(false);
 
   // References
   const contractRef = useRef<HTMLInputElement>(null); // To focus when the program starts
@@ -406,9 +409,15 @@ export default function Import() {
   //   return result.map((str) => str.replace(/^"|"$/g, ""));
   // }
 
+  const [sheetNames, setSheetNames] = useState<string[]>([]);
+  const [workbook, setWorkbook] = useState<WorkBook>();
   const handleReadExcel = async () => {
-    const data = await FileOperation.InputProductUsingExcel("import");
-    setMultipleRecords(data);
+    const data = await FileOperation.OpenExcelAndGetSheetName();
+    if (data.sheets.length) {
+      setSheetNames(data.sheets);
+      setWorkbook(data.workbook);
+      setSheetSelectOpen(true);
+    }
   };
 
   // const MultipleRecordNext = () => {};
@@ -438,6 +447,16 @@ export default function Import() {
     return () => {};
   }, [multipleRecords]);
 
+  const SelectSheetDone = async (names: string[]) => {
+    setSheetSelectOpen(false);
+    if (names.length == 0) return;
+    Common.Log(`Selected: ${names}`);
+    if (workbook !== undefined) {
+      const data = await FileOperation.ReadWorkbook(workbook, names, "import");
+      setMultipleRecords(data);
+    }
+  };
+
   return (
     <>
       <NavbarDefault></NavbarDefault>
@@ -458,6 +477,20 @@ export default function Import() {
           ""
         )}
       </div> */}
+      <ListSelect
+        open={sheetSelectOpen}
+        closeHandler={() => {
+          setSheetSelectOpen(false);
+        }}
+        doneHandler={SelectSheetDone}
+        label="chọn sheet cần nhập"
+        label_twstyles="uppercase justify-center text-xl pt-2 border-b pb-1 mb-1"
+        list_twstyles="p-0 px-1"
+        list_item_twstyles="p-0 active:bg-transparent "
+        item_label_twstyles="flex items-center w-full p-0 hover:cursor-pointer"
+        body_twstyles="h-[35vh] overflow-x-auto overflow-y-auto p-0"
+        size="sm"
+        items={sheetNames}></ListSelect>
       <Card className="w-[99%] h-max">
         <CardBody className="w-full h-max overflow-hidden flex flex-col items-center p-1 border-2 border-t-0 rounded-md">
           {fixedPart()}

@@ -11,6 +11,8 @@ import TypeProductCodeModal from "./single/TypeProductCodeModal";
 import { Common } from "../types/GlobalFnc";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import ListSelect from "./single/ListSelect";
+import { WorkBook } from "xlsx";
 
 export default function Export() {
   // States
@@ -29,6 +31,7 @@ export default function Export() {
   const [multipleRecords, setMultipleRecords] = useState<WarehouseData.Record[]>([]);
   const { getRecordFilename, popup, input_code, json } = useGlobalState();
   const [exportGC, setExportTypeRadio] = useState(true);
+  const [sheetSelectOpen, setSheetSelectOpen] = useState(false);
 
   // References
   const contractRef = useRef<HTMLInputElement>(null);
@@ -312,11 +315,12 @@ export default function Export() {
     setOpen(true);
   };
   const handleReadExcel = async () => {
-    const data = await FileOperation.InputProductUsingExcel(
-      "export",
-      exportGC ? "processing" : "production"
-    );
-    setMultipleRecords(data);
+    const data = await FileOperation.OpenExcelAndGetSheetName();
+    if (data.sheets.length) {
+      setSheetNames(data.sheets);
+      setWorkbook(data.workbook);
+      setSheetSelectOpen(true);
+    }
   };
   const updatingPart = () => {
     return (
@@ -452,23 +456,50 @@ export default function Export() {
     }
   };
 
+  const [sheetNames, setSheetNames] = useState<string[]>([]);
+  const [workbook, setWorkbook] = useState<WorkBook>();
+  // const handleReadExcel = async () => {
+  //   const data = await FileOperation.OpenExcelAndGetSheetName();
+  //   if (data.sheets.length) {
+  //     setSheetNames(data.sheets);
+  //     setWorkbook(data.workbook);
+  //     setSheetSelectOpen(true);
+  //   }
+  // };
+
+  const SelectSheetDone = async (names: string[]) => {
+    setSheetSelectOpen(false);
+    if (names.length == 0) return;
+    Common.Log(`Selected: ${names}`);
+    if (workbook !== undefined) {
+      const data = await FileOperation.ReadWorkbook(
+        workbook,
+        names,
+        "export",
+        exportGC ? "processing" : "production"
+      );
+      setMultipleRecords(data);
+    }
+  };
+
   return (
     <>
       <NavbarDefault></NavbarDefault>
       <TypeProductCodeModal saveHandler={handleTypeProductCode}></TypeProductCodeModal>
-      {/* <div className="w-full overflow-hidden flex flex-col items-center bg-blue">
-        {RadioTypes()}
-        {exportGC ? ExportGC() : ExportTP()}
-        <SaveButton className={`${SaveButtonStyle()}`} onClick={handleNewClick}></SaveButton>
-        {currentSessionData !== undefined ? (
-          <SummaryTable
-            data={currentSessionData}
-            amount={importedAmount}
-            input_ref={inpAmountRef}></SummaryTable>
-        ) : (
-          ""
-        )}
-      </div> */}
+      <ListSelect
+        open={sheetSelectOpen}
+        closeHandler={() => {
+          setSheetSelectOpen(false);
+        }}
+        doneHandler={SelectSheetDone}
+        label="chọn sheet cần nhập"
+        label_twstyles="uppercase justify-center text-xl pt-2 border-b pb-1 mb-1"
+        list_twstyles="p-0 px-1"
+        list_item_twstyles="p-0 active:bg-transparent "
+        item_label_twstyles="flex items-center w-full p-0 hover:cursor-pointer"
+        body_twstyles="h-[35vh] overflow-x-auto overflow-y-auto p-0"
+        size="sm"
+        items={sheetNames}></ListSelect>
       <Card className="w-[99%] h-max">
         <CardBody className="w-full h-max overflow-hidden flex flex-col items-center p-1 border-2 border-t-0 rounded-md">
           {RadioTypes()}

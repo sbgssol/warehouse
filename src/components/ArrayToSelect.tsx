@@ -1,5 +1,10 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 
+type ArrayToSelectState = {
+  value: string;
+  setValue: (value: string) => void;
+};
+
 export default function ArrayToSelect(props: {
   arr: string[];
   onChange: (value: string) => void;
@@ -12,6 +17,7 @@ export default function ArrayToSelect(props: {
   label?: string;
   has_header?: boolean;
   disabled?: boolean;
+  state?: ArrayToSelectState;
 }) {
   const [data, setData] = useState<string[]>([]);
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -45,10 +51,15 @@ export default function ArrayToSelect(props: {
   useEffect(() => {
     onLoad();
     if (props.remain_old_choice === undefined || !props.remain_old_choice) {
-      props.onChange(props.arr[0]);
+      const s = new Set(props.arr);
+      const value =
+        props.state !== undefined && props.state.value.length && s.has(props.state.value)
+          ? props.state.value
+          : props.arr[0];
       if (selectRef && selectRef.current) {
-        selectRef.current.value = props.arr[0];
+        selectRef.current.value = value;
       }
+      props.onChange(value);
     }
     // console.log(`Default value: ${props.default}`);
 
@@ -59,8 +70,13 @@ export default function ArrayToSelect(props: {
     <select
       disabled={props.disabled}
       className={props.select_class}
-      onChange={(e: ChangeEvent<HTMLSelectElement>) => props.onChange(e.target.value)}
-      value={props.default}
+      onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+        if (props.state !== undefined) {
+          props.state.setValue(e.target.value);
+        }
+        props.onChange(e.target.value);
+      }}
+      value={props.state !== undefined ? props.state.value : props.default}
       ref={selectRef}>
       {props.label ? (
         <option value="" disabled className={props.option_class}>
@@ -70,7 +86,7 @@ export default function ArrayToSelect(props: {
         <></>
       )}
       {data.map((str, index) => (
-        <option key={index} className={props.option_class} value={str}>
+        <option key={index} className={`${props.option_class} `} value={str}>
           {str}
         </option>
       ))}

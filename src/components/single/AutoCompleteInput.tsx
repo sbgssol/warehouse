@@ -80,6 +80,7 @@ export default function AutoCompleteInput(props: AutoCompleteInputProps) {
             className={`p-0 absolute right-0 mr-0.5 mt-1 hover:bg-transparent active:bg-transparent hover:scale-105 active:scale-90`}
             ripple={false}
             variant="text"
+            disabled={inputValue.length == 0}
             onClick={() => {
               setInputValue("");
               setMatchSources([]);
