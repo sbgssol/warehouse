@@ -11,8 +11,8 @@ export default function ArrayToSelect(props: {
   remain_old_choice?: boolean;
   how_many_columns?: number;
   target_column?: number;
-  select_class?: string;
-  option_class?: string;
+  select_class_twstyles?: string;
+  option_class_twstyles?: string;
   default?: string;
   label?: string;
   has_header?: boolean;
@@ -69,7 +69,7 @@ export default function ArrayToSelect(props: {
   return (
     <select
       disabled={props.disabled}
-      className={props.select_class}
+      className={`${props.select_class_twstyles}`}
       onChange={(e: ChangeEvent<HTMLSelectElement>) => {
         if (props.state !== undefined) {
           props.state.setValue(e.target.value);
@@ -79,14 +79,14 @@ export default function ArrayToSelect(props: {
       value={props.state !== undefined ? props.state.value : props.default}
       ref={selectRef}>
       {props.label ? (
-        <option value="" disabled className={props.option_class}>
+        <option value="" disabled className={props.option_class_twstyles}>
           {props.label}
         </option>
       ) : (
         <></>
       )}
       {data.map((str, index) => (
-        <option key={index} className={`${props.option_class} `} value={str}>
+        <option key={index} className={`${props.option_class_twstyles} `} value={str}>
           {str}
         </option>
       ))}

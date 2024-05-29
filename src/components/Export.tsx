@@ -13,6 +13,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ListSelect from "./single/ListSelect";
 import { WorkBook } from "xlsx";
+import ExcelFormatSelect from "./single/ExcelFormatSelect";
+import setting_svg from "../assets/setting-2.svg";
 
 export default function Export() {
   // States
@@ -322,6 +324,11 @@ export default function Export() {
       setSheetSelectOpen(true);
     }
   };
+
+  const handleExcelColumnConfiguration = () => {
+    setSelectFormatOpen(true);
+  };
+
   const updatingPart = () => {
     return (
       <div className={`w-full max-h-[400px] h-min mt-1`}>
@@ -353,15 +360,24 @@ export default function Export() {
               Tự nhập mã hàng
             </Typography>
           </Button>
-          <Button
-            fullWidth
-            onClick={handleReadExcel}
-            // disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
-            className={`p-1 ${ButtonBackgroundColor()}`}>
-            <Typography color="white" variant="h6">
-              nhập từ file excel
-            </Typography>
-          </Button>
+          <div className={`w-full flex space-x-1`}>
+            <Button
+              fullWidth
+              onClick={handleReadExcel}
+              // disabled={!hopDongValid || !rlsSrcRef || !rlsSrcRef.current?.value.length}
+              className={`p-1 ${ButtonBackgroundColor()}`}>
+              <Typography color="white" variant="h6">
+                nhập từ file excel
+              </Typography>
+            </Button>
+            <Button
+              className={`p-0 px-2 ${ButtonBackgroundColor()}`}
+              // variant="gradient"
+              // color="white"
+              onClick={handleExcelColumnConfiguration}>
+              <img src={setting_svg} className={`w-[24px]`}></img>
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -482,6 +498,8 @@ export default function Export() {
     }
   };
 
+  const [selectFormatOpen, setSelectFormatOpen] = useState(false);
+
   return (
     <>
       <NavbarDefault></NavbarDefault>
@@ -500,6 +518,12 @@ export default function Export() {
         body_twstyles="h-[35vh] overflow-x-auto overflow-y-auto p-0"
         size="sm"
         items={sheetNames}></ListSelect>
+      <ExcelFormatSelect
+        open={selectFormatOpen}
+        closeHandler={() => {
+          setSelectFormatOpen(false);
+        }}
+        doneHandler={() => {}}></ExcelFormatSelect>
       <Card className="w-[99%] h-max">
         <CardBody className="w-full h-max overflow-hidden flex flex-col items-center p-1 border-2 border-t-0 rounded-md">
           {RadioTypes()}

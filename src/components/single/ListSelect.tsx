@@ -38,13 +38,13 @@ export default function ListSelect(props: ListSelectProps) {
   }, [props.items]);
 
   const Buttons = () => {
-    const btn_twstyles = "w-[100px]";
+    const btn_twstyles = "w-[100px] p-0 rounded-md py-2 text-sm";
     return (
       <>
         <Button
           variant="outlined"
           color="red"
-          className={`${btn_twstyles}`}
+          className={`${btn_twstyles} hover:bg-red-50`}
           onClick={() => {
             props.closeHandler();
           }}>
@@ -70,7 +70,7 @@ export default function ListSelect(props: ListSelectProps) {
       size={props.size}
       // dismiss={{ outsidePress: false, escapeKey: true }}
       className="select-none">
-      <DialogHeader className={`${props.label_twstyles}`}>{props.label ?? ""}</DialogHeader>
+      <DialogHeader className={`${props.label_twstyles} mx-2`}>{props.label ?? ""}</DialogHeader>
       <DialogBody className={`${props.body_twstyles}`}>
         <List className={`${props.list_twstyles}`}>
           {props.items.map((value, index) => (
@@ -102,7 +102,9 @@ export default function ListSelect(props: ListSelectProps) {
           ))}
         </List>
       </DialogBody>
-      <DialogFooter className="flex justify-evenly">{Buttons()}</DialogFooter>
+      <DialogFooter className="flex justify-end space-x-2 border-t p-0 py-1.5 mx-2">
+        {Buttons()}
+      </DialogFooter>
     </Dialog>
   );
 }

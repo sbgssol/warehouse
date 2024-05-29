@@ -166,7 +166,7 @@ export namespace FileOperation {
       so_hop_dong: string;
       ngay_bat_dau: string;
       ngay_het_han: string;
-      chi_tiet: BCQT_ChiTiet[];
+      chi_tiet: Map<string, BCQT_ChiTiet>;
     };
 
     export const RecordsToBCQt = (
@@ -180,16 +180,18 @@ export namespace FileOperation {
         so_hop_dong: so_hop_dong,
         ngay_bat_dau: ngay_bat_dau,
         ngay_het_han: ngay_het_han,
-        chi_tiet: []
+        chi_tiet: new Map<string, BCQT_ChiTiet>()
       } as BCQT;
+
+      const ton_dau_ki = WarehouseData.GetTonDauKiAll(records);
 
       records.forEach((record) => {
         record.danh_sach_san_pham.forEach((prod) => {
-          tmp.chi_tiet.push({
+          tmp.chi_tiet.set(prod.ma_hang, {
             ma_hang: prod.ma_hang,
             ten_hang: product_map.get(prod.ma_hang)?.name,
             dvt: product_map.get(prod.ma_hang)?.unit,
-            ton_dau_ki: -1,
+            ton_dau_ki: ton_dau_ki.get(prod.ma_hang) ?? -1,
             nhap_trong_ki: -1,
             tai_xuat: -1,
             tieu_huy: -1,
@@ -277,9 +279,10 @@ export namespace FileOperation {
         "Ngày hết hạn",
         data.ngay_het_han
       ]);
-      data.chi_tiet.forEach((value, idx) => {
+      let idx = 1;
+      data.chi_tiet.forEach((value) => {
         tmp.push([
-          String(idx + 1),
+          String(idx++),
           value.ma_hang,
           value.ten_hang,
           value.dvt,
@@ -659,13 +662,43 @@ export namespace FileOperation {
     workbook: WorkBook,
     sheets: string[],
     type: InputType,
-    export_type?: ExportType
+    export_type?: ExportType,
+    columns?: {
+      hop_dong?: number;
+      bill?: number;
+      noi_xuat?: number;
+      ngay_to_khai?: number;
+      ngay_thuc_te?: number;
+      ma_hang?: number;
+      sl_nhap?: number;
+      sl_xuat_gc?: number;
+      sl_xuat_tp?: number;
+    }
   ): Promise<WarehouseData.Record[]> => {
     let result: WarehouseData.Record[] = [];
     try {
       let Imported: WarehouseData.Record[] = [];
       const sheetnames = new Set(sheets);
-      // Common.Log(`sheetnames.size: ${sheetnames.size}`);
+
+      const COL_HD = columns !== undefined ? columns.hop_dong ?? 1 : 1;
+      const COL_BILL = columns !== undefined ? columns.bill ?? 1 : 1;
+      const COL_LOCATION = columns !== undefined ? columns.noi_xuat ?? 1 : 1;
+      const COL_DATEDOC = columns !== undefined ? columns.ngay_to_khai ?? 1 : 1;
+      const COL_DOCREAL = columns !== undefined ? columns.ngay_thuc_te ?? 1 : 1;
+      const COL_CODE = columns !== undefined ? columns.ma_hang ?? 2 : 2;
+      let COL_AMOUNT = 5;
+      if (columns !== undefined) {
+        if (type == "import") {
+          COL_AMOUNT = columns.sl_nhap ?? 5;
+        } else {
+          if (export_type === "processing") {
+            COL_AMOUNT = columns.sl_xuat_gc ?? 5;
+          } else if (export_type == "production") {
+            COL_AMOUNT = columns.sl_xuat_tp ?? 5;
+          }
+        }
+      }
+
       workbook.SheetNames.forEach((sheetName) => {
         // Common.Log(`sheetnames.has(${sheetName}) -> ${sheetnames.has(sheetName)}`);
         if (IsTargetSheet(sheetName, type) && sheetnames.has(sheetName)) {
@@ -682,21 +715,19 @@ export namespace FileOperation {
             }
           });
 
-          // lines_without_empty.forEach((line) => {
-          //   Common.Log(`line: ${line}`);
-          // });
-
-          // Common.Log(`Sheet: ${sheetName}`);
-
           for (let i = 0; i < lines_without_empty.length; ++i) {
             const line = splitString(lines_without_empty[i]);
             if (line.length) {
               if (IsImport(lines_without_empty, i)) {
                 let record: WarehouseData.Record;
-                const hop_dong = splitString(lines_without_empty[i])[1];
-                const so_bill = splitString(lines_without_empty[i + 1])[1];
-                const ngay_chung_tu = Common.ParseDate(splitString(lines_without_empty[i + 2])[1]);
-                const ngay_thuc_te = Common.ParseDate(splitString(lines_without_empty[i + 3])[1]);
+                const hop_dong = splitString(lines_without_empty[i])[COL_HD];
+                const so_bill = splitString(lines_without_empty[i + 1])[COL_BILL];
+                const ngay_chung_tu = Common.ParseDate(
+                  splitString(lines_without_empty[i + 2])[COL_DATEDOC]
+                );
+                const ngay_thuc_te = Common.ParseDate(
+                  splitString(lines_without_empty[i + 3])[COL_DOCREAL]
+                );
                 record = new WarehouseData.Record(hop_dong, ngay_thuc_te, so_bill, ngay_chung_tu);
 
                 for (let j = i + 4; j < lines_without_empty.length; ++j) {
@@ -705,25 +736,24 @@ export namespace FileOperation {
                     break;
                   }
                   if (
-                    splitString(lines_without_empty[j])[2].length == 0 ||
-                    splitString(lines_without_empty[j])[5].length == 0
+                    splitString(lines_without_empty[j])[COL_CODE].length == 0 ||
+                    splitString(lines_without_empty[j])[COL_AMOUNT].length == 0
                   ) {
                     continue;
                   }
                   record.AddProduct(
-                    splitString(lines_without_empty[j])[2],
+                    splitString(lines_without_empty[j])[COL_CODE],
                     undefined,
-                    Number(splitString(lines_without_empty[j])[5])
+                    Number(splitString(lines_without_empty[j])[COL_AMOUNT])
                   );
-                  // console.log(
-                  //   `  ${lines_without_empty[j].split(",")[2]} -> ${lines_without_empty[j].split(",")[5]}`
-                  // );
                 }
                 Imported.push(record);
               } else if (IsExport(lines_without_empty, i)) {
                 let record: WarehouseData.Record;
-                const hop_dong = splitString(lines_without_empty[i + 1])[1];
-                const ngay_thuc_te = Common.ParseDate(splitString(lines_without_empty[i + 2])[1]);
+                const hop_dong = splitString(lines_without_empty[i + 1])[COL_HD];
+                const ngay_thuc_te = Common.ParseDate(
+                  splitString(lines_without_empty[i + 2])[COL_DOCREAL]
+                );
                 Common.Log(`Initializing ${hop_dong}, ${ngay_thuc_te}`);
                 record = new WarehouseData.Record(hop_dong, ngay_thuc_te);
 
@@ -733,40 +763,34 @@ export namespace FileOperation {
                     break;
                   }
                   if (
-                    splitString(lines_without_empty[j])[2].trim().length == 0 ||
-                    splitString(lines_without_empty[j])[5].trim().length == 0
+                    splitString(lines_without_empty[j])[COL_CODE].trim().length == 0 ||
+                    splitString(lines_without_empty[j])[COL_AMOUNT].trim().length == 0
                   ) {
                     continue;
                   }
-                  // Common.Log(
-                  //   `Amount str: ${lines_without_empty[j].split(",")[5]}, converted: ${Number(lines_without_empty[j].split(",")[5])}`
-                  // );
                   if (export_type !== undefined) {
                     if (export_type == "processing") {
-                      const ma_hang = splitString(lines_without_empty[j])[2];
-                      const noi_xuat = splitString(lines_without_empty[i])[1];
+                      const ma_hang = splitString(lines_without_empty[j])[COL_CODE];
+                      const noi_xuat = splitString(lines_without_empty[i])[COL_LOCATION];
                       const sl_nhap = undefined;
-                      const sl_xuat_gc = Number(splitString(lines_without_empty[j])[5]);
+                      const sl_xuat_gc = Number(splitString(lines_without_empty[j])[COL_AMOUNT]);
                       const sl_xuat_tp = undefined;
                       Common.Log(
                         `Adding processing: ${ma_hang}, ${noi_xuat}, ${sl_nhap}, ${sl_xuat_gc}, ${sl_xuat_tp}`
                       );
                       record.AddProduct(ma_hang, noi_xuat, sl_nhap, sl_xuat_gc, sl_xuat_tp);
                     } else if (export_type == "production") {
-                      const ma_hang = splitString(lines_without_empty[j])[2];
-                      const noi_xuat = splitString(lines_without_empty[i])[1];
+                      const ma_hang = splitString(lines_without_empty[j])[COL_CODE];
+                      const noi_xuat = splitString(lines_without_empty[i])[COL_LOCATION];
                       const sl_nhap = undefined;
                       const sl_xuat_gc = undefined;
-                      const sl_xuat_tp = Number(splitString(lines_without_empty[j])[5]);
+                      const sl_xuat_tp = Number(splitString(lines_without_empty[j])[COL_AMOUNT]);
                       Common.Log(
                         `Adding processing: ${ma_hang}, ${noi_xuat}, ${sl_nhap}, ${sl_xuat_gc}, ${sl_xuat_tp}`
                       );
                       record.AddProduct(ma_hang, noi_xuat, sl_nhap, sl_xuat_gc, sl_xuat_tp);
                     }
                   }
-                  // console.log(
-                  //   `  ${lines_without_empty[j].split(",")[2]} -> ${lines_without_empty[j].split(",")[5]}`
-                  // );
                 }
                 if (record.danh_sach_san_pham.length != 0) {
                   Imported.push(record);
@@ -785,9 +809,12 @@ export namespace FileOperation {
     return result;
   };
 
+  let last_path = "";
   export const OpenExcelAndGetSheetName = async () => {
     const path = await dialog.open({
-      defaultPath: await Common.BaseDiToStr(GlobalStrings.SaveDirectory),
+      defaultPath: last_path.length
+        ? last_path
+        : await Common.BaseDiToStr(GlobalStrings.SaveDirectory),
       filters: [{ name: "Excel file", extensions: ["xlsx", "xls"] }],
       multiple: false
     });
@@ -797,6 +824,7 @@ export namespace FileOperation {
     };
     let result = { sheets: [] } as Result;
     if (path) {
+      last_path = path as string;
       try {
         const buffer = await fs.readBinaryFile(path as string);
         const workbook: WorkBook = read(buffer, { type: "buffer" });
@@ -869,25 +897,5 @@ export namespace FileOperation {
     } else {
       return "unknown";
     }
-
-    // const old = await WarehouseData.RestoreData(file_name, GlobalStrings.SaveDirectory);
-    // old.push(tmp);
-
-    // const sorted = Common.SortRecords(old);
-    // let res = false;
-    // for (let i = 0; i < sorted.length; ++i) {
-    //   res = await sorted[i].StoreData(file_name, GlobalStrings.SaveDirectory, true);
-    //   if (res == false) {
-    //     return "unknown";
-    //   }
-    // }
-    return "success";
-
-    // const res = await tmp.StoreData(file_name, GlobalStrings.SaveDirectory, true);
-    // if (res) {
-    //   return "success";
-    // } else {
-    //   return "unknown";
-    // }
   };
 }

@@ -1,13 +1,4 @@
-import {
-  Button,
-  Card,
-  CardBody,
-  Checkbox,
-  IconButton,
-  Radio,
-  Tooltip,
-  Typography
-} from "@material-tailwind/react";
+import { Button, Checkbox, IconButton, Radio, Tooltip, Typography } from "@material-tailwind/react";
 import { WarehouseData } from "../types/ImportWarehouseData";
 import { useState, useEffect } from "react";
 import GlobalStrings from "../types/Globals";
@@ -103,27 +94,6 @@ export default function CreateReport() {
     setMaHang(code);
   };
 
-  // const handleRemoveClick = (old_record: ShortenData, product_code: string) => {
-  //   setOpenModalDelete(true);
-  //   setDataToEdit(old_record);
-  //   setMaHang(product_code);
-  // };
-
-  // const handleRemoveRecord = async () => {
-  //   const yes = await dialog.ask(`Bạn có chắc chắn muốn xóa?`, {
-  //     cancelLabel: "KHÔNG",
-  //     okLabel: "CÓ",
-  //     type: "warning"
-  //   });
-  //   if (yes) {
-  //     Remove(restoredData, dataToEdit, maHang, getRecordFilename());
-  //     setOpenModalDelete(false);
-  //     setTimeout(() => {
-  //       handleCheck();
-  //     }, 100);
-  //   }
-  // };
-
   const handleInputStockOk = async (amount: number) => {
     await AddStock(getRecordFilename(), restoredData, maHang, amount);
 
@@ -134,13 +104,9 @@ export default function CreateReport() {
   };
 
   const NeedInputStock = (records: ShortenData[], _code?: string) => {
-    // console.log(`Checking for code ${code}, data:\n${JSON.stringify(records)}`);
-
     if (records.some((value) => value.so_bill === GlobalStrings.InputStock)) {
-      // console.log(`-> true`);
       return false;
     }
-    // console.log(`-> true`);
     return true;
   };
 
@@ -155,17 +121,6 @@ export default function CreateReport() {
     setCurrentSelectedProductCode(value);
     setCurrentSelectedData(data);
   };
-
-  // useEffect(() => {
-  //   if (productSortedByDate.size) {
-  //     Common.Log(`Product sorted by date changed:`);
-  //     productSortedByDate.forEach((records, code) => {
-  //       Common.Log(`${code}\n  ${JSON.stringify(records)}`);
-  //     });
-  //   }
-
-  //   return () => {};
-  // }, [productSortedByDate]);
 
   const ProductSelect = () => {
     if (viewAll) return "";
@@ -200,8 +155,8 @@ export default function CreateReport() {
                 }}
                 arr={loadedProductCodes}
                 onChange={SelectData}
-                select_class={select_twstyles}
-                option_class={option_twstyles}></ArrayToSelect>
+                select_class_twstyles={select_twstyles}
+                option_class_twstyles={option_twstyles}></ArrayToSelect>
             </div>
           </div>
         </div>
@@ -212,10 +167,6 @@ export default function CreateReport() {
 
   const MultipleDelete = async (UIDs: string[]) => {
     if (UIDs.length) {
-      // popup.show(
-      //   "Tất cả các dữ liệu đã chọn sẽ bị xóa và không thể phục hồi, bạn có chắc chắn muốn xóa?",
-      //   "warning"
-      // );
       const yes = await dialog.confirm(
         "Tất cả dữ liệu đã chọn sẽ bị xóa và không thể phục hồi, bạn có chắc chắn muốn xóa?",
         {
@@ -266,6 +217,12 @@ export default function CreateReport() {
                     Đơn vị tính:
                   </th>
                   <th colSpan={2}>{product.getInfo(key, "unit")}</th>
+                </tr>
+                <tr>
+                  <th colSpan={2} className="">
+                    Tồn đầu kì:
+                  </th>
+                  <th colSpan={2}>{WarehouseData.GetTonDauKi(data) ?? "-"}</th>
                 </tr>
                 <tr>
                   {/* <th colSpan={2} className=""></th> */}
@@ -409,7 +366,7 @@ export default function CreateReport() {
                               // Common.Log(`to be removed: ${Array.from(tmp)}`);
                               setToBeRemoved(Array.from(tmp));
                             }}
-                            className={`p-0 hover:bg-red-100 active:scale-90`}
+                            className={`p-0 active:scale-90`}
                           />
                           {/* <IconButton
                             ripple={false}
@@ -567,7 +524,7 @@ export default function CreateReport() {
   };
   const Radios = () => {
     return (
-      <div className="flex w-full justify-evenly items-center">
+      <div className="flex">
         <Radio
           name="color"
           color="blue"
@@ -721,21 +678,39 @@ export default function CreateReport() {
   };
 
   const Buttons = () => {
+    const card_twstyles = "flex justify-center items-center rounded-xl p-2 h-[50px] shadow-md";
     return (
-      <div className={`w-full flex justify-center items-center`}>
-        <Card className={`border`}>
-          <CardBody className={`p-2 space-y-2`}>
-            <div className={`w-full flex justify-center`}>{CreateCheckButton()}</div>
+      <div className={`mt-1`}>
+        <div className={`w-full flex justify-center space-x-3 items-center`}>
+          <div className={`${card_twstyles}`}>
+            {CreateCheckButton()}
             {Radios()}
-            <div className={`space-x-2 `}>
-              <Typography className={`w-full text-center capitalize font-bold`}>
-                {"xuất file excel"}
-              </Typography>
-              {CreateExcelButtons()}
-            </div>
-          </CardBody>
-        </Card>
+          </div>
+          <div className={`${card_twstyles} space-x-2`}>{CreateExcelButtons()}</div>
+        </div>
       </div>
+      // <div className={`w-full flex justify-center items-center`}>
+      //   <Card className={`border ${card_twstyles}`}>
+      //     <div className={`flex items-center`}>
+      //       <CardBody className={`p-2 flex items-center`}>
+      //         {CreateCheckButton()}
+      //         {Radios()}
+      //       </CardBody>
+      //     </div>
+      //   </Card>
+      //   <Card className={`border ${card_twstyles}`}>
+      //     <div className={`flex items-centerpy-`}>
+      //       <CardBody className={`p-2 space-y-2 flex items-center`}>
+      //         <div className={`space-x-2 `}>
+      //           {/* <Typography className={`w-full text-center capitalize font-bold`}>
+      //             {"xuất file excel"}
+      //           </Typography> */}
+      //           {CreateExcelButtons()}
+      //         </div>
+      //       </CardBody>
+      //     </div>
+      //   </Card>
+      // </div>
     );
   };
 

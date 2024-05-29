@@ -6,10 +6,11 @@ module.exports = withMT({
   content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
   theme: {
     fontFamily: {
-      sans: ["Inter", ...defaultTheme.fontFamily.sans],
+      sans: ["Signika-Regular", ...defaultTheme.fontFamily.sans],
       myBold: ['"Baloo2"'],
       myRegular: ["Inter"],
-      myThin: ["Quicksand"]
+      myThin: ["Quicksand"],
+      "signika-l": ["Signika-Light"]
     },
     extend: {}
   },

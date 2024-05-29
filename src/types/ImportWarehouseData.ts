@@ -2,6 +2,7 @@ import { BaseDirectory, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import { Popup } from "./Dialog";
 import { Common } from "./GlobalFnc";
 import GlobalStrings from "./Globals";
+import { ShortenData } from "./ShortenData";
 
 export module WarehouseData {
   type RecordType = "import" | "export";
@@ -32,11 +33,13 @@ export module WarehouseData {
       this.ma_hang = ma_hang;
     }
   }
+
   export class Record {
     hop_dong: string;
     ngay_thuc_te: string;
     so_bill?: string;
     ngay_chung_tu?: string;
+    ton_dau_ki?: Map<string, number | undefined>;
     danh_sach_san_pham: Products[];
 
     constructor(hop_dong: string, ngay_thuc_te: string, so_bill?: string, ngay_chung_tu?: string) {
@@ -171,5 +174,36 @@ export module WarehouseData {
       `"${file_name}" stored to "${await Common.BaseDiToStr(GlobalStrings.SaveDirectory)}"`
     );
     return 0;
+  };
+
+  export const GetTonDauKiAll = (records: Record[]) => {
+    const res = new Map<string, number>();
+    for (let i = 0; i < records.length; ++i) {
+      const rec = records[i];
+      if (rec.hop_dong === GlobalStrings.InputStock && rec.so_bill === GlobalStrings.InputStock) {
+        for (let j = 0; j < rec.danh_sach_san_pham.length; ++j) {
+          const product = rec.danh_sach_san_pham[j];
+          if (product.sl_nhap !== undefined) {
+            res.set(product.ma_hang, product.sl_nhap);
+            break;
+          }
+        }
+      }
+    }
+    return res;
+  };
+
+  export const GetTonDauKi = (data: ShortenData[]) => {
+    let res: number | undefined;
+    for (let i = 0; i < data.length; ++i) {
+      if (
+        data[i].so_bill === GlobalStrings.InputStock &&
+        data[i].hop_dong === GlobalStrings.InputStock
+      ) {
+        res = data[i].sl_nhap;
+        break;
+      }
+    }
+    return res;
   };
 }

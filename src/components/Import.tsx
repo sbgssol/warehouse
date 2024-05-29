@@ -483,13 +483,13 @@ export default function Import() {
           setSheetSelectOpen(false);
         }}
         doneHandler={SelectSheetDone}
-        label="chọn sheet cần nhập"
-        label_twstyles="uppercase justify-center text-xl pt-2 border-b pb-1 mb-1"
+        label="Chọn sheet cần nhập"
+        label_twstyles="normal-case justify-center text-xl pt-2 border-b pb-1 mb-1"
         list_twstyles="p-0 px-1"
         list_item_twstyles="p-0 active:bg-transparent "
         item_label_twstyles="flex items-center w-full p-0 hover:cursor-pointer"
         body_twstyles="h-[35vh] overflow-x-auto overflow-y-auto p-0"
-        size="sm"
+        size="xs"
         items={sheetNames}></ListSelect>
       <Card className="w-[99%] h-max">
         <CardBody className="w-full h-max overflow-hidden flex flex-col items-center p-1 border-2 border-t-0 rounded-md">

@@ -234,7 +234,7 @@ export default function UpdateModal(props: {
                     onChange={(value) => {
                       setLocation(value);
                     }}
-                    select_class={`p-1.5 pl-2 border-2 border-teal-700 rounded-md w-full focus:outline-none ${disabled_delete}`}></ArrayToSelect>
+                    select_class_twstyles={`p-1.5 pl-2 border-2 border-teal-700 rounded-md w-full focus:outline-none ${disabled_delete}`}></ArrayToSelect>
                 </div>
               </div>
             </td>

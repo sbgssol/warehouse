@@ -39,11 +39,17 @@ export function NavbarDefault() {
   // };
 
   const button_outline = `teal`;
+  const btn_effect_twstyles =
+    "hover:scale-110 hover:bg-transparent active:scale-95 active:bg-transparent";
   return (
     <Navbar className="max-w-full mb-1 shadow-none sticky top-0 border-b-2 border-b-gray-600 p-1 rounded-none z-50">
       <div className="flex items-center justify-between text-blue-gray-900">
         <div className="flex justify-center items-center space-x-1">
-          <Button variant="text" color="green" className={`p-1`} onClick={handleHomeClick}>
+          <Button
+            variant="text"
+            color="green"
+            className={`p-1 ${btn_effect_twstyles}`}
+            onClick={handleHomeClick}>
             <img src={home_svg} className={`w-[32px]`} alt="" />
           </Button>
           {/* <Button variant="text" color="green" className={`p-1`} onClick={handleReloadClick}>
@@ -55,14 +61,14 @@ export function NavbarDefault() {
             label="Chọn một hợp đồng"
             onChange={handleHdChanged}
             default={contractName}
-            select_class="border-2 border-teal-700 rounded-md p-1 text-green-700 font-bold bg-green-50"
-            option_class="font-bold bg-white"></ArrayToSelect>
+            select_class_twstyles="border-2 border-teal-700 rounded-md p-1 text-green-700 font-bold bg-green-50 focus:outline-none"
+            option_class_twstyles="font-bold bg-white"></ArrayToSelect>
         </div>
         <div className={`space-x-2`}>
           <Button
             variant="text"
             color={`${button_outline}`}
-            className={`p-1`}
+            className={`p-1 ${btn_effect_twstyles}`}
             onClick={handleInpClick}>
             <img src={import_svg} className={`w-[32px]`} />
           </Button>
@@ -70,7 +76,7 @@ export function NavbarDefault() {
           <Button
             variant="text"
             color={`${button_outline}`}
-            className={`p-1`}
+            className={`p-1 ${btn_effect_twstyles}`}
             onClick={handleExportClick}>
             <img src={export_svg} className={`w-[32px]`} />
           </Button>
@@ -78,7 +84,7 @@ export function NavbarDefault() {
           <Button
             variant="text"
             color={`${button_outline}`}
-            className={`p-1`}
+            className={`p-1 ${btn_effect_twstyles}`}
             onClick={handleReportClick}>
             <img src={excel_svg} className={`w-[32px]`} />
           </Button>
@@ -86,7 +92,7 @@ export function NavbarDefault() {
           <Button
             variant="text"
             color={`${button_outline}`}
-            className={`p-1`}
+            className={`p-1 ${btn_effect_twstyles}`}
             onClick={handleCategoryClick}>
             <img src={category_svg} className={`w-[32px]`} />
           </Button>
