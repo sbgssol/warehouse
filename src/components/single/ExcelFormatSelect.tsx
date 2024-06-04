@@ -25,21 +25,22 @@ export default function ExcelFormatSelect(props: ExcelFormatSelectProps) {
   const COL_Amount = 5;
 
   const Buttons = () => {
-    const btn_twstyles = "w-[100px] p-0 rounded-md py-2 text-sm";
+    const btn_twstyles = "w-[100px] p-0 rounded-md py-2 text-sm hover:scale-105 active:scale-95";
     return (
       <>
         <Button
           variant="text"
-          color="deep-orange"
-          className={`${btn_twstyles} `}
+          color="red"
+          ripple={false}
+          className={`${btn_twstyles} hover:bg-transparent active:bg-transparent`}
           onClick={() => {
             props.closeHandler();
           }}>
           đóng
         </Button>
         <Button
-          variant="gradient"
-          color="light-green"
+          variant="outlined"
+          color="teal"
           className={`${btn_twstyles}`}
           onClick={() => {
             // props.doneHandler(Array.from(selectedEntries.keys()));
@@ -131,16 +132,16 @@ export default function ExcelFormatSelect(props: ExcelFormatSelectProps) {
       // dismiss={{ outsidePress: false, escapeKey: true }}
       className={`select-none`}>
       <DialogHeader
-        className={`p-0 py-1.5 justify-center bg-green-50 rounded-t-md ${border_width_twstyles} border-b-0 border-green-200`}>
+        className={`p-0 py-1.5 justify-center bg-teal-50 rounded-t-md ${border_width_twstyles} border-b-0 border-teal-200`}>
         <Typography variant="lead" className={`normal-case`}>
           {"Chọn định dạng file excel"}
         </Typography>
       </DialogHeader>
-      <DialogBody className={`${border_width_twstyles} border-t-0 border-b-0 border-green-200`}>
+      <DialogBody className={`${border_width_twstyles} border-t-0 border-b-0 border-teal-200`}>
         {Body()}
       </DialogBody>
       <DialogFooter
-        className={`flex justify-end space-x-2 ${border_width_twstyles} border-t-0 border-green-200 p-0 py-1.5 px-2 bg-green-50 rounded-b-md`}>
+        className={`flex justify-end space-x-2 ${border_width_twstyles} border-t-0 border-teal-200 p-0 py-1.5 px-2 bg-teal-50 rounded-b-md`}>
         {Buttons()}
       </DialogFooter>
     </Dialog>

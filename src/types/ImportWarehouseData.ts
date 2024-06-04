@@ -103,7 +103,7 @@ export module WarehouseData {
         });
       } catch (error) {
         const folder_name = await Common.BaseDiToStr(directory);
-        Popup.Error(`Không thể lưu dữ liệu vào\n${folder_name}`);
+        Popup.Error(`Không thể lưu dữ liệu vào\n${folder_name}\nError:${error}`);
         Common.Log(`Failed to store "${file_name}" to "${await Common.BaseDiToStr(directory)}"`);
         return false;
       }

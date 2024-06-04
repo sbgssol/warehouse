@@ -18,6 +18,13 @@ export default function SummaryTable(props: {
     return () => {};
   }, [props.amount]);
 
+  const stripeRow = (idx: number) => {
+    if (idx % 2) {
+      return "";
+    }
+    return "bg-gray-200";
+  };
+
   if (props.data.danh_sach_san_pham.length) {
     return (
       <div className="w-full overflow-y-auto mt-2 px-1">
@@ -33,7 +40,7 @@ export default function SummaryTable(props: {
           </thead>
           <tbody className="">
             {props.data.danh_sach_san_pham.flatMap((detail, index) => (
-              <tr key={index}>
+              <tr key={index} className={`${stripeRow(index)}`}>
                 <td className="border border-black overflow-hidden max-w-[5%] w-[5%]">
                   {index + 1}
                 </td>
@@ -75,7 +82,7 @@ export default function SummaryTable(props: {
                         props.input_ref.current[index] = ref;
                       }
                     }}
-                    className={`w-full pl-2 bg-gray-50`}></input>
+                    className={`w-full pl-2 ${stripeRow(index)}`}></input>
                 </td>
               </tr>
             ))}

@@ -13,6 +13,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ListSelect from "./single/ListSelect";
 import { WorkBook } from "xlsx";
+import GlobalStrings from "../types/Globals";
 
 export default function Import() {
   // States
@@ -280,26 +281,25 @@ export default function Import() {
     setOpen(true);
   };
 
-  // const handleSelectFromCsv = async () => {
-  //   const data = await FileOperation.OpenAndReadCsvFile();
-  //   if (
-  //     data.every((value) => {
-  //       const s = value.split(",");
-  //       console.log(`size: ${s.length}, value: ${s}`);
+  const [importStock, setImportStock] = useState(false);
+  const handleImportStock = (codes: string[], amounts?: number[]) => {
+    input_code.setOpen(false);
+    Common.Log(
+      `amounts === undefined: ${amounts === undefined}, codes.length: ${codes.length}, amounts.length: ${amounts?.length}`
+    );
+    if (amounts !== undefined && codes.length < amounts.length) {
+      popup.show("Kiếm tra lại mã hàng và số lượng", "error");
+      return;
+    }
+    setSelectedCodes(codes);
+    if (amounts !== undefined) {
+      setHopDongStr(GlobalStrings.InputStock);
+      setBillStr(GlobalStrings.InputStock);
+      setImportedAmount(amounts);
+    }
+    setMultipleRecords([]);
+  };
 
-  //       return s.every((v) => v.trim().length);
-  //     })
-  //   ) {
-  //     let tmp: string[] = [];
-  //     let amt: number[] = [];
-  //     data.forEach((v) => {
-  //       tmp.push(v.split(",")[0]);
-  //       amt.push(Number(v.split(",")[1]));
-  //     });
-  //     setSelectedCodes(tmp);
-  //     setImportedAmount(amt);
-  //   }
-  // };
   const updatingPart = () => {
     return (
       <>
@@ -327,6 +327,7 @@ export default function Import() {
               fullWidth
               onClick={() => {
                 input_code.show();
+                setImportStock(false);
               }}
               variant="gradient"
               color="amber"
@@ -345,6 +346,20 @@ export default function Import() {
               className={`p-1`}>
               <Typography color="white" variant="h6">
                 nhập từ file excel
+              </Typography>
+            </Button>
+            <Button
+              fullWidth
+              onClick={() => {
+                input_code.show();
+                setImportStock(true);
+              }}
+              variant="gradient"
+              color="orange"
+              // disabled={true}
+              className={`p-1`}>
+              <Typography color="white" variant="h6">
+                nhập tồn đầu kì
               </Typography>
             </Button>
           </div>
@@ -460,7 +475,10 @@ export default function Import() {
   return (
     <>
       <NavbarDefault></NavbarDefault>
-      <TypeProductCodeModal saveHandler={handleTypeProductCode}></TypeProductCodeModal>
+      <TypeProductCodeModal
+        saveHandler={
+          importStock ? handleImportStock : handleTypeProductCode
+        }></TypeProductCodeModal>
       {/* <Button onClick={handleReadExcel}>Read Excel</Button> */}
       {/* <div className="w-full h-max overflow-hidden flex flex-col items-center">
         {fixedPart()}
