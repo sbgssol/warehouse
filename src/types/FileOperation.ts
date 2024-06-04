@@ -504,6 +504,10 @@ export namespace FileOperation {
 
   type InputType = "import" | "export";
   type ExportType = "production" | "processing";
+  export interface ExcelColumns {
+    ma_hang: number;
+    so_luong: number;
+  }
   const IsTargetSheet = (sheet_name: string, type: InputType) => {
     if (type == "import") {
       return (
@@ -522,7 +526,8 @@ export namespace FileOperation {
 
   export const InputProductUsingExcel = async (
     type: InputType,
-    export_type?: ExportType
+    export_type?: ExportType,
+    columns?: ExcelColumns
   ): Promise<WarehouseData.Record[]> => {
     const path = await dialog.open({
       defaultPath: await Common.BaseDiToStr(GlobalStrings.SaveDirectory),
@@ -534,6 +539,8 @@ export namespace FileOperation {
       try {
         const buffer = await fs.readBinaryFile(path as string);
         const workbook: WorkBook = read(buffer, { type: "buffer" });
+        const code_col = columns ? columns.ma_hang : 2; // Column C
+        const amount_col = columns ? columns.so_luong : 5; // Column F
         let Imported: WarehouseData.Record[] = [];
         workbook.SheetNames.forEach((sheetName) => {
           if (IsTargetSheet(sheetName, type)) {
@@ -575,15 +582,15 @@ export namespace FileOperation {
                       break;
                     }
                     if (
-                      splitString(lines_without_empty[j])[2].length == 0 ||
-                      splitString(lines_without_empty[j])[5].length == 0
+                      splitString(lines_without_empty[j])[code_col].length == 0 ||
+                      splitString(lines_without_empty[j])[amount_col].length == 0
                     ) {
                       continue;
                     }
                     record.AddProduct(
-                      splitString(lines_without_empty[j])[2],
+                      splitString(lines_without_empty[j])[code_col],
                       undefined,
-                      Number(splitString(lines_without_empty[j])[5])
+                      Number(splitString(lines_without_empty[j])[amount_col])
                     );
                     // console.log(
                     //   `  ${lines_without_empty[j].split(",")[2]} -> ${lines_without_empty[j].split(",")[5]}`
@@ -603,8 +610,8 @@ export namespace FileOperation {
                       break;
                     }
                     if (
-                      splitString(lines_without_empty[j])[2].trim().length == 0 ||
-                      splitString(lines_without_empty[j])[5].trim().length == 0
+                      splitString(lines_without_empty[j])[code_col].trim().length == 0 ||
+                      splitString(lines_without_empty[j])[amount_col].trim().length == 0
                     ) {
                       continue;
                     }
@@ -613,21 +620,21 @@ export namespace FileOperation {
                     // );
                     if (export_type !== undefined) {
                       if (export_type == "processing") {
-                        const ma_hang = splitString(lines_without_empty[j])[2];
+                        const ma_hang = splitString(lines_without_empty[j])[code_col];
                         const noi_xuat = splitString(lines_without_empty[i])[1];
                         const sl_nhap = undefined;
-                        const sl_xuat_gc = Number(splitString(lines_without_empty[j])[5]);
+                        const sl_xuat_gc = Number(splitString(lines_without_empty[j])[amount_col]);
                         const sl_xuat_tp = undefined;
                         Common.Log(
                           `Adding processing: ${ma_hang}, ${noi_xuat}, ${sl_nhap}, ${sl_xuat_gc}, ${sl_xuat_tp}`
                         );
                         record.AddProduct(ma_hang, noi_xuat, sl_nhap, sl_xuat_gc, sl_xuat_tp);
                       } else if (export_type == "production") {
-                        const ma_hang = splitString(lines_without_empty[j])[2];
+                        const ma_hang = splitString(lines_without_empty[j])[code_col];
                         const noi_xuat = splitString(lines_without_empty[i])[1];
                         const sl_nhap = undefined;
                         const sl_xuat_gc = undefined;
-                        const sl_xuat_tp = Number(splitString(lines_without_empty[j])[5]);
+                        const sl_xuat_tp = Number(splitString(lines_without_empty[j])[amount_col]);
                         Common.Log(
                           `Adding processing: ${ma_hang}, ${noi_xuat}, ${sl_nhap}, ${sl_xuat_gc}, ${sl_xuat_tp}`
                         );
@@ -741,11 +748,11 @@ export namespace FileOperation {
                   ) {
                     continue;
                   }
-                  record.AddProduct(
-                    splitString(lines_without_empty[j])[COL_CODE],
-                    undefined,
-                    Number(splitString(lines_without_empty[j])[COL_AMOUNT])
-                  );
+                  let tmp = Number(splitString(lines_without_empty[j])[COL_AMOUNT]);
+                  if (Number.isNaN(tmp)) {
+                    tmp = 0;
+                  }
+                  record.AddProduct(splitString(lines_without_empty[j])[COL_CODE], undefined, tmp);
                 }
                 Imported.push(record);
               } else if (IsExport(lines_without_empty, i)) {
@@ -773,7 +780,10 @@ export namespace FileOperation {
                       const ma_hang = splitString(lines_without_empty[j])[COL_CODE];
                       const noi_xuat = splitString(lines_without_empty[i])[COL_LOCATION];
                       const sl_nhap = undefined;
-                      const sl_xuat_gc = Number(splitString(lines_without_empty[j])[COL_AMOUNT]);
+                      let sl_xuat_gc = Number(splitString(lines_without_empty[j])[COL_AMOUNT]);
+                      if (Number.isNaN(sl_xuat_gc)) {
+                        sl_xuat_gc = 0;
+                      }
                       const sl_xuat_tp = undefined;
                       Common.Log(
                         `Adding processing: ${ma_hang}, ${noi_xuat}, ${sl_nhap}, ${sl_xuat_gc}, ${sl_xuat_tp}`
@@ -784,7 +794,10 @@ export namespace FileOperation {
                       const noi_xuat = splitString(lines_without_empty[i])[COL_LOCATION];
                       const sl_nhap = undefined;
                       const sl_xuat_gc = undefined;
-                      const sl_xuat_tp = Number(splitString(lines_without_empty[j])[COL_AMOUNT]);
+                      let sl_xuat_tp = Number(splitString(lines_without_empty[j])[COL_AMOUNT]);
+                      if (Number.isNaN(sl_xuat_tp)) {
+                        sl_xuat_tp = 0;
+                      }
                       Common.Log(
                         `Adding processing: ${ma_hang}, ${noi_xuat}, ${sl_nhap}, ${sl_xuat_gc}, ${sl_xuat_tp}`
                       );

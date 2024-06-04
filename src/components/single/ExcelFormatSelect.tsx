@@ -8,11 +8,14 @@ import {
 } from "@material-tailwind/react";
 import ArrayToSelect from "../ArrayToSelect";
 import { useEffect, useState } from "react";
+import { FileOperation } from "../../types/FileOperation";
+import { Common } from "../../types/GlobalFnc";
 
 interface ExcelFormatSelectProps {
   open: boolean;
   closeHandler: () => void;
-  doneHandler: () => void;
+  doneHandler: (cols: FileOperation.ExcelColumns) => void;
+  columns?: FileOperation.ExcelColumns;
 }
 
 export type ExcelColumnPosition = {
@@ -21,8 +24,37 @@ export type ExcelColumnPosition = {
 };
 
 export default function ExcelFormatSelect(props: ExcelFormatSelectProps) {
-  const COL_Code = 2;
-  const COL_Amount = 5;
+  const EXCEL_COLUMNS = new Map<number, string>();
+  EXCEL_COLUMNS.set(0, "A");
+  EXCEL_COLUMNS.set(1, "B");
+  EXCEL_COLUMNS.set(2, "C");
+  EXCEL_COLUMNS.set(3, "D");
+  EXCEL_COLUMNS.set(4, "E");
+  EXCEL_COLUMNS.set(5, "F");
+  EXCEL_COLUMNS.set(6, "G");
+  EXCEL_COLUMNS.set(7, "H");
+  EXCEL_COLUMNS.set(8, "I");
+  EXCEL_COLUMNS.set(9, "J");
+  EXCEL_COLUMNS.set(10, "K");
+  EXCEL_COLUMNS.set(11, "L");
+  EXCEL_COLUMNS.set(12, "M");
+  EXCEL_COLUMNS.set(13, "N");
+  EXCEL_COLUMNS.set(14, "O");
+  EXCEL_COLUMNS.set(15, "P");
+  EXCEL_COLUMNS.set(16, "Q");
+  EXCEL_COLUMNS.set(17, "R");
+  EXCEL_COLUMNS.set(18, "S");
+  EXCEL_COLUMNS.set(19, "T");
+  EXCEL_COLUMNS.set(20, "U");
+  EXCEL_COLUMNS.set(21, "V");
+  EXCEL_COLUMNS.set(22, "W");
+  EXCEL_COLUMNS.set(23, "X");
+  EXCEL_COLUMNS.set(24, "Y");
+  EXCEL_COLUMNS.set(25, "Z");
+
+  const [innerColsState, setInnerColsState] = useState(props.columns);
+  const [colCode, setColCode] = useState("C");
+  const [colAmount, setColAmount] = useState("F");
 
   const Buttons = () => {
     const btn_twstyles = "w-[100px] p-0 rounded-md py-2 text-sm hover:scale-105 active:scale-95";
@@ -43,7 +75,9 @@ export default function ExcelFormatSelect(props: ExcelFormatSelectProps) {
           color="teal"
           className={`${btn_twstyles}`}
           onClick={() => {
-            // props.doneHandler(Array.from(selectedEntries.keys()));
+            if (innerColsState !== undefined) {
+              props.doneHandler(innerColsState);
+            }
           }}>
           xong
         </Button>
@@ -52,41 +86,13 @@ export default function ExcelFormatSelect(props: ExcelFormatSelectProps) {
   };
 
   // const [defaultColumn, setDefaultColumn] = useState(new Map<number, string>());
-  const ColMap = new Map<number, string>([
-    [0, "A"],
-    [1, "B"],
-    [2, "C"],
-    [3, "D"],
-    [4, "E"],
-    [5, "F"],
-    [6, "G"],
-    [7, "H"],
-    [8, "I"],
-    [9, "J"],
-    [10, "K"],
-    [11, "L"],
-    [12, "M"],
-    [13, "N"],
-    [14, "O"],
-    [15, "P"],
-    [16, "Q"],
-    [17, "R"],
-    [18, "S"],
-    [19, "T"],
-    [20, "U"],
-    [21, "V"],
-    [22, "W"],
-    [23, "X"],
-    [24, "Y"],
-    [25, "Z"]
-  ]);
-  const [colCode, setColCode] = useState("C");
-  const [colAmount, setColAmount] = useState("F");
 
   useEffect(() => {
     if (props.open) {
-      setColCode(ColMap.get(COL_Code) ?? "C");
-      setColAmount(ColMap.get(COL_Amount) ?? "F");
+      if (props.columns !== undefined) {
+        setColCode(EXCEL_COLUMNS.get(props.columns.ma_hang) ?? "C");
+        setColAmount(EXCEL_COLUMNS.get(props.columns.so_luong) ?? "F");
+      }
     }
 
     return () => {};
@@ -99,9 +105,16 @@ export default function ExcelFormatSelect(props: ExcelFormatSelectProps) {
           <div className={`w-1/3`}>Cột mã hàng</div>
           <div className={`w-2/3`}>
             <ArrayToSelect
-              arr={Array.from(ColMap.values())}
-              onChange={() => {}}
-              default={ColMap.get(COL_Code)}
+              arr={Array.from(EXCEL_COLUMNS.values())}
+              onChange={(value) => {
+                if (innerColsState) {
+                  const tmp = innerColsState;
+                  tmp.ma_hang = value.charCodeAt(0) - 65;
+                  setInnerColsState(tmp);
+                  Common.Log(`Columns: ${JSON.stringify(tmp)}`);
+                }
+              }}
+              default={props.columns !== undefined ? EXCEL_COLUMNS.get(props.columns.ma_hang) : ""}
               state={{ value: colCode, setValue: setColCode }}
               option_class_twstyles="font-myThin font-bold"
               select_class_twstyles="w-full focus:outline-none p-1 border-2 rounded-md border-teal-600"></ArrayToSelect>
@@ -111,9 +124,16 @@ export default function ExcelFormatSelect(props: ExcelFormatSelectProps) {
           <div className={`w-1/3`}>Cột số lượng</div>
           <div className={`w-2/3`}>
             <ArrayToSelect
-              arr={Array.from(ColMap.values())}
-              onChange={() => {}}
-              default={ColMap.get(COL_Amount)}
+              arr={Array.from(EXCEL_COLUMNS.values())}
+              onChange={(value) => {
+                if (innerColsState) {
+                  const tmp = innerColsState;
+                  tmp.so_luong = value.charCodeAt(0) - 65;
+                  setInnerColsState(tmp);
+                  Common.Log(`Columns: ${JSON.stringify(tmp)}`);
+                }
+              }}
+              default={props.columns !== undefined ? EXCEL_COLUMNS.get(props.columns.so_luong) : ""}
               state={{ value: colAmount, setValue: setColAmount }}
               option_class_twstyles="font-myThin font-bold"
               select_class_twstyles="w-full focus:outline-none p-1 border-2 rounded-md border-teal-600"></ArrayToSelect>

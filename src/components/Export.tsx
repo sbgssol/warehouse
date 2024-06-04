@@ -34,6 +34,10 @@ export default function Export() {
   const { getRecordFilename, popup, input_code, json } = useGlobalState();
   const [exportGC, setExportTypeRadio] = useState(true);
   const [sheetSelectOpen, setSheetSelectOpen] = useState(false);
+  const [excelFormat, setExcelFormat] = useState({
+    ma_hang: 2,
+    so_luong: 5
+  } as FileOperation.ExcelColumns);
 
   // References
   const contractRef = useRef<HTMLInputElement>(null);
@@ -185,6 +189,8 @@ export default function Export() {
 
   const handleSaveClick = async () => {
     if (currentSessionData === undefined) return;
+    if (currentSessionData.danh_sach_san_pham.length == 0) return;
+
     let res: FileOperation.SaveResult = "unknown";
     if (multipleRecords.length) {
       for (let i = 0; i < multipleRecords.length; ++i) {
@@ -488,11 +494,29 @@ export default function Export() {
     if (names.length == 0) return;
     Common.Log(`Selected: ${names}`);
     if (workbook !== undefined) {
+      const cols: {
+        hop_dong?: number;
+        bill?: number;
+        noi_xuat?: number;
+        ngay_to_khai?: number;
+        ngay_thuc_te?: number;
+        ma_hang?: number;
+        sl_nhap?: number;
+        sl_xuat_gc?: number;
+        sl_xuat_tp?: number;
+      } = {};
+      cols.ma_hang = excelFormat.ma_hang;
+      if (exportGC) {
+        cols.sl_xuat_gc = excelFormat.so_luong;
+      } else {
+        cols.sl_xuat_tp = excelFormat.so_luong;
+      }
       const data = await FileOperation.ReadWorkbook(
         workbook,
         names,
         "export",
-        exportGC ? "processing" : "production"
+        exportGC ? "processing" : "production",
+        cols
       );
       setMultipleRecords(data);
     }
@@ -523,7 +547,12 @@ export default function Export() {
         closeHandler={() => {
           setSelectFormatOpen(false);
         }}
-        doneHandler={() => {}}></ExcelFormatSelect>
+        columns={excelFormat}
+        doneHandler={(cols) => {
+          setExcelFormat(cols);
+          setSelectFormatOpen(false);
+          setCurrentSessionData(new WarehouseData.Record("", ""));
+        }}></ExcelFormatSelect>
       <Card className="w-[99%] h-max">
         <CardBody className="w-full h-max overflow-hidden flex flex-col items-center p-1 border-2 border-t-0 rounded-md">
           {RadioTypes()}
