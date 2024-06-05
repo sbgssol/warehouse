@@ -7,6 +7,7 @@ import CategoryManagement from "./components/CategoryManagement";
 import Export from "./components/Export";
 import { useEffect } from "react";
 import ResourceLoader from "./components/single/ResourceLoader";
+import LockPopup from "./components/single/LockPopup";
 
 export default function App() {
   useEffect(() => {
@@ -20,6 +21,7 @@ export default function App() {
       <div className="p-1 h-full flex flex-col items-center scroll-smooth">
         <ResourceLoader>
           <Popup />
+          <LockPopup />
           <Routes>
             <Route path="/" element={<DashBoard />} />
             <Route path="import" element={<Import />} />

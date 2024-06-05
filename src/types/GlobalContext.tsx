@@ -64,6 +64,13 @@ interface GlobalStateContextType {
     setRawNoiXuat: (data: string[]) => void;
   };
 
+  lock: {
+    open: boolean;
+    setOpen: (open: boolean) => void;
+    verified: boolean;
+    setVerified: (verified: boolean) => void;
+  };
+
   // resources: {
   //   pathHopDong: string;
   //   setPathHopDong: (path: string) => void;
@@ -104,6 +111,10 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [pathHopDong, setPathHopDong] = useState<string>();
   const [pathMaHang, setPathMaHang] = useState<string>();
   const [pathNoiXuat, setPathNoiXuat] = useState<string>();
+
+  // lock
+  const [lock, setLock] = useState(false);
+  const [verified, setVerified] = useState(false);
 
   const getRecordFilename = () => {
     return contractName + "_" + GlobalStrings.RecordFileName;
@@ -200,6 +211,13 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
           setPathHopDong: setPathHopDong,
           setPathMaHang: setPathMaHang,
           setPathNoiXuat: setPathNoiXuat
+        },
+
+        lock: {
+          open: lock,
+          setOpen: setLock,
+          verified: verified,
+          setVerified: setVerified
         }
       }}>
       {children}

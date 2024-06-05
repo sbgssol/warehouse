@@ -6,24 +6,42 @@ import category_svg from "../assets/barcode.svg";
 import { useNavigate } from "react-router-dom";
 import { ReactNode } from "react";
 import { color } from "@material-tailwind/react/types/components/button";
+import { useGlobalState } from "../types/GlobalContext";
 
 export default function DashBoard() {
+  const { lock } = useGlobalState();
   const navigate = useNavigate();
 
   const handleImportClick = () => {
-    navigate("/import");
+    if (lock.verified == false) {
+      lock.setOpen(true);
+    } else {
+      navigate("/import");
+    }
   };
   const handleExportClick = () => {
-    navigate("/export");
+    if (lock.verified == false) {
+      lock.setOpen(true);
+    } else {
+      navigate("/export");
+    }
   };
   const handleReport = () => {
-    navigate("/report");
+    if (lock.verified == false) {
+      lock.setOpen(true);
+    } else {
+      navigate("/report");
+    }
   };
 
   const btn_twstyles = `w-full h-full rounded-md flex flex-row justify-evenly items-center`;
 
   const handleCategory = () => {
-    navigate("/category");
+    if (lock.verified == false) {
+      lock.setOpen(true);
+    } else {
+      navigate("/category");
+    }
   };
 
   const font_twstyles = "font-myBold";
@@ -55,6 +73,7 @@ export default function DashBoard() {
   };
 
   const DashBoardBody = () => {
+    //
     return (
       <div className="grid grid-cols-2 h-full gap-4 p-4 bg-red">
         {CreateButton(
