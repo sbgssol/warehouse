@@ -1,4 +1,4 @@
-import { Dialog, DialogHeader, Typography, DialogBody } from "@material-tailwind/react";
+import { Typography } from "@material-tailwind/react";
 import { useEffect, useRef, useState } from "react";
 import { Common } from "../../types/GlobalFnc";
 import { useGlobalState } from "../../types/GlobalContext";
@@ -59,37 +59,47 @@ export default function LockPopup() {
   };
 
   const inp_twstyles =
-    "shadow-md w-full h-[55px] rounded-md text-[50px] text-center drop-shadow-md focus:bg-teal-50 font-myRegular focus:outline-none";
+    "shadow-md w-[55px] h-[55px] rounded-md text-[50px] text-center drop-shadow-md focus:bg-teal-50 font-myRegular focus:outline-none";
 
   const Body = () => (
-    <div className={`w-full flex justify-evenly space-x-2`}>
-      {Array.from({ length: numInputs }).map((_, idx) => (
-        <input
-          type="password"
-          key={idx}
-          ref={(el) => (inpRef.current[idx] = el)}
-          maxLength={1}
-          className={`${inp_twstyles}`}
-          onFocus={() => {
-            setInpIdx(idx);
-            inpRef.current[idx]?.select();
-          }}
-          onChange={(event) => handleInputChange(event, idx)}
-          onKeyDown={(event) => handleKeyDown(event, idx)}
-        />
-      ))}
+    <div className={`w-full flex justify-center flex-col items-center`}>
+      <Typography variant="h2" className={`uppercase`} color="teal">
+        nhập mã pin
+      </Typography>
+      <div className={`p-8 shadow-lg rounded-xl space-x-2 drop-shadow-lg`}>
+        {Array.from({ length: numInputs }).map((_, idx) => (
+          <input
+            type="password"
+            key={idx}
+            ref={(el) => (inpRef.current[idx] = el)}
+            maxLength={1}
+            className={`${inp_twstyles}`}
+            onFocus={() => {
+              setInpIdx(idx);
+              inpRef.current[idx]?.select();
+            }}
+            onChange={(event) => handleInputChange(event, idx)}
+            onKeyDown={(event) => handleKeyDown(event, idx)}
+          />
+        ))}
+      </div>
     </div>
   );
 
+  useEffect(() => {
+    if (lock.verified == false) {
+      setTimeout(() => {
+        lock.setOpen(true);
+      }, 500);
+    }
+
+    return () => {};
+  }, [lock.verified]);
+
   return (
-    <Dialog open={lock.open} handler={() => {}} size={"xs"} className={`select-none`}>
-      <DialogHeader
-        className={`p-0 py-1.5 justify-center bg-teal-50 rounded-t-md border-b-0 border-teal-200`}>
-        <Typography variant="lead" className={`normal-case`}>
-          {"Nhập mã PIN"}
-        </Typography>
-      </DialogHeader>
-      <DialogBody className={`border-t-0 border-b-0 border-teal-200`}>{Body()}</DialogBody>
-    </Dialog>
+    <div
+      className={`w-full h-[99%] absolute bg-gray-100 overflow-hidden flex items-center select-none`}>
+      {Body()}
+    </div>
   );
 }

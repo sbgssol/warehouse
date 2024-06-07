@@ -48,4 +48,49 @@ export namespace KeyPress {
       }
     });
   };
+
+  export const CreateShortcut = (keys: string, handler: () => void) => {
+    const keyArray = keys
+      .toLowerCase()
+      .split("+")
+      .map((key) => key.trim());
+
+    const isValidKey = (key: string): boolean => {
+      const validModifiers = ["ctrl", "alt", "shift"];
+      // Allow any single character or function key (e.g., "a", "l", "f1") in addition to the modifiers
+      return (
+        validModifiers.includes(key) ||
+        (key.length === 1 && key.match(/[a-z0-9]/) !== null) ||
+        key.startsWith("f")
+      );
+    };
+
+    if (keyArray.some((key) => !isValidKey(key))) {
+      throw new Error("Invalid key(s) provided.");
+    }
+
+    const onKeyDown = (event: KeyboardEvent): void => {
+      const pressedKeys: string[] = [];
+      if (event.ctrlKey) pressedKeys.push("ctrl");
+      if (event.altKey) pressedKeys.push("alt");
+      if (event.shiftKey) pressedKeys.push("shift");
+
+      const key = event.key.toLowerCase();
+      if (key.length === 1 || key.startsWith("f")) {
+        pressedKeys.push(key);
+      }
+
+      const pressedKeyCombination = pressedKeys.join(" + ");
+      if (pressedKeyCombination === keyArray.join(" + ")) {
+        handler();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+
+    // Return a function to unregister the combination
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  };
 }

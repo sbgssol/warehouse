@@ -6,42 +6,45 @@ import category_svg from "../assets/barcode.svg";
 import { useNavigate } from "react-router-dom";
 import { ReactNode } from "react";
 import { color } from "@material-tailwind/react/types/components/button";
-import { useGlobalState } from "../types/GlobalContext";
 
 export default function DashBoard() {
-  const { lock } = useGlobalState();
+  // const { lock } = useGlobalState();
   const navigate = useNavigate();
 
   const handleImportClick = () => {
-    if (lock.verified == false) {
-      lock.setOpen(true);
-    } else {
-      navigate("/import");
-    }
+    // if (lock.verified == false) {
+    //   lock.setOpen(true);
+    // } else {
+    //   navigate("/import");
+    // }
+    navigate("/import");
   };
   const handleExportClick = () => {
-    if (lock.verified == false) {
-      lock.setOpen(true);
-    } else {
-      navigate("/export");
-    }
+    // if (lock.verified == false) {
+    //   lock.setOpen(true);
+    // } else {
+    //   navigate("/export");
+    // }
+    navigate("/export");
   };
   const handleReport = () => {
-    if (lock.verified == false) {
-      lock.setOpen(true);
-    } else {
-      navigate("/report");
-    }
+    // if (lock.verified == false) {
+    //   lock.setOpen(true);
+    // } else {
+    //   navigate("/report");
+    // }
+    navigate("/report");
   };
 
   const btn_twstyles = `w-full h-full rounded-md flex flex-row justify-evenly items-center`;
 
   const handleCategory = () => {
-    if (lock.verified == false) {
-      lock.setOpen(true);
-    } else {
-      navigate("/category");
-    }
+    // if (lock.verified == false) {
+    //   lock.setOpen(true);
+    // } else {
+    //   navigate("/category");
+    // }
+    navigate("/category");
   };
 
   const font_twstyles = "font-myBold";

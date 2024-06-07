@@ -113,7 +113,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [pathNoiXuat, setPathNoiXuat] = useState<string>();
 
   // lock
-  const [lock, setLock] = useState(false);
+  const [lock, setLock] = useState(true);
   const [verified, setVerified] = useState(false);
 
   const getRecordFilename = () => {

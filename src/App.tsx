@@ -8,10 +8,15 @@ import Export from "./components/Export";
 import { useEffect } from "react";
 import ResourceLoader from "./components/single/ResourceLoader";
 import LockPopup from "./components/single/LockPopup";
+import { useGlobalState } from "./types/GlobalContext";
+import { KeyPress } from "./types/KeyPressHandler";
 
 export default function App() {
+  const { lock } = useGlobalState();
   useEffect(() => {
-    // KeyPress.DisableFunctionKey(["F5"]);
+    KeyPress.CreateShortcut("ctrl + alt + l", () => {
+      lock.setVerified(false);
+    });
 
     return () => {};
   }, []);
@@ -21,14 +26,17 @@ export default function App() {
       <div className="p-1 h-full flex flex-col items-center scroll-smooth">
         <ResourceLoader>
           <Popup />
-          <LockPopup />
+          {/* <LockPopup /> */}
           <Routes>
-            <Route path="/" element={<DashBoard />} />
-            <Route path="import" element={<Import />} />
-            <Route path="export" element={<Export />} />
-            <Route path="report" element={<CreateReport />} />
-            <Route path="category" element={<CategoryManagement />} />
-            <Route path="*" element={<DashBoard />} />
+            <Route path="/" element={lock.verified ? <DashBoard /> : <LockPopup />} />
+            <Route path="import" element={lock.verified ? <Import /> : <LockPopup />} />
+            <Route path="export" element={lock.verified ? <Export /> : <LockPopup />} />
+            <Route path="report" element={lock.verified ? <CreateReport /> : <LockPopup />} />
+            <Route
+              path="category"
+              element={lock.verified ? <CategoryManagement /> : <LockPopup />}
+            />
+            <Route path="*" element={lock.verified ? <DashBoard /> : <LockPopup />} />
           </Routes>
         </ResourceLoader>
       </div>
