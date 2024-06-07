@@ -17,6 +17,9 @@ export default function App() {
     KeyPress.CreateShortcut("ctrl + alt + l", () => {
       lock.setVerified(false);
     });
+    KeyPress.CreateShortcut("alt + shift + u", () => {
+      lock.setVerified(true);
+    });
 
     return () => {};
   }, []);

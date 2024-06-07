@@ -22,6 +22,7 @@ export default function Export() {
   const [dateRelease, setDateRelease] = useState(new Date());
   const [selectedCodes, setSelectedCodes] = useState<string[]>();
   const [importedAmount, setImportedAmount] = useState<number[]>([]);
+  const [locationStr, setLocationStr] = useState("");
   const [csvContent, setCsvContent] = useState<string[]>([]);
   const [csvLocation, setCsvLocation] = useState<string[]>([]);
   const [locationSet, setLocationSet] = useState<Set<string>>(new Set<string>());
@@ -79,6 +80,9 @@ export default function Export() {
     );
 
     if (json.rawNoiXuat !== undefined) {
+      if (json.rawNoiXuat.length) {
+        setLocationStr(json.rawNoiXuat[0].split(",")[0]);
+      }
       setCsvLocation(json.rawNoiXuat);
       const tmp: Set<string> = new Set<string>();
       json.rawNoiXuat.forEach((value) => {
@@ -205,6 +209,9 @@ export default function Export() {
         }
       }
     } else {
+      currentSessionData.danh_sach_san_pham.forEach((product) => {
+        product.noi_xuat = locationStr;
+      });
       res = await FileOperation.StoreRecordToDisk(
         getRecordFilename(),
         currentSessionData,
@@ -243,7 +250,11 @@ export default function Export() {
       <select
         name="rlsSrc"
         className={`w-full bg-white rounded-md p-1.5 pl-2 border-2 ${BorderColor()} ${OutlineColor()}`}
-        ref={rlsSrcRef}>
+        ref={rlsSrcRef}
+        value={locationStr}
+        onChange={(e) => {
+          setLocationStr(e.target.value);
+        }}>
         <option value="" disabled>
           Chọn nơi xuất hàng
         </option>
