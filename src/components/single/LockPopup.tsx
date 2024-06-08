@@ -59,14 +59,14 @@ export default function LockPopup() {
   };
 
   const inp_twstyles =
-    "shadow-md w-[55px] h-[55px] rounded-md text-[50px] text-center drop-shadow-md focus:bg-teal-50 font-myRegular focus:outline-none";
+    "shadow-md w-[55px] h-[55px] rounded-md text-[50px] text-center drop-shadow-md focus:bg-teal-50 font-myRegular focus:outline-none bg-gray-50";
 
   const Body = () => (
     <div className={`w-full flex justify-center flex-col items-center`}>
       <Typography variant="h2" className={`uppercase`} color="teal">
         nhập mã pin
       </Typography>
-      <div className={`p-8 shadow-lg rounded-xl space-x-2 drop-shadow-lg`}>
+      <div className={`p-8 shadow-lg rounded-xl space-x-2 drop-shadow-lg bg-white`}>
         {Array.from({ length: numInputs }).map((_, idx) => (
           <input
             type="password"

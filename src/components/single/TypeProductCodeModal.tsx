@@ -16,7 +16,7 @@ export default function TypeProductCodeModal(props: TypeProductCodeProps) {
   const amountListRef = useRef<HTMLTextAreaElement>(null);
   const lineNumberRef = useRef<HTMLTextAreaElement>(null);
 
-  const btn_width_twstyles = "max-w-[150px] w-[100px]";
+  const btn_width_twstyles = "max-w-[150px]";
   const CancelButton = () => {
     return (
       <Button
@@ -26,7 +26,7 @@ export default function TypeProductCodeModal(props: TypeProductCodeProps) {
         onClick={() => {
           input_code.setOpen(false);
         }}>
-        hủy <img src={cancel_icon} className="w-[32px]"></img>
+        <img src={cancel_icon} className="w-[32px]"></img>
       </Button>
     );
   };
@@ -76,16 +76,18 @@ export default function TypeProductCodeModal(props: TypeProductCodeProps) {
         color="green"
         className={`${btn_width_twstyles} flex items-center justify-evenly py-1 px-1 border-2 border-green-400`}
         onClick={handleSaveClick}>
-        lưu <img src={save_icon} className="w-[32px]"></img>
+        <img src={save_icon} className="w-[32px]"></img>
       </Button>
     );
   };
 
   const Buttons = () => {
     return (
-      <div className={`w-full flex items-center`}>
-        <div className={`w-1/3`}>{CancelButton()}</div>
-        <div className={`w-2/3 flex justify-end space-x-2`}>{SaveButton()}</div>
+      <div className={`w-full flex items-center justify-center space-x-3`}>
+        {CancelButton()}
+        {SaveButton()}
+        {/* <div className={`w-1/3`}>{CancelButton()}</div>
+        <div className={`w-2/3 flex justify-end space-x-2`}>{SaveButton()}</div> */}
       </div>
     );
   };
@@ -158,7 +160,7 @@ export default function TypeProductCodeModal(props: TypeProductCodeProps) {
       handler={() => {
         input_code.setOpen(false);
       }}
-      size="md">
+      size="sm">
       {Body()}
       <DialogFooter className={`px-2 border-t-2 mt-1.5`}>{Buttons()}</DialogFooter>
     </Dialog>
